@@ -28,6 +28,12 @@ from AnkiDroid.
 The parent workspace ties these pieces together so the desktop/backend code,
 Android app, and Android backend can be developed as one repository.
 
+## Original Repositories
+
+- `anki/`: https://github.com/ankitects/anki.git
+- `Anki-Android/`: https://github.com/ankidroid/Anki-Android.git
+- `Anki-Android-Backend/`: https://github.com/ankidroid/Anki-Android-Backend.git
+
 ## Local Commands
 
 Use `just --list` from this folder after the three child repos are in place.
