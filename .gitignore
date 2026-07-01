@@ -1,0 +1,17 @@
+.DS_Store
+
+# Local IDE and machine-specific files
+.idea/
+local.properties
+**/local.properties
+
+# Build outputs
+out/
+build/
+.gradle/
+target/
+**/target/
+
+# Local signing credentials
+Anki-Android/tools/fallback-release-keystore.jks
+

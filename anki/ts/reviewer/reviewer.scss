@@ -1,0 +1,377 @@
+/* Copyright: Ankitects Pty Ltd and contributors
+ * License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html */
+
+@use "sass:string";
+@use "../lib/sass/vars";
+@use "../routes/image-occlusion/review";
+
+:root {
+    --concept-secondary-text: #456582;
+    --concept-muted-text: #538263;
+}
+
+.nightMode {
+    --concept-secondary-text: #c8e2f4;
+    --concept-muted-text: #c8e8d0;
+}
+
+hr {
+    background-color: vars.palette(darkgray, 0);
+    margin: 1em 0;
+    border: none;
+    height: 1px;
+}
+
+body {
+    margin: 20px;
+    overflow-wrap: break-word;
+    background-color: #fbfaf7;
+    // default background setting to fit with toolbar
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: top;
+    background-attachment: fixed;
+}
+
+body.concept-graph-visible {
+    padding-inline-end: calc(min(22rem, calc(100vw - 2rem)) + 1.5rem);
+}
+
+// explicit nightMode definition required
+// to override default .card styling
+body.nightMode {
+    background-color: var(--canvas);
+    color: var(--fg);
+}
+
+img {
+    max-width: 100%;
+    max-height: 95vh;
+}
+
+li {
+    text-align: start;
+}
+
+pre {
+    text-align: left;
+}
+
+#_flag {
+    position: fixed;
+    [dir="ltr"] & {
+        right: 10px;
+    }
+    [dir="rtl"] & {
+        left: 10px;
+    }
+    top: 0;
+    font-size: 30px;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
+}
+
+#_mark {
+    position: fixed;
+    [dir="ltr"] & {
+        left: 10px;
+    }
+    [dir="rtl"] & {
+        right: 10px;
+    }
+    top: 0;
+    font-size: 30px;
+    color: yellow;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
+}
+
+#_concept_kc_badge {
+    position: fixed;
+    [dir="ltr"] & {
+        right: 10px;
+    }
+    [dir="rtl"] & {
+        left: 10px;
+    }
+    bottom: 10px;
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--fg);
+    font-size: 12px;
+    line-height: 1.2;
+    max-width: min(24rem, calc(100vw - 2rem));
+    opacity: 0.86;
+    overflow: hidden;
+    padding: 0.35rem 0.55rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+#_concept_graph_sidebar {
+    position: fixed;
+    [dir="ltr"] & {
+        right: 10px;
+    }
+    [dir="rtl"] & {
+        left: 10px;
+    }
+    top: 10px;
+    bottom: 3.2rem;
+    width: min(22rem, calc(100vw - 2rem));
+    background: color-mix(in srgb, var(--canvas) 96%, #fbfaf7);
+    border: 1px solid rgba(69 101 130 / 0.28);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.4rem 1.5rem rgba(0 0 0 / 0.18);
+    color: var(--fg);
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    gap: 0.5rem;
+    overflow: auto;
+    padding: 0.6rem;
+    z-index: 20;
+}
+
+#_concept_graph_sidebar[hidden] {
+    display: none;
+}
+
+.concept-sidebar-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+
+    button {
+        margin: 0;
+        min-width: 0;
+    }
+}
+
+.concept-sidebar-counters {
+    color: var(--concept-secondary-text);
+}
+
+.concept-sidebar-scores {
+    background: color-mix(in srgb, var(--canvas) 92%, #8fb89a);
+    border: 1px solid rgba(83 130 99 / 0.30);
+    border-radius: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.4rem;
+}
+
+.concept-sidebar-score-row {
+    color: var(--concept-secondary-text);
+}
+
+.concept-sidebar-graph {
+    background: color-mix(in srgb, var(--canvas) 94%, #6f8fa8);
+    border: 1px solid rgba(69 101 130 / 0.22);
+    border-radius: 0.4rem;
+    min-height: 11rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.concept-sidebar-graph svg {
+    height: 100%;
+    inset: 0;
+    position: absolute;
+    width: 100%;
+
+    line {
+        stroke: color-mix(in srgb, var(--concept-secondary-text) 55%, transparent);
+        stroke-width: 1;
+        vector-effect: non-scaling-stroke;
+    }
+}
+
+.concept-sidebar-node {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.08rem;
+    position: absolute;
+    transform: translate(-50%, -50%);
+}
+
+.concept-sidebar-dot {
+    background: var(--concept-secondary-text);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    box-shadow: 0 0 0 1px var(--border);
+    flex: 0 0 auto;
+    height: 0.55rem;
+    width: 0.55rem;
+}
+
+.concept-sidebar-node-label {
+    background: color-mix(in srgb, var(--canvas) 90%, #fbfaf7);
+    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    border-radius: 0.25rem;
+    color: var(--fg);
+    font-size: 10px;
+    line-height: 1.05;
+    max-width: 3.8rem;
+    overflow: hidden;
+    padding: 0.04rem 0.16rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.concept-sidebar-node.inner,
+.concept-sidebar-row.inner {
+    border-left: 0.25rem solid #456582;
+}
+
+.concept-sidebar-node.inner {
+    border-left: 0;
+
+    .concept-sidebar-dot {
+        background: #456582;
+    }
+}
+
+.concept-sidebar-node.outer,
+.concept-sidebar-row.outer {
+    border-left: 0.25rem solid #538263;
+}
+
+.concept-sidebar-node.outer {
+    border-left: 0;
+
+    .concept-sidebar-dot {
+        background: #538263;
+    }
+}
+
+.concept-sidebar-node.locked,
+.concept-sidebar-row.locked {
+    border-left: 0.16rem solid #d69a2d;
+}
+
+.concept-sidebar-node.locked {
+    border-left: 0;
+}
+
+.concept-sidebar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.concept-sidebar-row {
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    color: var(--concept-secondary-text);
+    padding: 0.3rem;
+}
+
+.nightMode {
+    #_concept_graph_sidebar {
+        background: color-mix(in srgb, var(--canvas) 92%, #6f8fa8);
+        border-color: rgba(143 184 154 / 0.35);
+        box-shadow: 0 0.4rem 1.5rem rgba(0 0 0 / 0.35);
+    }
+
+    .concept-sidebar-scores {
+        background: color-mix(in srgb, var(--canvas) 90%, #456582);
+        border-color: rgba(143 184 154 / 0.32);
+    }
+
+    .concept-sidebar-graph {
+        background: color-mix(in srgb, var(--canvas) 92%, #456582);
+        border-color: rgba(143 184 154 / 0.28);
+    }
+
+    .concept-sidebar-graph svg line {
+        stroke: color-mix(in srgb, var(--concept-muted-text) 70%, transparent);
+    }
+
+    .concept-sidebar-node-label {
+        background: color-mix(in srgb, var(--canvas) 86%, #456582);
+        border-color: rgba(143 184 154 / 0.30);
+        color: var(--fg);
+    }
+
+    .concept-sidebar-counters,
+    .concept-sidebar-score-row,
+    .concept-sidebar-row {
+        color: var(--concept-muted-text);
+    }
+
+    .concept-sidebar-dot {
+        background: var(--fg);
+        box-shadow: 0 0 0 1px var(--canvas);
+    }
+}
+
+#typeans {
+    width: 100%;
+    // https://anki.tenderapp.com/discussions/beta-testing/1854-using-margin-auto-causes-horizontal-scrollbar-on-typesomething
+    box-sizing: border-box;
+    line-height: 1.75;
+}
+
+code#typeans {
+    white-space: pre-wrap;
+    font-variant-ligatures: none;
+}
+
+.typeGood {
+    background: #afa;
+    color: black;
+}
+
+.typeBad {
+    color: black;
+    background: #faa;
+}
+
+.typeMissed {
+    color: black;
+    background: #ccc;
+}
+
+button {
+    margin: 1em 0.5em;
+}
+
+.replay-button {
+    text-decoration: none;
+    display: inline-flex;
+    vertical-align: middle;
+    margin: 3px;
+
+    svg {
+        width: 40px;
+        height: 40px;
+
+        circle {
+            fill: #fff;
+            stroke: #414141;
+        }
+
+        path {
+            fill: #414141;
+        }
+    }
+}
+
+.nightMode {
+    .latex {
+        filter: invert(100%);
+    }
+}
+
+.drawing {
+    zoom: 50%;
+}
+.nightMode img.drawing {
+    filter: string.unquote("invert(1) hue-rotate(180deg)");
+}
