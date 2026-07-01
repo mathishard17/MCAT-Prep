@@ -1,25 +1,32 @@
 # MCAT Prep Workspace
 
-Parent workspace for the MCAT desktop app, Android backend, and Android app.
+Parent workspace for the MCAT prep desktop, Android, and backend projects.
 
-Expected layout:
+## Repository Layout
 
 ```text
 MCAT-Prep/
-  anki/
-  Anki-Android-Backend/
-  Anki-Android/
-  scripts/
+  anki/                 Desktop app and upstream backend code pulled from Anki.
+  Anki-Android/         Android app pulled from AnkiDroid.
+  Anki-Android-Backend/ Backend bridge used to connect Anki backend code to Android.
+  scripts/              Workspace helper scripts.
 ```
 
-## Migration Status
+## Folder Roles
 
-The three child repositories now live under this parent folder as nested Git
-repositories. Their uncommitted work is preserved inside each child repo.
+`anki/` contains the desktop application code and backend logic brought in from
+Anki. This is the source for the desktop experience and the upstream backend
+behavior it depends on.
 
-Before committing this parent repo, decide whether it should track the children
-as Git submodules or whether this should become a full monorepo import. For now,
-do not flatten the child repos while they still have uncommitted work.
+`Anki-Android/` contains the Android application code brought in from
+AnkiDroid. This is the mobile client users run on Android devices.
+
+`Anki-Android-Backend/` contains the backend bridge code used to connect the
+Anki backend pieces to the Android app. It is based on the backend work pulled
+from AnkiDroid.
+
+The parent workspace ties these pieces together so the desktop/backend code,
+Android app, and Android backend can be developed as one repository.
 
 ## Local Commands
 
