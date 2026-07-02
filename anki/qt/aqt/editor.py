@@ -36,6 +36,12 @@ from anki.models import NotetypeDict, NotetypeId, StockNotetype
 from anki.notes import Note, NoteFieldsCheckResult, NoteId
 from anki.utils import checksum, is_lin, is_win, namedtmp
 from aqt import AnkiQt, colors, gui_hooks
+from aqt.concept_tags import (
+    CONCEPT_METADATA_TAG_PREFIXES,
+    concept_tags_meet_add_requirements,
+    derived_mcat_sections_for_topics,
+    normalize_concept_tag,
+)
 from aqt.operations import QueryOp
 from aqt.operations.note import update_note
 from aqt.operations.notetype import update_notetype_legacy
@@ -193,52 +199,6 @@ CONCEPT_DIFFICULTY_OPTIONS = [
     ("Difficulty 4", "4"),
     ("Difficulty 5", "5"),
 ]
-
-CONCEPT_METADATA_TAG_PREFIXES = (
-    "KC::",
-    "MCAT::",
-    "Difficulty::",
-    "IRT::Discrimination::",
-    "IRT::Guessing::",
-    "Reasoning::",
-)
-
-
-def normalize_concept_tag(tag: str) -> str:
-    return tag.replace("∷", "::")
-
-
-def concept_tags_meet_add_requirements(tags: Iterable[str]) -> bool:
-    normalized_tags = [normalize_concept_tag(tag) for tag in tags]
-    return any(
-        tag.startswith("KC::") and tag.removeprefix("KC::") for tag in normalized_tags
-    ) and any(
-        tag.startswith("Difficulty::") and tag.removeprefix("Difficulty::")
-        for tag in normalized_tags
-    )
-
-
-def derived_mcat_sections_for_topics(topics: Iterable[str]) -> list[str]:
-    sections = []
-    for topic in topics:
-        if topic.startswith("Bio::"):
-            topic_sections = ["Bio_Biochem", "Chem_Phys", "Psych_Soc"]
-        elif topic.startswith("Biochem::"):
-            topic_sections = ["Bio_Biochem", "Chem_Phys"]
-        elif topic.startswith(("GenChem::", "Physics::", "Orgo::")):
-            topic_sections = ["Chem_Phys"]
-        elif topic.startswith("PsychSoc::"):
-            topic_sections = ["Psych_Soc"]
-        elif topic.startswith("CARS::"):
-            topic_sections = ["CARS"]
-        else:
-            continue
-
-        for section in topic_sections:
-            if section not in sections:
-                sections.append(section)
-
-    return sections
 
 
 pics = (

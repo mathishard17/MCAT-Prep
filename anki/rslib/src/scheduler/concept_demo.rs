@@ -1,8 +1,13 @@
 // Copyright: Ankitects Pty Ltd and contributors
 // License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-use anki_proto::scheduler;
+use std::collections::BTreeMap;
 
+use anki_proto::scheduler;
+use fsrs::FSRS;
+use fsrs::FSRS5_DEFAULT_DECAY;
+
+use super::concept::section_memory_from_kc_memory;
 use super::concept::CardConceptMetadata;
 use super::concept::ConceptSchedulerState;
 use super::concept::Evidence;
@@ -11,6 +16,7 @@ use super::concept::KnowledgeGraph;
 use super::concept::McatSection;
 use super::concept::ReadinessEvidenceStatus;
 use super::concept::SectionScoreStatus;
+use crate::card::Card;
 use crate::prelude::*;
 
 const MCAT_DEMO_CARDS_MD: &str = include_str!("../../../added features/mcat_demo_cards.md");
@@ -184,6 +190,7 @@ impl Collection {
             .copied()
             .unwrap_or_default();
         let graph = canonical_mcat_demo_graph();
+        let kc_memory = self.concept_kc_memory_for_deck(deck_id)?;
         let evidence = persisted.state.readiness_evidence_status(&persisted.config);
         let (evidence_kind, seen_cards, required_seen_cards) = match evidence {
             ReadinessEvidenceStatus::InsufficientEvidence {
@@ -225,6 +232,7 @@ impl Collection {
                     negative: mastery_state
                         .map(|state| state.negative)
                         .unwrap_or_default(),
+                    memory: kc_memory.get(component).copied().unwrap_or(0.0) as f32,
                 }
             })
             .collect();
@@ -251,13 +259,23 @@ impl Collection {
         ]
         .into_iter()
         .map(|section| {
-            section_score_to_proto(persisted.state.section_score_status(
+            let mut proto = section_score_to_proto(persisted.state.section_score_status(
                 section,
                 &graph,
                 &persisted.config,
-            ))
+            ));
+            let section_memory = section_memory_from_kc_memory(section, &graph, &kc_memory);
+            proto.section_has_memory = section_memory.is_some();
+            proto.section_memory = section_memory.unwrap_or(0.0) as f32;
+            proto
         })
         .collect();
+        let has_memory = !kc_memory.is_empty();
+        let overall_memory = if has_memory {
+            (kc_memory.values().sum::<f64>() / kc_memory.len() as f64) as f32
+        } else {
+            0.0
+        };
 
         Ok(scheduler::ConceptSchedulerStatusResponse {
             enabled,
@@ -282,7 +300,85 @@ impl Collection {
             }),
             recommendations,
             section_scores,
+            overall_memory,
+            has_memory,
         })
+    }
+
+    /// Average per-KC card memory (recall probability of already-studied cards)
+    /// for a deck, keyed by KC id. KCs with no studied cards are omitted.
+    pub(crate) fn concept_kc_memory_for_deck(
+        &mut self,
+        deck_id: DeckId,
+    ) -> Result<BTreeMap<KnowledgeComponentId, f64>> {
+        let now = self.timing_today()?.now;
+        let mut totals: BTreeMap<KnowledgeComponentId, (f64, u32)> = BTreeMap::new();
+        for card_id in self.storage.all_cards_in_single_deck(deck_id)? {
+            let card = self.storage.get_card(card_id)?.or_not_found(card_id)?;
+            let Some(memory) = self.card_memory(&card, now)? else {
+                continue;
+            };
+            let note = self
+                .storage
+                .get_note(card.note_id)?
+                .or_not_found(card.note_id)?;
+            let metadata = CardConceptMetadata::from_tags(&note.tags);
+            for component in metadata.target_components {
+                let entry = totals.entry(component).or_insert((0.0, 0));
+                entry.0 += memory;
+                entry.1 += 1;
+            }
+        }
+        Ok(totals
+            .into_iter()
+            .map(|(component, (sum, count))| {
+                (component, if count > 0 { sum / count as f64 } else { 0.0 })
+            })
+            .collect())
+    }
+
+    /// Recall probability of a single card today: FSRS retrievability when a
+    /// memory state is available, otherwise a rating-decay fallback. Returns
+    /// `None` for cards that have not been studied yet.
+    fn card_memory(&self, card: &Card, now: TimestampSecs) -> Result<Option<f64>> {
+        if card.reps == 0 {
+            return Ok(None);
+        }
+        let last_review_time = match card.last_review_time {
+            Some(time) => time,
+            None => match self.storage.time_of_last_review(card.id)? {
+                Some(time) => time,
+                None => return Ok(None),
+            },
+        };
+        let elapsed_secs = now.elapsed_secs_since(last_review_time).max(0) as u32;
+
+        if let Some(state) = card.memory_state {
+            let decay = card.decay.unwrap_or(FSRS5_DEFAULT_DECAY);
+            let retrievability = FSRS::new(None).unwrap().current_retrievability_seconds(
+                state.into(),
+                elapsed_secs,
+                decay,
+            );
+            return Ok(Some(retrievability as f64));
+        }
+
+        // Fallback when FSRS memory state is unavailable: decay the last rating's
+        // base recall probability relative to the current interval.
+        let base = self
+            .storage
+            .get_revlog_entries_for_card(card.id)?
+            .into_iter()
+            .rev()
+            .find(|entry| entry.has_rating_and_affects_scheduling())
+            .and_then(|entry| base_recall_for_button(entry.button_chosen));
+        let Some(base) = base else {
+            return Ok(None);
+        };
+        let elapsed_days = elapsed_secs as f64 / 86_400.0;
+        let interval_days = card.interval.max(1) as f64;
+        let decay_factor = (-elapsed_days / interval_days).exp();
+        Ok(Some((base * decay_factor).clamp(0.0, 1.0)))
     }
 
     fn reconstruct_mcat_demo_state_from_revlogs(
@@ -344,6 +440,9 @@ fn section_score_to_proto(score: SectionScoreStatus) -> scheduler::ConceptSectio
         readiness_upper: score.readiness_upper as f32,
         answered_items: score.answered_items,
         required_items: score.required_items,
+        // Populated by the status builder, which has access to card memory.
+        section_memory: 0.0,
+        section_has_memory: false,
     }
 }
 
@@ -353,6 +452,17 @@ fn mcat_section_to_proto(section: McatSection) -> scheduler::McatSection {
         McatSection::ChemPhys => scheduler::McatSection::ChemPhys,
         McatSection::PsychSoc => scheduler::McatSection::PsychSoc,
         McatSection::Cars => scheduler::McatSection::Cars,
+    }
+}
+
+fn base_recall_for_button(button: u8) -> Option<f64> {
+    // Track E fallback: base recall probability implied by the last rating.
+    match button {
+        1 => Some(0.20),
+        2 => Some(0.55),
+        3 => Some(0.80),
+        4 => Some(0.90),
+        _ => None,
     }
 }
 
@@ -660,6 +770,42 @@ mod tests {
         assert_eq!(dna.answered, 5);
         assert!(dna.mastery > 0.5);
         assert_eq!(status.counters.unwrap().daily_positive, 5);
+
+        Ok(())
+    }
+
+    #[test]
+    fn demo_status_reports_memory_after_reviews() -> Result<()> {
+        let mut col = Collection::new();
+        let deck_id = col.import_mcat_demo_deck()?;
+        for _ in 0..5 {
+            col.answer_good();
+        }
+
+        let status = col.concept_scheduler_status(deck_id)?;
+        assert!(status.has_memory);
+        // Cards just answered Good => high recall probability, but still a valid
+        // probability.
+        assert!(status.overall_memory > 0.5);
+        assert!(status.overall_memory <= 1.0);
+
+        let graph = status.graph.unwrap();
+        let dna = graph
+            .nodes
+            .iter()
+            .find(|node| node.id == "Bio::DNA")
+            .unwrap();
+        // The studied KC has a recall estimate from its studied cards.
+        assert!(dna.answered > 0);
+        assert!(dna.memory > 0.0);
+
+        // A KC with no studied cards stays at 0 memory so the UI can hide it.
+        let untouched = graph
+            .nodes
+            .iter()
+            .find(|node| node.answered == 0)
+            .unwrap();
+        assert_eq!(untouched.memory, 0.0);
 
         Ok(())
     }

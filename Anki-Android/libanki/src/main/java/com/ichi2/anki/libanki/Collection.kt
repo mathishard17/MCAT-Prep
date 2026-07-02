@@ -1469,6 +1469,9 @@ class Collection(
     fun getSchedulingStatesWithContextRaw(input: ByteArray): ByteArray = backend.getSchedulingStatesWithContextRaw(input = input)
 
     @NotInPyLib
+    fun getConceptSchedulerStatusRaw(input: ByteArray): ByteArray = backend.getConceptSchedulerStatusRaw(input = input)
+
+    @NotInPyLib
     fun setSchedulingStatesRaw(input: ByteArray): ByteArray = backend.setSchedulingStatesRaw(input = input)
 
     @NotInPyLib

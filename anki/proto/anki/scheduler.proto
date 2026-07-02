@@ -166,6 +166,11 @@ message ConceptSchedulerStatusResponse {
   ConceptGraph graph = 6;
   repeated ConceptTopicRecommendation recommendations = 7;
   repeated ConceptSectionScore section_scores = 8;
+  // Average recall probability of already-studied cards across all KCs with
+  // review history. Distinct from mastery (understanding), performance (IRT),
+  // and readiness.
+  float overall_memory = 9;
+  bool has_memory = 10;
 }
 
 message ConceptEvidenceStatus {
@@ -220,6 +225,8 @@ message ConceptGraphNode {
   uint32 answered = 6;
   uint32 positive = 7;
   uint32 negative = 8;
+  // Average recall probability of this KC's studied cards (0 when none studied).
+  float memory = 9;
 }
 
 message ConceptGraphEdge {
@@ -258,6 +265,11 @@ message ConceptSectionScore {
   float readiness_upper = 13;
   uint32 answered_items = 14;
   uint32 required_items = 15;
+  // Blueprint-weighted average recall probability of studied cards in this
+  // section. section_has_memory is false when no cards in the section have
+  // been studied yet.
+  float section_memory = 16;
+  bool section_has_memory = 17;
 }
 
 message GetQueuedCardsRequest {

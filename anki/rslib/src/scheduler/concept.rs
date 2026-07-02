@@ -377,10 +377,10 @@ pub(crate) struct ConceptSchedulerConfig {
     pub(crate) irt_min_section_items: u32,
     #[serde(default = "default_irt_min_section_coverage")]
     pub(crate) irt_min_section_coverage: f64,
-    #[serde(default = "default_max_coverage_penalty")]
-    pub(crate) max_coverage_penalty: f64,
-    #[serde(default = "default_max_mastery_penalty")]
-    pub(crate) max_mastery_penalty: f64,
+    /// Scaled score the untested (uncovered) fraction of a section is assumed to
+    /// contribute to readiness: a four-choice random-guessing baseline.
+    #[serde(default = "default_guessing_baseline_score")]
+    pub(crate) guessing_baseline_score: f64,
     #[serde(default = "default_max_coverage_standard_error")]
     pub(crate) max_coverage_standard_error: f64,
     #[serde(default = "default_max_mastery_standard_error")]
@@ -402,8 +402,7 @@ impl Default for ConceptSchedulerConfig {
             readiness_min_seen_cards: 500,
             irt_min_section_items: default_irt_min_section_items(),
             irt_min_section_coverage: default_irt_min_section_coverage(),
-            max_coverage_penalty: default_max_coverage_penalty(),
-            max_mastery_penalty: default_max_mastery_penalty(),
+            guessing_baseline_score: default_guessing_baseline_score(),
             max_coverage_standard_error: default_max_coverage_standard_error(),
             max_mastery_standard_error: default_max_mastery_standard_error(),
         }
@@ -418,12 +417,8 @@ fn default_irt_min_section_coverage() -> f64 {
     0.60
 }
 
-fn default_max_coverage_penalty() -> f64 {
-    4.0
-}
-
-fn default_max_mastery_penalty() -> f64 {
-    3.0
+fn default_guessing_baseline_score() -> f64 {
+    120.0
 }
 
 fn default_max_coverage_standard_error() -> f64 {
@@ -932,17 +927,28 @@ impl ConceptSchedulerState {
     ) -> SectionScoreStatus {
         let irt = self.irt_sections.get(&section).cloned().unwrap_or_default();
         let section_mastery = self.section_mastery(section, graph, config);
-        let coverage = self.section_coverage(section, graph);
-        let mastery_uncertainty = 1.0 - coverage;
+        let coverage = self.section_coverage(section, graph).clamp(0.0, 1.0);
         let performance_center = irt.scaled_score();
         let performance_standard_error = irt.performance_standard_error();
-        let coverage_penalty = (1.0 - coverage) * config.max_coverage_penalty;
-        let mastery_penalty = (1.0 - section_mastery) * config.max_mastery_penalty;
+
+        // Readiness projects a whole-section score. The blueprint is scored as a
+        // blend: the covered fraction scores at demonstrated performance, while
+        // the untested (uncovered) fraction has no evidence and is assumed to
+        // score at the guessing baseline. Coverage is therefore a hard ceiling:
+        // the most readiness can reach is `guess + coverage * (132 - guess)`, so
+        // a section can only approach 132 once it is fully covered.
+        let guess_floor = config.guessing_baseline_score;
         let readiness_center =
-            (performance_center - coverage_penalty - mastery_penalty).clamp(118.0, 132.0);
+            (guess_floor + coverage * (performance_center - guess_floor)).clamp(118.0, 132.0);
+
+        // Uncertainty: the performance term only informs the covered fraction, so
+        // it is scaled by coverage; thin coverage and weak section mastery widen
+        // the band. Variances are summed, then square-rooted.
+        let performance_standard_error_component = coverage * performance_standard_error;
         let coverage_standard_error = (1.0 - coverage) * config.max_coverage_standard_error;
-        let mastery_standard_error = mastery_uncertainty * config.max_mastery_standard_error;
-        let readiness_standard_error = ((performance_standard_error * performance_standard_error)
+        let mastery_standard_error = (1.0 - section_mastery) * config.max_mastery_standard_error;
+        let readiness_standard_error = ((performance_standard_error_component
+            * performance_standard_error_component)
             + (coverage_standard_error * coverage_standard_error)
             + (mastery_standard_error * mastery_standard_error))
             .sqrt();
@@ -1044,6 +1050,50 @@ impl ConceptSchedulerState {
         } else {
             mastery_sum / count as f64
         }
+    }
+}
+
+/// Blueprint-weighted section memory from per-KC memory values.
+///
+/// Mirrors the discipline weighting used for section mastery, but averages
+/// `CardMemory`-derived per-KC recall instead of mastery. Returns `None` when
+/// no KC in the section has any studied-card memory, so callers can gate the
+/// display instead of showing a misleading 0%.
+pub(crate) fn section_memory_from_kc_memory(
+    section: McatSection,
+    graph: &KnowledgeGraph,
+    kc_memory: &BTreeMap<KnowledgeComponentId, f64>,
+) -> Option<f64> {
+    let mut weighted_memory = 0.0;
+    let mut total_weight = 0.0;
+
+    for (discipline, weight) in section_disciplines(section) {
+        let weight = *weight;
+        if weight <= 0.0 {
+            continue;
+        }
+
+        let mut memory_sum = 0.0;
+        let mut count = 0u32;
+        for component in graph.components() {
+            if McatDiscipline::for_component(component) == Some(*discipline) {
+                if let Some(memory) = kc_memory.get(component) {
+                    memory_sum += *memory;
+                    count += 1;
+                }
+            }
+        }
+
+        if count > 0 {
+            total_weight += weight;
+            weighted_memory += weight * (memory_sum / count as f64);
+        }
+    }
+
+    if total_weight == 0.0 {
+        None
+    } else {
+        Some(weighted_memory / total_weight)
     }
 }
 
@@ -1400,6 +1450,83 @@ mod tests {
 
         assert_approx_eq(score.coverage, 0.05);
         assert!(!score.enough_evidence);
+    }
+
+    #[test]
+    fn readiness_is_capped_by_partial_coverage() {
+        let config = ConceptSchedulerConfig {
+            irt_min_section_items: 1,
+            irt_min_section_coverage: 0.5,
+            ..ConceptSchedulerConfig::default()
+        };
+        let mut graph = KnowledgeGraph::default();
+        graph.add_component(kc("Bio::DNA"));
+        let mut state = ConceptSchedulerState::default();
+
+        // Strong biology evidence (high mastery + many correct, easy items) drives
+        // performance toward the top of the scale, but the Bio/Biochem blueprint is
+        // only ~65% covered because no biochem/chem items were answered.
+        let item = IrtItemMetadata {
+            difficulty: -1.0,
+            discrimination: 1.5,
+            guessing: 0.2,
+        };
+        for _ in 0..40 {
+            state.record_evidence(kc("Bio::DNA"), Evidence::Positive, &config);
+            state.record_irt_response(
+                McatSection::BioBiochem,
+                [McatDiscipline::Biology],
+                item,
+                Evidence::Positive,
+            );
+        }
+
+        let score = state.section_score_status(McatSection::BioBiochem, &graph, &config);
+        let guess_floor = config.guessing_baseline_score;
+
+        // Coverage is well under 100%, so readiness must sit below performance.
+        assert!(score.coverage < 0.7);
+        assert!(score.performance_center > guess_floor);
+        assert!(score.readiness_center < score.performance_center);
+        // Readiness is exactly the coverage-weighted blend toward the guessing floor.
+        assert_approx_eq(
+            score.readiness_center,
+            guess_floor + score.coverage * (score.performance_center - guess_floor),
+        );
+        // It can never exceed the coverage ceiling, even if performance is maxed.
+        let ceiling = guess_floor + score.coverage * (132.0 - guess_floor);
+        assert!(score.readiness_center <= ceiling + 1e-9);
+        assert!(ceiling < 132.0);
+    }
+
+    #[test]
+    fn full_coverage_lets_readiness_reach_performance() {
+        let config = ConceptSchedulerConfig {
+            irt_min_section_items: 1,
+            irt_min_section_coverage: 0.5,
+            ..ConceptSchedulerConfig::default()
+        };
+        // CARS is a single-discipline section (100% weight), so one discipline can
+        // reach full coverage on its own.
+        let mut graph = KnowledgeGraph::default();
+        graph.add_component(kc("CARS::Reasoning"));
+        let mut state = ConceptSchedulerState::default();
+
+        let item = IrtItemMetadata {
+            difficulty: 0.0,
+            discrimination: 1.0,
+            guessing: 0.25,
+        };
+        for _ in 0..40 {
+            state.record_evidence(kc("CARS::Reasoning"), Evidence::Positive, &config);
+            state.record_irt_response(McatSection::Cars, [McatDiscipline::Cars], item, Evidence::Positive);
+        }
+
+        let score = state.section_score_status(McatSection::Cars, &graph, &config);
+
+        assert_approx_eq(score.coverage, 1.0);
+        // At full coverage the blend collapses to performance itself.
+        assert_approx_eq(score.readiness_center, score.performance_center);
     }
 
     #[test]

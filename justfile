@@ -9,6 +9,9 @@ desktop:
 desktop-check:
     cd anki && just check
 
+desktop-installer:
+    cd anki && ./tools/build-installer
+
 backend:
     cd Anki-Android-Backend && ./build.sh
 

@@ -26,7 +26,7 @@ Research on how to accurately measure and efficiently increase ability on the MC
 
 ## DOK 4: Spiky POVs
 
-### SPOV 1: Memory Structure Determines Long-term Ability
+**SPOV 1: Memory Structure Determines Long-term Ability**
 
 • So, build the structures well now, or else nothing you do right now will matter in a few months.
 • **Elaboration:** The way we learn directly impacts how our brains build up the structures in our memory. With overly detailed flashcards, in order to remember them efficiently, our brains will create a bunch of disconnected nodes of extreme precise information. Yet by working through multi-step complex practice problems, our brains have to retain the information through a systematic graph of concepts, problems, approaches.
@@ -35,11 +35,13 @@ Research on how to accurately measure and efficiently increase ability on the MC
 • **Opposite POV:** You can put a ton of effort in learning and still do poorly on tests.
 • **Rebuttal:** Because you are learning the wrong way. You are not building long-lasting and stable mental structures. When you just reread, summarize even, you are not (re)building connections and (re)activating nodes you initially created.
 
-### SPOV 2: An EduLLM Must Be Graph-Based
+**SPOV 2: ~~An EduLLM must be graph-based.~~ An EduLLM needs a comprehensive graph-based tool.**
 
-• **Elaboration:** Firstly, the best way to learn things is not linearly. Prerequisites should not be strict. And our limits are infinite in all directions. In order for an EduLLM to be the most efficient to help humans learn, it must truly understand schemas, the both forward and backward propagation of information through all the nodes, and the flexibility to continue to grow as a network of knowledge components. Neural nets are not bad, but far from enough.
-• **Opposite POV:** Transformers work very well.
-• **Rebuttal:** When you prompt an LLM to generate a full concept map, it can only generate some topics, and subtopics, and the connections as it outputs. For a large map, after some time when it’s writing a new topic, there’s no way it can attend back to and connect it with the first topic. This attention structure will always be bias towards the most recent tokens. But our brains don’t work like that.
+- Elaboration: Firstly, the best way to learn things is not linearly. Prerequisites should not be strict. And our limits are infinite in all directions. In order for an EduLLM to be the most efficient to help humans learn, it must truly understand schemas, the both forward and backward propagation of information through all the nodes, and the flexibility to continue to grow as a network of knowledge components.
+- Opposite POV: Transformers work very well.
+- Rebuttal: When you prompt an LLM to generate a full concept map, it can only generate some topics, and subtopics, and the connections as it outputs. For a large map, after some time when it’s writing a new topic, there’s no way it can attend back to and connect it with the first topic. This attention structure will always be bias towards the most recent tokens. But our brains don’t work like that.
+- 7/1: Given that current LLMs are trained on surplus amounts of data and understand a variety of topics at a depth at least of high school teachers, it is not necessary to change the inner structure and go through even more expensive training for something that won’t be that much better (or even better). Thus, instead of focusing on the LLM itself, it’s important to focus on the **harness:** **evals, memory, context,** and **tools**. This brainlift has focus on graphs/schemas, so the below will focus on tools.
+- Extending the elaboration and rebuttal, LLMs need to understand how this graphical representation works via a good tool & MCP. **This tool needs to track the learner’s brain.** (Having an actual live MRI could work lol but would be overly noisy and would probably also be simplified to some graph-based structure) For the tool to model the brain, that will be through graphs since our memories, both making new and retrieving old ones, are always **structured as schemas**.
 
 ## DOK 3: Insights
 
@@ -135,7 +137,7 @@ Accurate metrics to measure the user’s abilities
 • **Agency needs scaffolding:** OECD found students were more confident using digital tools than managing autonomous learning without reminders. **Why it matters:** A black-box queue is not enough; users need transparent plans, small next steps, and adjustable autonomy. **Source:** [OECD, PISA 2022 Results Volume I](https://www.oecd.org/en/publications/2023/12/pisa-2022-results-volume-i_76772a36/full-report/from-data-to-insights_f1c46d26.html)
 • **First-gen medical students face financial constraints:** AAMC reports first-generation MD matriculants remain underrepresented and often come from lower-income backgrounds. **Why it matters:** Core score-improving features should not be premium-only. **Source:** [AAMC, First-Generation U.S. Medical School Matriculants](https://www.aamc.org/media/78371/download)
 
-## DOK 1: Research & Facts
+## DOK 1: Research & Facts 6/29 & 6/30
 
 ### The Learning Science Experts
 

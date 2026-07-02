@@ -53,6 +53,12 @@ Done:
 - Adds `.cursor/mistakes.md` and records known mistakes around coverage calculation, persisted-state backfill, and add-card editor lifecycle assumptions.
 - Improves light/dark mode contrast in Concept Scheduler deck-options panels and reviewer Progress sidebar, avoiding grey text on grey and white text on soft-white panels.
 - Keeps IRT scores inside deck options and the reviewer Progress sidebar only; the flashcard face itself only shows the current card's KC badge.
+- Matches the reviewer sidebar locked-topic row accent to its graph dot color (neutral, and white in dark mode) instead of a separate orange accent, so each description lines up with its dot.
+- (Track F) Adds an Add Cards `Browse Added` button that opens the Browser filtered to the most recently added note (`nid:<id>`), so demo cards can be located immediately.
+- (Track F) Replaces the generic "cards added" tooltip with a confirmation that shows the destination deck name, new note id, and KC tag(s).
+- (Track F) Confirms adds route to the deck chooser's selected deck.
+- (Track F) Extracts the pure concept-tag helpers (`normalize_concept_tag`, `concept_tags_meet_add_requirements`, `derived_mcat_sections_for_topics`, `CONCEPT_METADATA_TAG_PREFIXES`) into `qt/aqt/concept_tags.py` so tag rules are unit-testable without Qt; `editor.py` re-imports them.
+- (Track F) Adds `qt/tests/test_concept_tags.py` (pure tag rules) and `pylib/tests/test_concept_add_cards.py` (findability contract: a tagged note lands in the selected deck and is findable by `tag:KC::...` and by note id).
 
 ## Current Algorithm Behavior
 
@@ -148,8 +154,11 @@ Mutation/update path:
   - `Difficulty::1` through `Difficulty::5` maps to IRT difficulty from `-2.0` to `2.0`.
   - `IRT::Discrimination::x` is optional and defaults to `1.0`.
   - `IRT::Guessing::x` is optional and defaults to `0.25` for four-choice cards.
-- Section performance is reported as an MCAT scaled-score range from the estimated theta and standard error.
-- Readiness uses the section performance estimate plus KC mastery coverage. Penalties shift the center, and uncertainty is combined by adding variances before taking the square root.
+- Section performance is reported as an MCAT scaled-score range from the estimated theta and standard error. Performance is conditional on the material actually practiced, so it can reach 132 on tested content regardless of coverage.
+- Readiness projects a whole-section score and is gated by coverage as a hard ceiling: `readiness_center = clamp(guess_floor + coverage * (performance_center - guess_floor), 118, 132)`, with `guess_floor = 120` (four-choice guessing baseline). The covered fraction scores at performance; the untested fraction is assumed to score at the guessing baseline. Max readiness at coverage `c` is `120 + c * 12`, so 90% coverage caps readiness at 130.8 and 50% caps it at 126 — you cannot show 132 without full coverage.
+- Coverage previously only subtracted a small additive penalty (max 4 points), which let ~90% coverage still show ~131.6; it is now a multiplicative ceiling.
+- Section mastery no longer shifts the readiness center. It stays a displayed diagnostic and only widens the uncertainty band (`mastery_se = (1 - section_mastery) * max_mastery_standard_error`).
+- Readiness uncertainty sums variances: the performance term is scaled by coverage (`coverage * performance_se`), plus coverage and mastery terms, before taking the square root.
 - Section score outputs refuse strong claims when answered item counts or section blueprint coverage are too low.
 - The deck-options UI hides performance/readiness score ranges until the section has at least `60%` coverage.
 - The UI does not show raw "insufficient evidence" item counts; it shows a short coverage/evidence gate message instead.
@@ -163,6 +172,14 @@ Not wired yet:
 - No full `just check` yet; `just lint`, `just test-ts`, and targeted Rust tests pass.
 - `just test-py` still fails only on the known unrelated Qt installer template issue in `qt/tests/test_installer.py`.
 - No Android companion or mobile sync yet.
+
+Track F verification (2026-07-01):
+
+- `pylib/tests/test_concept_add_cards.py`: 1 passed.
+- `qt/tests/test_concept_tags.py`: 5 passed.
+- Python/Qt changes are lint-clean via the editor language servers.
+
+The build env had to be repaired first: this checkout was moved from `/Users/sophiaz/alphaai/anki`, which left `out/pylib/anki/_rsbridge.so` as a dangling symlink, stale `out/pyenv` editable `.pth` files, and an old `builddir` in `out/build.ninja`. Those were repointed to the current path so `anki` imports and the tests run. See `.cursor/mistakes.md` for the moved-checkout gotcha.
 
 ## Manual Demo Workflow
 

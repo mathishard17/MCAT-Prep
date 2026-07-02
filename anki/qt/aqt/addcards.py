@@ -14,6 +14,7 @@ from anki.models import NotetypeId
 from anki.notes import Note, NoteFieldsCheckResult, NoteId
 from anki.utils import html_to_text_line, is_mac
 from aqt import AnkiQt, gui_hooks
+from aqt.concept_tags import CONCEPT_METADATA_TAG_PREFIXES, normalize_concept_tag
 from aqt.deckchooser import DeckChooser
 from aqt.notetypechooser import NotetypeChooser
 from aqt.operations.note import add_note
@@ -52,6 +53,7 @@ class AddCards(QMainWindow):
         self.setupButtons()
         self.history: list[NoteId] = []
         self._last_added_note: Note | None = None
+        self._last_added_note_id: NoteId | None = None
         gui_hooks.operation_did_execute.append(self.on_operation_did_execute)
         restoreGeom(self, "add")
         gui_hooks.add_cards_did_init(self)
@@ -133,6 +135,13 @@ class AddCards(QMainWindow):
         qconnect(self.compat_add_shorcut.activated, self.addButton.click)
         self.addButton.setToolTip(shortcut(tr.adding_add_shortcut_ctrlandenter()))
         self._update_add_button_enabled()
+        # browse the most recently added note, so a card can be located immediately
+        self.browseAddedButton = bb.addButton("Browse Added", ar)
+        self.browseAddedButton.setToolTip(
+            "Open the Browser filtered to the note you just added."
+        )
+        self.browseAddedButton.setEnabled(False)
+        qconnect(self.browseAddedButton.clicked, self.browse_last_added)
 
         # close
         self.closeButton = QPushButton(tr.actions_close())
@@ -238,7 +247,7 @@ class AddCards(QMainWindow):
             note.tags = [
                 tag
                 for tag in old_note.tags
-                if not tag.startswith(aqt.editor.CONCEPT_METADATA_TAG_PREFIXES)
+                if not tag.startswith(CONCEPT_METADATA_TAG_PREFIXES)
             ]
         self.setAndFocusNote(note)
         self.editor.reset_concept_metadata_panel()
@@ -291,6 +300,29 @@ class AddCards(QMainWindow):
     def editHistory(self, nid: NoteId) -> None:
         aqt.dialogs.open("Browser", self.mw, search=(SearchNode(nid=nid),))
 
+    def browse_last_added(self) -> None:
+        if self._last_added_note_id is None:
+            return
+        aqt.dialogs.open(
+            "Browser", self.mw, search=(SearchNode(nid=self._last_added_note_id),)
+        )
+
+    def _added_note_confirmation(
+        self, note: Note, count: int, target_deck_id: DeckId
+    ) -> str:
+        """Confirm where the note landed so it can be located after adding."""
+        deck_name = self.col.decks.name(target_deck_id)
+        kc_tags = [
+            normalized
+            for tag in note.tags
+            if (normalized := normalize_concept_tag(tag)).startswith("KC::")
+        ]
+        kc_summary = ", ".join(kc_tags) if kc_tags else "no KC tag"
+        return (
+            f"{tr.importing_cards_added(count=count)} "
+            f"· note {note.id} → “{deck_name}” · {kc_summary}"
+        )
+
     def add_current_note(self) -> None:
         if self.editor.current_notetype_is_image_occlusion():
             self.editor.update_occlusions_field()
@@ -318,10 +350,16 @@ class AddCards(QMainWindow):
         def on_success(changes: OpChangesWithCount) -> None:
             # only used for detecting changed sticky fields on close
             self._last_added_note = note
+            self._last_added_note_id = note.id
+            if hasattr(self, "browseAddedButton"):
+                self.browseAddedButton.setEnabled(True)
 
             self.addHistory(note)
 
-            tooltip(tr.importing_cards_added(count=changes.count), period=500)
+            tooltip(
+                self._added_note_confirmation(note, changes.count, target_deck_id),
+                period=3000,
+            )
             av_player.stop_and_clear_queue()
             self._load_new_note(sticky_fields_from=note)
             gui_hooks.add_cards_did_add_note(note)

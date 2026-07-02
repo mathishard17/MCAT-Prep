@@ -413,6 +413,9 @@ class Reviewer:
         const counters = document.createElement("div");
         counters.className = "concept-sidebar-counters";
         counters.textContent = `Nodes ${payload.nodes.length} · Answers ${payload.totalAnswers} · Evidence ${payload.totalEvidence}`;
+        if (payload.hasMemory) {
+            counters.textContent += ` · Memory ${percent(payload.overallMemory)}`;
+        }
         sidebar.append(counters);
 
         const scores = document.createElement("div");
@@ -427,6 +430,9 @@ class Reviewer:
                 row.textContent = `${score.section}: performance ${scoreRange(score, "performance")} · readiness ${scoreRange(score, "readiness")}`;
             } else {
                 row.textContent = `${score.section}: ${percent(score.coverage)} coverage`;
+            }
+            if (score.sectionHasMemory) {
+                row.textContent += ` · memory ${percent(score.sectionMemory)}`;
             }
             scores.append(row);
         }
@@ -576,11 +582,15 @@ __CONCEPT_EXTRA__
                     performanceUpper=score.performance_upper,
                     readinessLower=score.readiness_lower,
                     readinessUpper=score.readiness_upper,
+                    sectionMemory=score.section_memory,
+                    sectionHasMemory=score.section_has_memory,
                 )
                 for score in status.section_scores
             ],
             totalAnswers=sum(node["answered"] for node in nodes),
             totalEvidence=status.counters.total_seen_cards,
+            overallMemory=status.overall_memory,
+            hasMemory=status.has_memory,
         )
 
     def _concept_section_label(self, section: int) -> str:

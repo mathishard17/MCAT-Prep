@@ -446,11 +446,14 @@ Psych/Soc coverage up to 5%
 Readiness is not the same as performance.
 
 ```text
-Performance = IRT estimate from answered items.
-Readiness = performance adjusted for topic coverage and mastery evidence.
+Performance = IRT ability estimate on the material actually practiced
+              (conditional on tested content; can reach 132 on that content).
+Readiness   = projected whole-section score, gated by how much of the section
+              blueprint has been covered.
 ```
 
-Section mastery:
+Section mastery (shown as a diagnostic; it no longer shifts the center, it only
+widens the readiness band):
 
 ```text
 SectionMastery =
@@ -464,24 +467,42 @@ Coverage =
   sum(weight_bucket_i * min(answered_i / required_i, 1.0))
 ```
 
-Penalties shift the center:
+Coverage is a hard ceiling on readiness. The blueprint is scored as a blend: the
+covered fraction scores at demonstrated performance, and the untested (uncovered)
+fraction is assumed to score at the four-choice guessing baseline, because there
+is no evidence for it yet.
 
 ```text
-CoveragePenalty = (1 - Coverage) * MaxCoveragePenalty
-MasteryPenalty  = (1 - SectionMastery) * MaxMasteryPenalty
+GuessFloor = 120
 
 ReadinessCenter =
-  PerformanceCenter - CoveragePenalty - MasteryPenalty
+  clamp(GuessFloor + Coverage * (PerformanceCenter - GuessFloor), 118, 132)
 ```
 
-Uncertainty is combined by adding variances:
+So the most readiness can reach at a given coverage is a strict function of
+coverage:
 
 ```text
-CoverageSE = (1 - Coverage) * MaxCoverageSE
-MasterySE  = MasteryUncertainty * MaxMasterySE
+MaxReadiness(Coverage) = GuessFloor + Coverage * (132 - GuessFloor)
+
+  Coverage 100% -> up to 132
+  Coverage  90% -> up to 130.8
+  Coverage  50% -> up to 126.0
+```
+
+A section can only approach 132 once it is fully covered.
+
+Uncertainty is combined by adding variances. The performance term only informs
+the covered fraction, so it is scaled by coverage; thin coverage and weak section
+mastery widen the band.
+
+```text
+PerformanceComponentSE = Coverage * PerformanceSE
+CoverageSE             = (1 - Coverage) * MaxCoverageSE
+MasterySE              = (1 - SectionMastery) * MaxMasterySE
 
 ReadinessVariance =
-  PerformanceSE^2 + CoverageSE^2 + MasterySE^2
+  PerformanceComponentSE^2 + CoverageSE^2 + MasterySE^2
 
 ReadinessSE = sqrt(ReadinessVariance)
 ```
@@ -496,10 +517,9 @@ ReadinessRange =
 Default constants:
 
 ```text
-MaxCoveragePenalty = 4 scaled-score points
-MaxMasteryPenalty  = 3 scaled-score points
-MaxCoverageSE      = 2
-MaxMasterySE       = 2
+GuessFloor    = 120 scaled-score points
+MaxCoverageSE = 2
+MaxMasterySE  = 2
 ```
 
 The UI hides performance/readiness ranges until:
@@ -518,14 +538,15 @@ Memory score:
   KC mastery / retention-style evidence.
 
 Performance score:
-  IRT ability estimate from answered items.
+  IRT ability estimate on the material actually practiced.
 
 Readiness score:
-  Performance adjusted for coverage, mastery, and uncertainty.
+  Whole-section projection: performance gated by blueprint coverage, with the
+  uncovered fraction anchored to the guessing baseline.
 ```
 
 A learner can have high performance but low readiness if they answered a narrow
-or biased sample.
+or biased sample: acing 50% of the blueprint caps readiness near 126, not 132.
 
 ## Honesty Rule
 

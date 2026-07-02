@@ -230,8 +230,6 @@ class NoteEditorFragment :
     /** Concept Scheduler metadata panel (in-development demo). Null until [setupConceptSchedulerPanel]. */
     private var conceptSchedulerPanel: View? = null
     private var csKcView: android.widget.AutoCompleteTextView? = null
-    private var csPrereqView: android.widget.AutoCompleteTextView? = null
-    private var csSectionView: android.widget.AutoCompleteTextView? = null
     private var csDifficultyView: android.widget.AutoCompleteTextView? = null
     private var csDiscriminationView: EditText? = null
     private var csGuessingView: EditText? = null
@@ -1263,6 +1261,12 @@ class NoteEditorFragment :
         // treat add new note and edit existing note independently
         if (addNote) {
             // Concept Scheduler demo: fold the metadata panel into tags and require KC + Difficulty.
+            // The KC must be a specific knowledge component (e.g. Bio::DNA), not a whole subject.
+            val kcField = normalizeConceptTag(csKcView?.text?.toString()?.trim().orEmpty())
+            if (kcField.isNotEmpty() && !McatTopics.isSpecificKc(kcField)) {
+                showSnackbar(R.string.concept_scheduler_kc_invalid)
+                return
+            }
             mergeConceptSchedulerTags()
             if (!hasRequiredConceptTags()) {
                 showSnackbar(R.string.concept_scheduler_metadata_required)
@@ -1447,16 +1451,15 @@ class NoteEditorFragment :
     // ---- Concept Scheduler metadata panel (in-development demo) ----
 
     /**
-     * Wires the collapsible "Concept Scheduler tags" panel: populates the KC/prerequisite/section/
-     * difficulty dropdowns and toggles the panel's visibility. Selections are turned into tags in
-     * [mergeConceptSchedulerTags] when the note is saved.
+     * Wires the collapsible "Concept Scheduler tags" panel: populates the KC and difficulty dropdowns
+     * and toggles the panel's visibility. Like the desktop editor, only KC and difficulty are chosen;
+     * the MCAT section is inferred from the KC and prerequisites come from the canonical graph, so
+     * neither is asked for here. Selections become tags in [mergeConceptSchedulerTags] when saved.
      */
     private fun setupConceptSchedulerPanel() {
         val toggle = requireView().findViewById<android.widget.Button>(R.id.concept_scheduler_toggle)
         conceptSchedulerPanel = requireView().findViewById(R.id.concept_scheduler_panel)
         csKcView = requireView().findViewById(R.id.cs_kc)
-        csPrereqView = requireView().findViewById(R.id.cs_prereq)
-        csSectionView = requireView().findViewById(R.id.cs_section)
         csDifficultyView = requireView().findViewById(R.id.cs_difficulty)
         csDiscriminationView = requireView().findViewById(R.id.cs_discrimination)
         csGuessingView = requireView().findViewById(R.id.cs_guessing)
@@ -1465,11 +1468,7 @@ class NoteEditorFragment :
         fun dropdownAdapter(items: List<String>) =
             ArrayAdapter(ctx, android.R.layout.simple_spinner_dropdown_item, items)
 
-        val noneLabel = getString(R.string.concept_scheduler_none)
-        val autoLabel = getString(R.string.concept_scheduler_section_auto)
         csKcView?.setAdapter(dropdownAdapter(McatTopics.ALL_KCS))
-        csPrereqView?.setAdapter(dropdownAdapter(listOf(noneLabel) + McatTopics.ALL_KCS))
-        csSectionView?.setAdapter(dropdownAdapter(listOf(autoLabel) + McatTopics.SECTIONS))
         csDifficultyView?.setAdapter(dropdownAdapter((1..5).map { it.toString() }))
 
         toggle.setOnClickListener {
@@ -1483,22 +1482,21 @@ class NoteEditorFragment :
     }
 
     /**
-     * If a KC topic is chosen in the panel, converts the panel selections into `KC::`/`Prereq::`/
-     * `MCAT::`/`Difficulty::`/`IRT::` tags and merges them into [selectedTags] (de-duplicated). Also
-     * normalizes any manually-typed tags that use the Unicode `∷` separator to ASCII `::`.
+     * If a specific KC is chosen in the panel, converts the panel selections into `KC::`/`MCAT::`/
+     * `Difficulty::`/`IRT::` tags and merges them into [selectedTags] (de-duplicated). The MCAT section
+     * is auto-derived from the KC; prerequisites are not set per-card (they live in the canonical
+     * graph). A non-specific KC (e.g. a bare subject like `Bio`) is ignored here and rejected at save
+     * time by [saveNote]. Also normalizes manually-typed tags that use the Unicode `∷` separator.
      */
     private fun mergeConceptSchedulerTags() {
         val current = (selectedTags ?: ArrayList()).map { normalizeConceptTag(it) }.toMutableList()
 
-        val kc = csKcView?.text?.toString()?.trim().orEmpty()
-        if (kc.isNotEmpty()) {
-            val prereq = csPrereqView?.text?.toString()?.trim()?.takeIf { it.isNotEmpty() && it != getString(R.string.concept_scheduler_none) }
-            val sectionText = csSectionView?.text?.toString()?.trim()
-            val sectionOverride = sectionText?.takeIf { it.isNotEmpty() && it != getString(R.string.concept_scheduler_section_auto) }
+        val kc = normalizeConceptTag(csKcView?.text?.toString()?.trim().orEmpty())
+        if (McatTopics.isSpecificKc(kc)) {
             val difficulty = csDifficultyView?.text?.toString()?.trim()?.toIntOrNull() ?: 1
             val discrimination = csDiscriminationView?.text?.toString()?.trim()?.toDoubleOrNull()
             val guessing = csGuessingView?.text?.toString()?.trim()?.toDoubleOrNull()
-            val built = buildConceptTags(kc, prereq, sectionOverride, difficulty, discrimination, guessing)
+            val built = buildConceptTags(kc = kc, difficulty = difficulty, discrimination = discrimination, guessing = guessing)
             for (tag in built) if (tag !in current) current.add(tag)
         }
         selectedTags = current
@@ -1513,8 +1511,6 @@ class NoteEditorFragment :
     /** Clears the panel selections and collapses it (after a successful add). */
     private fun resetConceptSchedulerPanel() {
         csKcView?.setText("", false)
-        csPrereqView?.setText("", false)
-        csSectionView?.setText("", false)
         csDifficultyView?.setText("", false)
         csDiscriminationView?.text = null
         csGuessingView?.text = null

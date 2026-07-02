@@ -252,7 +252,9 @@ pre {
 
 .concept-sidebar-node.locked,
 .concept-sidebar-row.locked {
-    border-left: 0.16rem solid #d69a2d;
+    // Match the locked graph dot (neutral, and white in dark mode) rather than a
+    // separate orange accent, so the description lines up with its dot.
+    border-left: 0.16rem solid var(--concept-secondary-text);
 }
 
 .concept-sidebar-node.locked {
@@ -308,6 +310,10 @@ pre {
     .concept-sidebar-dot {
         background: var(--fg);
         box-shadow: 0 0 0 1px var(--canvas);
+    }
+
+    .concept-sidebar-row.locked {
+        border-left-color: var(--fg);
     }
 }
 

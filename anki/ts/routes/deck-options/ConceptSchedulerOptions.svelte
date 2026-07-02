@@ -471,6 +471,10 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                     prereq violations total:
                                     {status.counters?.prerequisiteViolationsTotal ?? 0}
                                 </span>
+                                <span>
+                                    memory (recall of studied cards):
+                                    {status.hasMemory ? percent(status.overallMemory) : "—"}
+                                </span>
                             </div>
                             <div class="backend-snapshot-card">
                                 <strong>Live queue session</strong>
@@ -521,6 +525,9 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                         {/if}
                                     {/if}
                                     <span>Blueprint coverage: {percent(score.coverage)}</span>
+                                    {#if score.sectionHasMemory}
+                                        <span>Memory: {percent(score.sectionMemory)}</span>
+                                    {/if}
                                 </div>
                             {/each}
                         </div>

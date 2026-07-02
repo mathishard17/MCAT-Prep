@@ -38,15 +38,12 @@ If you want to use a string in your code that can't be translated, please use:
     <!-- Concept Scheduler: Add Card metadata panel (in-development demo feature; do not translate) -->
     <string name="concept_scheduler_tags_show" comment="Do not translate. Expands the concept scheduler tag panel in the note editor.">Show Concept Scheduler tags</string>
     <string name="concept_scheduler_tags_hide" comment="Do not translate. Collapses the concept scheduler tag panel in the note editor.">Hide Concept Scheduler tags</string>
-    <string name="concept_scheduler_kc_hint" comment="Do not translate. Dropdown label for the required target knowledge component.">Target KC (required)</string>
-    <string name="concept_scheduler_prereq_hint" comment="Do not translate. Dropdown label for the optional prerequisite knowledge component.">Prerequisite KC (optional)</string>
-    <string name="concept_scheduler_section_hint" comment="Do not translate. Dropdown label for the MCAT section.">MCAT section</string>
+    <string name="concept_scheduler_kc_hint" comment="Do not translate. Dropdown label for the required target knowledge component.">Target KC, e.g. Bio::DNA (required)</string>
     <string name="concept_scheduler_difficulty_hint" comment="Do not translate. Dropdown label for the required difficulty.">Difficulty 1-5 (required)</string>
     <string name="concept_scheduler_discrimination_hint" comment="Do not translate. Field label for optional IRT discrimination.">IRT discrimination</string>
     <string name="concept_scheduler_guessing_hint" comment="Do not translate. Field label for optional IRT guessing.">IRT guessing</string>
-    <string name="concept_scheduler_section_auto" comment="Do not translate. MCAT section dropdown option that auto-derives the section from the KC.">Auto (from KC)</string>
     <string name="concept_scheduler_metadata_required" comment="Do not translate. Shown when the user tries to add a demo card without choosing KC and difficulty.">Choose target KC and difficulty tags first.</string>
-    <string name="concept_scheduler_none" comment="Do not translate. Dropdown option meaning no prerequisite selected.">(none)</string>
+    <string name="concept_scheduler_kc_invalid" comment="Do not translate. Shown when the typed KC is not a specific knowledge component from the list.">Choose a specific knowledge component from the list, e.g. Bio::DNA.</string>
     <!-- Bottom Nav Bar: In progress for GSoC 2026 -->
     <string name="bottom_nav_more" maxLength="28">More</string>
     <string name="bottom_nav_browse" maxLength="28">Browse</string>

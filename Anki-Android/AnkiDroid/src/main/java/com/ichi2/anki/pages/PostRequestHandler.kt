@@ -118,6 +118,7 @@ val collectionMethods =
         "getImageOcclusionNote" to { bytes -> getImageOcclusionNoteRaw(bytes) },
         "setWantsAbort" to { bytes -> setWantsAbortRaw(bytes) },
         "getSchedulingStatesWithContext" to { bytes -> getSchedulingStatesWithContextRaw(bytes) },
+        "getConceptSchedulerStatus" to { bytes -> getConceptSchedulerStatusRaw(bytes) },
         "setSchedulingStates" to { bytes -> setSchedulingStatesRaw(bytes) },
         "getChangeNotetypeInfo" to { bytes -> getChangeNotetypeInfoRaw(bytes) },
         "changeNotetype" to { bytes -> changeNotetypeRaw(bytes) },

@@ -154,11 +154,49 @@ Fix:
 
 - KC-to-MCAT mapping now emits all plausible sections, while still allowing user overrides.
 
+## Track F: Findability After Add
+
+The blocker for scaling content was that a user could click Add successfully but
+then not find the card. The add flow now confirms where the card went and gives
+a direct way to open it:
+
+- After a successful add, the confirmation tooltip reports the destination deck
+  name, the new note id, and the KC tag(s), instead of only "N cards added".
+- A `Browse Added` button in the Add Cards window opens the Browser filtered to
+  the most recently added note (`nid:<id>`). It is enabled after the first add.
+- Adds continue to route to the deck chooser's selected deck; the deck name in
+  the confirmation makes the destination explicit.
+- Concept metadata tags are still cleared and the panel re-collapsed for the
+  next note, so tags do not silently carry over.
+
+Acceptance mapping:
+
+- Locate the new card immediately: `Browse Added` + note-id/KC-tag confirmation.
+- Correct tags: KC, MCAT, Difficulty, IRT, and `Reasoning::Conceptual` are
+  applied before the add.
+- Correct deck: the add uses `deck_chooser.selected_deck_id`.
+- No crash when the tag widget is not initialized: tag-widget access stays
+  guarded by `hasattr`.
+
+## Tests
+
+- `qt/tests/test_concept_tags.py` covers the pure tag rules (requirement check,
+  Unicode `::` normalization, MCAT section derivation/overlap/dedupe).
+- `pylib/tests/test_concept_add_cards.py` is the findability contract: a note
+  with Concept Scheduler tags added to a chosen deck lands in that deck and is
+  findable by both `tag:KC::...` and by note id.
+
 ## Files Touched
+
+- `qt/aqt/concept_tags.py` (new)
+  - Pure, Qt-free helpers: `normalize_concept_tag`,
+    `concept_tags_meet_add_requirements`, `derived_mcat_sections_for_topics`,
+    and the `CONCEPT_METADATA_TAG_PREFIXES` constant.
 
 - `qt/aqt/editor.py`
   - Adds Concept Scheduler tag options.
-  - Adds pure helper functions for tag normalization, requirement checks, and MCAT derivation.
+  - Imports the pure tag helpers from `aqt.concept_tags` (moved out of this file
+    so they can be unit tested without constructing an editor).
   - Adds the collapsible metadata panel.
   - Wires `saveTags` to refresh Add state.
   - Applies concept metadata tags before adding.
@@ -168,6 +206,10 @@ Fix:
   - Keeps Add clickable when a note exists.
   - Blocks add on click if KC/Difficulty tags are missing.
   - Uses `set_note()` on notetype changes so editor state syncs correctly.
+  - Adds the `Browse Added` action and the richer add confirmation.
+
+- `qt/tests/test_concept_tags.py` (new), `pylib/tests/test_concept_add_cards.py` (new)
+  - See Tests above.
 
 ## Verification So Far
 

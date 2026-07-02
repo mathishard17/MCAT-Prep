@@ -85,6 +85,14 @@ object McatTopics {
         )
 
     /**
+     * True only when [kc] is a specific knowledge component from the MCAT map (e.g. `Bio::DNA`), not a
+     * whole subject area (`Bio`) or unrecognized free text. A card must target one specific KC, so the
+     * Add-Card picker rejects anything that isn't an exact entry in [ALL_KCS]. Tolerates the Unicode
+     * `∷` separator and surrounding whitespace.
+     */
+    fun isSpecificKc(kc: String): Boolean = normalizeConceptTag(kc.trim()) in ALL_KCS
+
+    /**
      * Maps a KC id to its default MCAT section token, from the KC's domain prefix. Used to auto-derive
      * the `MCAT::` tag when the user doesn't manually override the section.
      */

@@ -17,6 +17,7 @@ package com.ichi2.anki.conceptscheduler
 
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AddCardConceptMetadataTest {
@@ -76,6 +77,23 @@ class AddCardConceptMetadataTest {
     fun `normalizeConceptTag maps unicode proportion glyph to ascii colons`() {
         assertEquals("KC::Biochem::Glycolysis", normalizeConceptTag("KC∷Biochem∷Glycolysis"))
         assertEquals("Difficulty::1", normalizeConceptTag("Difficulty∷1"))
+    }
+
+    @Test
+    fun `isSpecificKc accepts only exact leaf KCs, not subjects or free text`() {
+        // Specific knowledge components are accepted.
+        assertTrue(McatTopics.isSpecificKc("Bio::DNA"))
+        assertTrue(McatTopics.isSpecificKc("Biochem::Glycolysis"))
+        // Whole subject areas are rejected — you can't just "check all of Biology".
+        assertFalse(McatTopics.isSpecificKc("Bio"))
+        assertFalse(McatTopics.isSpecificKc("Biochem"))
+        // Unrecognized free text and blanks are rejected.
+        assertFalse(McatTopics.isSpecificKc("Biology"))
+        assertFalse(McatTopics.isSpecificKc("Bio::NotAThing"))
+        assertFalse(McatTopics.isSpecificKc(""))
+        // Whitespace and the Unicode proportion separator are tolerated.
+        assertTrue(McatTopics.isSpecificKc("  Bio::DNA  "))
+        assertTrue(McatTopics.isSpecificKc("Bio∷DNA"))
     }
 
     @Test
