@@ -170,6 +170,21 @@ class Reviewer:
         self._show_answer_timer: QTimer | None = None
         self.auto_advance_enabled = False
         self._concept_graph_visible = False
+        # Structured payload for the current MCAT multiple-choice card (question,
+        # choices, correct index, explanation), or None for a normal card.
+        self._mcat_current: dict[str, Any] | None = None
+        # Cache of AI-reworded stems, keyed by card id -> (question, was_reworded).
+        # Ensures we call OpenAI at most once per card per session (no excessive
+        # calls when a card re-renders or comes back after "Again").
+        self._mcat_reword_cache: dict[int, tuple[str, bool]] = {}
+        # Card ids with a reword request currently in flight, so a redraw doesn't
+        # kick off a duplicate call before the first one returns.
+        self._mcat_reword_inflight: set[int] = set()
+        # "Ask AI" chat state for the current MC card: the learner's chosen choice
+        # index, the scoped system prompt, and the running conversation history.
+        self._mcat_selected_index: int | None = None
+        self._mcat_chat_system: str | None = None
+        self._mcat_chat_history: list[dict[str, str]] = []
         gui_hooks.av_player_did_end_playing.append(self._on_av_player_did_end_playing)
 
     def show(self) -> None:
@@ -337,21 +352,268 @@ class Reviewer:
 <div id="_flag" hidden>&#x2691;</div>
 <div id="_concept_kc_badge" hidden></div>
 <div id="_concept_graph_sidebar" hidden></div>
+<div id="_concept_lesson_panel" hidden></div>
+<div id="_mcat_quiz" hidden></div>
+<div id="_mcat_chat" hidden></div>
+<style>
+body.mcat-quiz-active #qa { display: none; }
+.mcat-quiz-card {
+    width: min(94vw, 56rem);
+    margin: 0.5rem auto 2rem;
+    text-align: start;
+    font-size: 1.05rem;
+    line-height: 1.5;
+}
+.mcat-quiz-kc {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--concept-secondary-text, #456582);
+    background: color-mix(in srgb, var(--canvas, #fff) 90%, #6f8fa8);
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.6rem;
+}
+.mcat-quiz-question { margin-bottom: 1rem; font-weight: 500; }
+.mcat-quiz-reworded {
+    display: inline-block;
+    font-size: 0.68rem;
+    color: var(--concept-muted-text, #538263);
+    margin: -0.6rem 0 0.8rem;
+    opacity: 0.85;
+}
+.mcat-quiz-reword-row { margin: -0.4rem 0 0.8rem; }
+.mcat-quiz-reword {
+    font: inherit;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--fg, #333) 22%, transparent);
+    background: transparent;
+    color: var(--fg, #333);
+    cursor: pointer;
+}
+.mcat-quiz-reword:hover:not(:disabled) { background: color-mix(in srgb, var(--canvas, #fff) 85%, #4f74d6); }
+.mcat-quiz-reword:disabled { cursor: default; opacity: 0.6; }
+.nightMode .mcat-quiz-reword { color: #9dc0ff; border-color: rgba(157, 192, 255, 0.5); }
+.mcat-quiz-choices { display: flex; flex-direction: column; gap: 0.5rem; }
+.mcat-quiz-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    width: 100%;
+    text-align: start;
+    padding: 0.7rem 0.9rem;
+    border: 1.5px solid color-mix(in srgb, var(--canvas, #fff) 78%, #6f8fa8);
+    border-radius: 0.7rem;
+    background: var(--canvas, #fff);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s, transform 0.05s;
+}
+.mcat-quiz-choice:hover:not(:disabled) {
+    border-color: #6f8fa8;
+    background: color-mix(in srgb, var(--canvas, #fff) 88%, #6f8fa8);
+}
+/* The choice you're hovering/keyboard-focused on glows and dims to guide the eye. */
+.mcat-quiz-choice:hover:not(:disabled),
+.mcat-quiz-choice:focus-visible:not(:disabled) {
+    animation: mcatChoicePulse 1.2s ease-in-out infinite;
+    border-color: #3b82f6;
+}
+@keyframes mcatChoicePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    50% { box-shadow: 0 0 10px 2px rgba(59, 130, 246, 0.55); }
+}
+.mcat-quiz-choice:active:not(:disabled) { transform: translateY(1px); }
+/* Keep choices fully opaque after answering so the text stays readable. */
+.mcat-quiz-choice:disabled { cursor: default; opacity: 1; }
+.mcat-quiz-choice-text { min-width: 0; overflow-wrap: anywhere; }
+.mcat-quiz-letter {
+    flex: 0 0 auto;
+    width: 1.5rem; height: 1.5rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    font-size: 0.8rem; font-weight: 600;
+    background: color-mix(in srgb, var(--canvas, #fff) 82%, #6f8fa8);
+    color: var(--concept-secondary-text, #456582);
+}
+.mcat-quiz-choice.correct {
+    border: 2.5px solid #3fae6e;
+    background: color-mix(in srgb, var(--canvas, #fff) 82%, #3fae6e);
+    box-shadow: 0 0 0 3px rgba(63 174 110 / 0.35);
+    font-weight: 600;
+}
+.mcat-quiz-choice.correct .mcat-quiz-letter { background: #3fae6e; color: #fff; }
+.mcat-quiz-choice.wrong {
+    border: 2.5px solid #d66;
+    background: color-mix(in srgb, var(--canvas, #fff) 84%, #d66);
+    box-shadow: 0 0 0 3px rgba(221 102 102 / 0.35);
+    font-weight: 600;
+}
+.mcat-quiz-choice.wrong .mcat-quiz-letter { background: #d66; color: #fff; }
+.mcat-quiz-feedback { margin-top: 1.1rem; }
+.mcat-quiz-verdict { font-weight: 700; margin-bottom: 0.4rem; }
+.mcat-quiz-verdict.correct { color: #369a60; }
+.mcat-quiz-verdict.wrong { color: #c9534f; }
+.mcat-quiz-explanation {
+    background: color-mix(in srgb, var(--canvas, #fff) 92%, #6f8fa8);
+    border-radius: 0.6rem;
+    padding: 0.7rem 0.9rem;
+    margin-bottom: 0.8rem;
+    font-size: 0.98rem;
+}
+.mcat-quiz-rate-prompt {
+    font-size: 0.85rem;
+    color: var(--concept-secondary-text, #456582);
+    margin-bottom: 0.4rem;
+}
+.mcat-quiz-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.mcat-quiz-continue {
+    padding: 0.6rem 1.3rem;
+    border: none; border-radius: 0.6rem;
+    background: #3fae6e; color: #fff;
+    font: inherit; font-weight: 600; cursor: pointer;
+}
+.mcat-quiz-continue:hover { background: #369a60; }
+.mcat-quiz-rate {
+    flex: 1 1 auto;
+    min-width: 4.5rem;
+    padding: 0.55rem 0.8rem;
+    border: 1.5px solid color-mix(in srgb, var(--canvas, #fff) 74%, #6f8fa8);
+    border-radius: 0.6rem;
+    background: color-mix(in srgb, var(--canvas, #fff) 94%, #6f8fa8);
+    color: inherit; font: inherit; font-weight: 600; cursor: pointer;
+}
+.mcat-quiz-rate:hover { border-color: #6f8fa8; background: color-mix(in srgb, var(--canvas, #fff) 86%, #6f8fa8); }
+.mcat-quiz-rate.ease1:hover { border-color: #d66; }
+.mcat-quiz-rate.ease4:hover { border-color: #3fae6e; }
+.nightMode .mcat-quiz-explanation { background: color-mix(in srgb, var(--canvas) 88%, #456582); }
+.nightMode .mcat-quiz-choice { background: var(--canvas); }
+.nightMode .mcat-quiz-letter { background: color-mix(in srgb, var(--canvas) 78%, #456582); }
+.mcat-quiz-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9rem;
+    min-height: 12rem;
+    color: var(--concept-secondary-text, #456582);
+}
+.mcat-quiz-spinner {
+    width: 2.4rem; height: 2.4rem;
+    border-radius: 50%;
+    border: 3px solid color-mix(in srgb, var(--canvas, #fff) 70%, #6f8fa8);
+    border-top-color: #4f74d6;
+    animation: mcat-spin 0.8s linear infinite;
+}
+.mcat-quiz-loading-text { font-size: 0.95rem; }
+@keyframes mcat-spin { to { transform: rotate(360deg); } }
+.concept-next-topics {
+    box-sizing: border-box;
+    padding: 0.4rem;
+    border: 1px solid color-mix(in srgb, var(--canvas, #fff) 78%, #4f74d6);
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--canvas, #fff) 92%, #4f74d6);
+}
+.concept-next-h { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.1rem; }
+.concept-next-sub { font-size: 0.72rem; opacity: 0.8; margin-bottom: 0.5rem; }
+.concept-next-btn {
+    box-sizing: border-box;
+    display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+    width: 100%; text-align: start;
+    padding: 0.45rem 0.6rem; margin: 0 0 0.35rem;
+    border: 1px solid color-mix(in srgb, var(--canvas, #fff) 74%, #4f74d6);
+    border-radius: 0.35rem;
+    background: color-mix(in srgb, var(--canvas, #fff) 97%, #4f74d6);
+    color: inherit; font: inherit; font-weight: 600; cursor: pointer;
+}
+.concept-next-btn:hover { background: color-mix(in srgb, var(--canvas, #fff) 85%, #4f74d6); }
+.concept-next-btn.rec { border-color: #3fae6e; }
+.concept-next-go { font-size: 0.78rem; color: #2f6fed; white-space: nowrap; }
+.concept-next-btn.rec .concept-next-go { color: #369a60; }
+.nightMode .concept-next-topics { background: color-mix(in srgb, var(--canvas) 86%, #4f74d6); }
+.nightMode .concept-next-btn { background: color-mix(in srgb, var(--canvas) 88%, #456582); }
+.nightMode .concept-next-go { color: #9dc0ff; }
+.mcat-quiz-ask-row { margin-top: 0.8rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.mcat-quiz-ask, .mcat-quiz-lesson {
+    padding: 0.5rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--canvas, #fff) 74%, #4f74d6);
+    border-radius: 0.6rem;
+    background: color-mix(in srgb, var(--canvas, #fff) 94%, #4f74d6);
+    color: #2f6fed; font: inherit; font-weight: 600; cursor: pointer;
+}
+.mcat-quiz-ask:hover, .mcat-quiz-lesson:hover { background: color-mix(in srgb, var(--canvas, #fff) 85%, #4f74d6); }
+.mcat-quiz-lesson.glow {
+    border-color: #3b82f6;
+    animation: mcatLessonGlow 1.4s ease-in-out infinite;
+}
+@keyframes mcatLessonGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    50% { box-shadow: 0 0 11px 3px rgba(59, 130, 246, 0.75); }
+}
+#_mcat_chat[hidden] { display: none; }
+#_mcat_chat {
+    position: fixed;
+    left: 1rem; bottom: 1rem;
+    width: min(24rem, calc(100vw - 2rem));
+    max-height: 70vh;
+    display: flex; flex-direction: column;
+    background: var(--canvas, #fff);
+    border: 1px solid color-mix(in srgb, var(--canvas, #fff) 70%, #4f74d6);
+    border-radius: 0.8rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    z-index: 200;
+    overflow: hidden;
+}
+.mcat-chat-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--canvas, #fff) 82%, #6f8fa8);
+    font-size: 0.95rem;
+}
+.mcat-chat-close { border: none; background: transparent; color: inherit; cursor: pointer; font-size: 1rem; }
+.mcat-chat-messages {
+    flex: 1 1 auto; overflow-y: auto;
+    padding: 0.7rem; display: flex; flex-direction: column; gap: 0.5rem;
+    min-height: 6rem;
+}
+.mcat-chat-msg {
+    max-width: 85%;
+    padding: 0.5rem 0.7rem;
+    border-radius: 0.7rem;
+    font-size: 0.92rem; line-height: 1.4;
+    white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.mcat-chat-msg.ai { align-self: flex-start; background: color-mix(in srgb, var(--canvas, #fff) 90%, #6f8fa8); }
+.mcat-chat-msg.user { align-self: flex-end; background: color-mix(in srgb, var(--canvas, #fff) 82%, #4f74d6); }
+.mcat-chat-pending { opacity: 0.6; font-weight: 700; letter-spacing: 0.15em; }
+.mcat-chat-inputrow {
+    display: flex; gap: 0.4rem; padding: 0.6rem;
+    border-top: 1px solid color-mix(in srgb, var(--canvas, #fff) 82%, #6f8fa8);
+}
+.mcat-chat-input {
+    flex: 1 1 auto; resize: none;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--canvas, #fff) 74%, #6f8fa8);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--canvas, #fff) 98%, #6f8fa8);
+    color: inherit; font: inherit;
+}
+.mcat-chat-send {
+    padding: 0 0.9rem;
+    border: none; border-radius: 0.5rem;
+    background: #3fae6e; color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+}
+.mcat-chat-send:disabled { opacity: 0.5; cursor: default; }
+.nightMode #_mcat_chat { background: var(--canvas); }
+.nightMode .mcat-chat-msg.ai { background: color-mix(in srgb, var(--canvas) 86%, #456582); }
+.nightMode .mcat-chat-msg.user { background: color-mix(in srgb, var(--canvas) 80%, #4f74d6); }
+</style>
 <script>
 (() => {
-    const graphLayout = {
-        "Bio::DNA": { x: 8, y: 18 },
-        "Bio::Genetics": { x: 30, y: 18 },
-        "Bio::Eukaryotic_Cell": { x: 8, y: 72 },
-        "Biochem::Amino_Acids": { x: 8, y: 45 },
-        "Biochem::Peptides_and_Proteins": { x: 30, y: 45 },
-        "Biochem::Protein_Structure_and_Function": { x: 52, y: 45 },
-        "Biochem::Enzymes": { x: 72, y: 45 },
-        "Biochem::Bioenergetics": { x: 52, y: 72 },
-        "Biochem::Glycolysis": { x: 72, y: 72 },
-        "Biochem::Citric_Acid_Cycle": { x: 90, y: 72 },
-    };
-
     const graphLabels = {
         "Bio::DNA": "DNA",
         "Bio::Genetics": "Gen",
@@ -365,18 +627,100 @@ class Reviewer:
         "Biochem::Citric_Acid_Cycle": "TCA",
     };
 
-    const pointFor = (id, index) => graphLayout[id] ?? {
-        x: 12 + (index % 4) * 25,
-        y: 20 + Math.floor(index / 4) * 25,
+    const DISCIPLINE_ORDER = ["Bio", "Biochem", "GenChem", "Orgo", "Physics", "PsychSoc", "CARS"];
+    const disciplineOf = (id) => id.split("::")[0] || "Other";
+    const SECTION_COLORS = {
+        Bio_Biochem: "#4f74d6",
+        Chem_Phys: "#d65f5f",
+        Psych_Soc: "#5aa469",
+        CARS: "#c99a3a",
+        Other: "#8a8a8a",
     };
+    const sectionOf = (id) => {
+        const d = disciplineOf(id);
+        if (d === "Bio" || d === "Biochem") return "Bio_Biochem";
+        if (d === "GenChem" || d === "Orgo" || d === "Physics") return "Chem_Phys";
+        if (d === "PsychSoc") return "Psych_Soc";
+        if (d === "CARS") return "CARS";
+        return "Other";
+    };
+    const sectionColor = (id) => SECTION_COLORS[sectionOf(id)] ?? SECTION_COLORS.Other;
+    // "Lynchpin" size: how many other KCs list this one as a prerequisite.
+    const dependentsMap = (edges) => {
+        const counts = {};
+        for (const edge of edges) {
+            counts[edge.prerequisiteId] = (counts[edge.prerequisiteId] ?? 0) + 1;
+        }
+        return counts;
+    };
+
+    // "Linear paths" layered layout: topological longest-path depth = column,
+    // MCAT discipline = horizontal lane. Returns integer {col,row} grid units so
+    // the renderer can place nodes in a scrollable, zoomable canvas.
+    const layeredUnits = (ids, edges) => {
+        const idset = new Set(ids);
+        const succ = new Map(ids.map((id) => [id, []]));
+        const indeg = new Map(ids.map((id) => [id, 0]));
+        for (const edge of edges) {
+            if (idset.has(edge.prerequisiteId) && idset.has(edge.targetId)) {
+                succ.get(edge.prerequisiteId).push(edge.targetId);
+                indeg.set(edge.targetId, indeg.get(edge.targetId) + 1);
+            }
+        }
+        const depth = new Map(ids.map((id) => [id, 0]));
+        const remaining = new Map(indeg);
+        const queue = ids.filter((id) => remaining.get(id) === 0);
+        while (queue.length) {
+            const u = queue.shift();
+            for (const v of succ.get(u)) {
+                if (depth.get(v) < depth.get(u) + 1) { depth.set(v, depth.get(u) + 1); }
+                remaining.set(v, remaining.get(v) - 1);
+                if (remaining.get(v) === 0) { queue.push(v); }
+            }
+        }
+        const laneOf = (id) => {
+            const d = disciplineOf(id);
+            return DISCIPLINE_ORDER.includes(d) ? d : "Other";
+        };
+        const lanes = [...DISCIPLINE_ORDER, "Other"];
+        const pos = {};
+        let rowTop = 0;
+        let maxCol = 0;
+        for (const lane of lanes) {
+            const members = ids.filter((id) => laneOf(id) === lane);
+            if (!members.length) { continue; }
+            members.sort((a, b) => (depth.get(a) - depth.get(b)) || (a < b ? -1 : 1));
+            const colCount = new Map();
+            let laneRows = 0;
+            for (const id of members) {
+                const c = depth.get(id);
+                const r = colCount.get(c) ?? 0;
+                colCount.set(c, r + 1);
+                pos[id] = { col: c, row: rowTop + r };
+                if (r + 1 > laneRows) { laneRows = r + 1; }
+                if (c > maxCol) { maxCol = c; }
+            }
+            rowTop += laneRows + 1;
+        }
+        return { pos, cols: maxCol + 1, rows: Math.max(rowTop, 1) };
+    };
+    let _showFullMap = false;
+    let _graphZoom = 1;
+    let _lastConceptPayload = null;
 
     const shortGraphLabel = (id) => graphLabels[id] ?? id.split("::").at(-1).replaceAll("_", " ").slice(0, 8);
     const percent = (value) => `${Math.round(value * 100)}%`;
-    const masteryText = (node) => node.answered >= 3 ? `, P ${percent(node.mastery)}` : "";
     const scoreRange = (score, prefix) => `${Math.round(score[`${prefix}Lower`])}-${Math.round(score[`${prefix}Upper`])}`;
     const setSidebarVisible = (visible) => {
         document.body.classList.toggle("concept-graph-visible", visible);
     };
+
+    const _kcBadge = document.getElementById("_concept_kc_badge");
+    if (_kcBadge) {
+        _kcBadge.style.cursor = "pointer";
+        _kcBadge.title = "Open this concept's lesson";
+        _kcBadge.addEventListener("click", () => pycmd("lesson"));
+    }
 
     window._hideConceptGraphSidebar = () => {
         const sidebar = document.getElementById("_concept_graph_sidebar");
@@ -386,11 +730,446 @@ class Reviewer:
         setSidebarVisible(false);
     };
 
+    window._hideLessonPanel = () => {
+        const panel = document.getElementById("_concept_lesson_panel");
+        if (panel) {
+            panel.hidden = true;
+            panel.replaceChildren();
+        }
+    };
+
+    // Render the constrained subset of Mermaid used by lesson diagrams
+    // (flowchart TD/LR, rectangle + decision nodes, solid/dotted labelled edges)
+    // as an inline SVG. Returns an <svg> element, or null so callers can fall
+    // back to showing the raw source as text.
+    const _flowSeq = { n: 0 };
+    const renderMermaidFlow = (source) => {
+        try {
+            const SVGNS = "http://www.w3.org/2000/svg";
+            const mk = (tag, attrs) => {
+                const el = document.createElementNS(SVGNS, tag);
+                for (const k in (attrs || {})) { el.setAttribute(k, attrs[k]); }
+                return el;
+            };
+            const decoder = document.createElement("textarea");
+            const decode = (s) => { decoder.innerHTML = s; return decoder.value; };
+            const labelLines = (raw) => String(raw == null ? "" : raw)
+                .split(/<br\s*\/?>/i)
+                .map((p) => decode(p).trim())
+                .filter((p) => p.length);
+
+            let rawLines = source.split("\\n").map((l) => l.trim()).filter((l) => l.length);
+            if (!rawLines.length) { return null; }
+            let dir = "TD";
+            const dm = rawLines[0].match(/^(?:flowchart|graph)\s+(TD|TB|LR|RL|BT)\\b/i);
+            if (dm) { dir = dm[1].toUpperCase(); }
+            const horizontal = dir === "LR" || dir === "RL";
+
+            const nodes = new Map();
+            const edges = [];
+            const stripQuotes = (s) => s.replace(/^"|"$/g, "");
+            const ensureNode = (id, label, shape) => {
+                let n = nodes.get(id);
+                if (!n) { n = { id, label: id, shape: "rect", order: nodes.size }; nodes.set(id, n); }
+                if (label != null) { n.label = label; if (shape) { n.shape = shape; } }
+                return n;
+            };
+            const readLabel = (s, pos) => {
+                const open = s[pos];
+                const close = open === "[" ? "]" : open === "{" ? "}" : ")";
+                const shape = open === "[" ? "rect" : open === "{" ? "decision" : "round";
+                let i = pos + 1;
+                let inner;
+                if (s[i] === '"') {
+                    i++;
+                    const start = i;
+                    while (i < s.length && s[i] !== '"') { i++; }
+                    inner = s.slice(start, i);
+                    i++;
+                    while (i < s.length && s[i] !== close) { i++; }
+                    i++;
+                } else {
+                    const start = i;
+                    while (i < s.length && s[i] !== close) { i++; }
+                    inner = s.slice(start, i);
+                    i++;
+                }
+                return { inner, shape, end: i };
+            };
+
+            const skip = /^(?:(?:flowchart|graph|subgraph|end|direction|classDef|class|style|click|linkStyle)\\b|%%)/i;
+            for (const line of rawLines) {
+                if (skip.test(line)) { continue; }
+                let i = 0;
+                let prev = null;
+                let pending = null;
+                while (i < line.length) {
+                    while (i < line.length && /\s/.test(line[i])) { i++; }
+                    if (i >= line.length) { break; }
+                    const rest = line.slice(i);
+                    const em = rest.match(/^(-\.->|-->|==>|===>|---|-\.-)(\s*\|\s*([^|]*?)\s*\|)?/);
+                    if (em) {
+                        pending = { dashed: em[1].indexOf(".") >= 0, label: em[3] != null ? stripQuotes(em[3].trim()) : "" };
+                        i += em[0].length;
+                        continue;
+                    }
+                    const idm = rest.match(/^([A-Za-z0-9_]+)/);
+                    if (!idm) { i++; continue; }
+                    const id = idm[1];
+                    i += id.length;
+                    let label = null;
+                    let shape = null;
+                    if (line[i] === "[" || line[i] === "{" || line[i] === "(") {
+                        const parsed = readLabel(line, i);
+                        label = parsed.inner; shape = parsed.shape; i = parsed.end;
+                    }
+                    ensureNode(id, label, shape);
+                    if (prev != null && pending != null) {
+                        edges.push({ from: prev, to: id, label: pending.label, dashed: pending.dashed });
+                    }
+                    pending = null;
+                    prev = id;
+                }
+            }
+            if (!nodes.size) { return null; }
+
+            // Layer by longest path over forward edges only; back edges (feedback
+            // loops) are kept for drawing but excluded so cycles don't skew layout.
+            const ids = [...nodes.keys()];
+            const adj = new Map(ids.map((k) => [k, []]));
+            const indeg = new Map(ids.map((k) => [k, 0]));
+            for (const e of edges) {
+                if (adj.has(e.from)) { adj.get(e.from).push(e); }
+                if (indeg.has(e.to)) { indeg.set(e.to, indeg.get(e.to) + 1); }
+            }
+            const color = new Map(ids.map((k) => [k, 0]));
+            const forward = [];
+            const visit = (u) => {
+                color.set(u, 1);
+                for (const e of adj.get(u)) {
+                    if (color.get(e.to) === 1) { continue; }
+                    forward.push(e);
+                    if (color.get(e.to) === 0) { visit(e.to); }
+                }
+                color.set(u, 2);
+            };
+            for (const k of ids) { if (indeg.get(k) === 0) { visit(k); } }
+            for (const k of ids) { if (color.get(k) === 0) { visit(k); } }
+
+            const layer = new Map(ids.map((k) => [k, 0]));
+            for (let iter = 0; iter < ids.length; iter++) {
+                let changed = false;
+                for (const e of forward) {
+                    if (layer.get(e.to) < layer.get(e.from) + 1) { layer.set(e.to, layer.get(e.from) + 1); changed = true; }
+                }
+                if (!changed) { break; }
+            }
+
+            const fontSize = 12;
+            const lineH = 16;
+            const padX = 11;
+            const padY = 8;
+            const fam = getComputedStyle(document.body).fontFamily || "sans-serif";
+            const meas = document.createElement("canvas").getContext("2d");
+            meas.font = fontSize + "px " + fam;
+            const widthOf = (arr) => arr.reduce((m, t) => Math.max(m, meas.measureText(t).width), 0);
+            for (const n of nodes.values()) {
+                n.lines = labelLines(n.label);
+                if (!n.lines.length) { n.lines = [n.id]; }
+                n.w = Math.max(46, Math.round(widthOf(n.lines)) + padX * 2);
+                n.h = n.lines.length * lineH + padY * 2;
+            }
+
+            let layerCount = 0;
+            for (const k of ids) { layerCount = Math.max(layerCount, layer.get(k) + 1); }
+            const buckets = Array.from({ length: layerCount }, () => []);
+            for (const n of nodes.values()) { buckets[layer.get(n.id)].push(n); }
+            for (const b of buckets) { b.sort((a, c) => a.order - c.order); }
+
+            const layerGap = horizontal ? 66 : 42;
+            const sibGap = 22;
+            const pad = 8;
+            const mainSize = (n) => horizontal ? n.w : n.h;
+            const crossSize = (n) => horizontal ? n.h : n.w;
+            const layerMain = [];
+            let mainCursor = 0;
+            for (let l = 0; l < layerCount; l++) {
+                layerMain[l] = mainCursor;
+                let mx = 0;
+                for (const n of buckets[l]) { mx = Math.max(mx, mainSize(n)); }
+                mainCursor += mx + layerGap;
+            }
+            const totalMain = Math.max(0, mainCursor - layerGap);
+            let totalCross = 0;
+            const crossTotals = buckets.map((b) => {
+                let t = Math.max(0, b.length - 1) * sibGap;
+                for (const n of b) { t += crossSize(n); }
+                totalCross = Math.max(totalCross, t);
+                return t;
+            });
+            for (let l = 0; l < layerCount; l++) {
+                let cross = (totalCross - crossTotals[l]) / 2;
+                let mx = 0;
+                for (const n of buckets[l]) { mx = Math.max(mx, mainSize(n)); }
+                for (const n of buckets[l]) {
+                    const mainPos = layerMain[l] + (mx - mainSize(n)) / 2;
+                    if (horizontal) { n.x = mainPos + pad; n.y = cross + pad; }
+                    else { n.x = cross + pad; n.y = mainPos + pad; }
+                    cross += crossSize(n) + sibGap;
+                }
+            }
+            const width = (horizontal ? totalMain : totalCross) + pad * 2;
+            const height = (horizontal ? totalCross : totalMain) + pad * 2;
+
+            const svg = mk("svg", {
+                viewBox: "0 0 " + Math.round(width) + " " + Math.round(height),
+                role: "img",
+            });
+            svg.style.maxWidth = "none";
+            svg.style.width = Math.round(width) + "px";
+            svg.style.height = Math.round(height) + "px";
+            svg.style.display = "block";
+            svg.style.margin = "0 auto";
+            const arrowId = "lessonFlowArrow" + (_flowSeq.n++);
+            const defs = mk("defs");
+            const arrow = mk("marker", { id: arrowId, viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto-start-reverse" });
+            arrow.append(mk("path", { d: "M0,0 L10,5 L0,10 z", fill: "#5b7488" }));
+            defs.append(arrow);
+            svg.append(defs);
+
+            const center = (n) => ({ x: n.x + n.w / 2, y: n.y + n.h / 2 });
+            const borderPt = (n, tx, ty) => {
+                const cx = n.x + n.w / 2;
+                const cy = n.y + n.h / 2;
+                const dx = tx - cx;
+                const dy = ty - cy;
+                if (!dx && !dy) { return { x: cx, y: cy }; }
+                const s = 1 / Math.max(Math.abs(dx) / (n.w / 2), Math.abs(dy) / (n.h / 2));
+                return { x: cx + dx * s, y: cy + dy * s };
+            };
+
+            for (const e of edges) {
+                const a = nodes.get(e.from);
+                const b = nodes.get(e.to);
+                if (!a || !b) { continue; }
+                const ca = center(a);
+                const cb = center(b);
+                const p1 = borderPt(a, cb.x, cb.y);
+                const p2 = borderPt(b, ca.x, ca.y);
+                const path = mk("path", {
+                    d: "M" + p1.x.toFixed(1) + "," + p1.y.toFixed(1) + " L" + p2.x.toFixed(1) + "," + p2.y.toFixed(1),
+                    fill: "none",
+                    stroke: "#5b7488",
+                    "stroke-width": "1.5",
+                    "marker-end": "url(#" + arrowId + ")",
+                });
+                if (e.dashed) { path.setAttribute("stroke-dasharray", "5 4"); }
+                svg.append(path);
+                if (e.label) {
+                    const lines = labelLines(e.label);
+                    if (lines.length) {
+                        const lx = (p1.x + p2.x) / 2;
+                        const ly = (p1.y + p2.y) / 2;
+                        const bw = Math.round(widthOf(lines)) + 8;
+                        const bh = lines.length * 14 + 4;
+                        svg.append(mk("rect", { x: (lx - bw / 2).toFixed(1), y: (ly - bh / 2).toFixed(1), width: bw, height: bh, rx: "3", fill: "#ffffff", opacity: "0.9" }));
+                        const t = mk("text", { "text-anchor": "middle", "font-size": "11", fill: "#37506a", "font-family": fam });
+                        lines.forEach((ln, idx) => {
+                            const ts = mk("tspan", { x: lx.toFixed(1), y: (ly - bh / 2 + 12 + idx * 14).toFixed(1) });
+                            ts.textContent = ln;
+                            t.append(ts);
+                        });
+                        svg.append(t);
+                    }
+                }
+            }
+
+            for (const n of nodes.values()) {
+                let fill = "#eef3f7";
+                let stroke = "#456582";
+                let rx = "6";
+                if (n.shape === "decision") { fill = "#fbf1dd"; stroke = "#b5852a"; }
+                else if (n.shape === "round") { fill = "#e6f3ec"; stroke = "#3fae6e"; rx = String(n.h / 2); }
+                svg.append(mk("rect", { x: n.x, y: n.y, width: n.w, height: n.h, rx, fill, stroke, "stroke-width": "1.4" }));
+                const total = n.lines.length * lineH;
+                const ty = n.y + (n.h - total) / 2 + fontSize;
+                const tx = n.x + n.w / 2;
+                const text = mk("text", { "text-anchor": "middle", "font-size": String(fontSize), fill: "#1b2b39", "font-family": fam });
+                n.lines.forEach((ln, idx) => {
+                    const ts = mk("tspan", { x: tx.toFixed(1), y: (ty + idx * lineH).toFixed(1) });
+                    ts.textContent = ln;
+                    text.append(ts);
+                });
+                svg.append(text);
+            }
+            return svg;
+        } catch (err) {
+            console.log("lesson mermaid render failed", err);
+            return null;
+        }
+    };
+
+    // Render a Mermaid diagram from its source into `holder`, replacing whatever
+    // fallback content it holds. Uses the bundled real Mermaid library; if that is
+    // somehow unavailable, falls back to the built-in mini flowchart renderer, and
+    // finally leaves the raw-source <pre> in place.
+    let _mermaidInited = false;
+    const _renderMermaidDiagram = (holder, source) => {
+        const mermaid = window.mermaid;
+        if (mermaid && mermaid.render) {
+            try {
+                if (!_mermaidInited) {
+                    const dark = document.body.classList.contains("nightMode");
+                    mermaid.initialize({
+                        startOnLoad: false,
+                        securityLevel: "loose",
+                        theme: dark ? "dark" : "default",
+                        flowchart: { htmlLabels: true, useMaxWidth: true },
+                    });
+                    _mermaidInited = true;
+                }
+                const id = "_mcatMermaid" + (_flowSeq.n++);
+                mermaid.render(id, source).then((res) => {
+                    holder.innerHTML = res.svg;
+                }).catch((err) => {
+                    console.log("lesson mermaid render failed", err);
+                    // leave the raw-source fallback already in `holder`
+                });
+                return;
+            } catch (err) {
+                console.log("lesson mermaid init failed", err);
+            }
+        }
+        const flow = renderMermaidFlow(source);
+        if (flow) { holder.replaceChildren(flow); }
+    };
+
+    window._renderLessonPanel = (payload) => {
+        const panel = document.getElementById("_concept_lesson_panel");
+        if (!panel || !payload) { return; }
+        panel.hidden = false;
+        panel.replaceChildren();
+
+        const card = document.createElement("div");
+        card.className = "concept-lesson-card";
+
+        const head = document.createElement("div");
+        head.className = "concept-lesson-head";
+        const title = document.createElement("strong");
+        title.textContent = payload.title || payload.kc;
+        head.append(title);
+        const close = document.createElement("button");
+        close.type = "button";
+        close.textContent = "\u2715";
+        close.title = "Close";
+        close.addEventListener("click", () => window._hideLessonPanel());
+        head.append(close);
+        card.append(head);
+
+        if (payload.section) {
+            const sec = document.createElement("div");
+            sec.className = "concept-lesson-section";
+            sec.textContent = payload.section.replace("MCAT::", "").replaceAll("_", " ");
+            card.append(sec);
+        }
+
+        const body = document.createElement("div");
+        body.className = "concept-lesson-body";
+        card.append(body);
+
+        const addProse = (label, text) => {
+            if (!text) { return; }
+            const sec = document.createElement("div");
+            sec.className = "concept-lesson-sec";
+            const h = document.createElement("div");
+            h.className = "concept-lesson-sec-h";
+            h.textContent = label;
+            const b = document.createElement("div");
+            b.className = "concept-lesson-sec-b";
+            b.textContent = text;
+            sec.append(h, b);
+            body.append(sec);
+        };
+
+        addProse("Overview", payload.overview);
+        if (payload.keyConcepts && payload.keyConcepts.length) {
+            const sec = document.createElement("div");
+            sec.className = "concept-lesson-sec";
+            const h = document.createElement("div");
+            h.className = "concept-lesson-sec-h";
+            h.textContent = "Key concepts";
+            sec.append(h);
+            const ul = document.createElement("ul");
+            for (const item of payload.keyConcepts) {
+                const li = document.createElement("li");
+                li.textContent = item;
+                ul.append(li);
+            }
+            sec.append(ul);
+            body.append(sec);
+        }
+        addProse("Builds on", payload.prerequisiteReminder);
+        const addFigure = (build, caption) => {
+            const sec = document.createElement("div");
+            sec.className = "concept-lesson-sec";
+            const h = document.createElement("div");
+            h.className = "concept-lesson-sec-h";
+            h.textContent = "Diagram";
+            const fig = document.createElement("div");
+            fig.className = "concept-lesson-figure";
+            build(fig);
+            sec.append(h, fig);
+            if (caption) {
+                const cap = document.createElement("div");
+                cap.className = "concept-lesson-figcaption";
+                cap.textContent = caption;
+                sec.append(cap);
+            }
+            body.append(sec);
+        };
+        let renderedDiagram = false;
+        if (payload.diagramSvg) {
+            addFigure((fig) => { fig.innerHTML = payload.diagramSvg; }, payload.diagram);
+            renderedDiagram = true;
+        }
+        if (payload.diagramMermaid && !renderedDiagram) {
+            // When an SVG is also shown, payload.diagram is that image's alt text,
+            // so don't reuse it as the flowchart caption.
+            const caption = payload.diagramSvg ? "" : payload.diagram;
+            addFigure((fig) => {
+                const scroll = document.createElement("div");
+                scroll.style.overflowX = "auto";
+                scroll.style.maxWidth = "100%";
+                // Show the raw source as a graceful fallback; _renderMermaidDiagram
+                // swaps in the rendered SVG once (real) Mermaid parses it.
+                const pre = document.createElement("pre");
+                pre.textContent = payload.diagramMermaid;
+                pre.style.whiteSpace = "pre";
+                pre.style.overflowX = "auto";
+                pre.style.margin = "0";
+                pre.style.fontSize = "0.8rem";
+                scroll.append(pre);
+                fig.append(scroll);
+                _renderMermaidDiagram(scroll, payload.diagramMermaid);
+            }, caption);
+            renderedDiagram = true;
+        }
+        if (!renderedDiagram && payload.diagram) {
+            addProse("Diagram", payload.diagram);
+        }
+        addProse("Worked example", payload.workedExample);
+        addProse("Common misconception", payload.commonMisconception);
+        addProse("Try it", payload.firstRetrievalPrompt);
+
+        panel.append(card);
+    };
+
     window._renderConceptGraphSidebar = (payload) => {
         const sidebar = document.getElementById("_concept_graph_sidebar");
         if (!sidebar || !payload) {
             return;
         }
+        _lastConceptPayload = payload;
 
         sidebar.hidden = false;
         setSidebarVisible(true);
@@ -410,6 +1189,41 @@ class Reviewer:
         header.append(close);
         sidebar.append(header);
 
+        // Prominent "what to learn next" picker at the very top of the sidebar,
+        // so choosing the next topic is obvious after reviewing.
+        const startableNodes = payload.nodes.filter((n) => n.fringe === "outer");
+        const recNodes = startableNodes.filter((n) => n.recommended);
+        const nextList = (recNodes.length ? recNodes : startableNodes).slice(0, 6);
+        if (nextList.length) {
+            const next = document.createElement("div");
+            next.className = "concept-next-topics";
+            const nh = document.createElement("div");
+            nh.className = "concept-next-h";
+            nh.textContent = "Pick your next topic";
+            next.append(nh);
+            const sub = document.createElement("div");
+            sub.className = "concept-next-sub";
+            sub.textContent = recNodes.length
+                ? "Suggested next \u2014 prerequisites are ready. Tap one to start."
+                : "Ready to start \u2014 prerequisites are met. Tap one to begin.";
+            next.append(sub);
+            for (const node of nextList) {
+                const b = document.createElement("button");
+                b.type = "button";
+                b.className = "concept-next-btn" + (node.recommended ? " rec" : "");
+                const name = document.createElement("span");
+                name.className = "concept-next-name";
+                name.textContent = node.id.split("::").at(-1).replaceAll("_", " ");
+                const go = document.createElement("span");
+                go.className = "concept-next-go";
+                go.textContent = node.recommended ? "\u2605 Start" : "Start \u25b8";
+                b.append(name, go);
+                b.addEventListener("click", () => pycmd("conceptStart:" + node.id));
+                next.append(b);
+            }
+            sidebar.append(next);
+        }
+
         const counters = document.createElement("div");
         counters.className = "concept-sidebar-counters";
         counters.textContent = `Nodes ${payload.nodes.length} · Answers ${payload.totalAnswers} · Evidence ${payload.totalEvidence}`;
@@ -418,73 +1232,729 @@ class Reviewer:
         }
         sidebar.append(counters);
 
+        // Daily progress: a blue bar showing how much is left to study today.
+        const dailyDone = payload.dailyDone || 0;
+        const dailyRemaining = payload.dailyRemaining || 0;
+        const dailyTotal = dailyDone + dailyRemaining;
+        const daily = document.createElement("div");
+        daily.className = "concept-sidebar-daily";
+        const dailyLabel = document.createElement("div");
+        dailyLabel.className = "concept-sidebar-daily-label";
+        dailyLabel.textContent = dailyRemaining > 0
+            ? `${dailyRemaining} card${dailyRemaining === 1 ? "" : "s"} left today · ${dailyDone} done`
+            : (dailyTotal > 0 ? "Done for the day!" : "Nothing due today");
+        const dailyTrack = document.createElement("div");
+        dailyTrack.className = "concept-sidebar-daily-track";
+        const dailyFill = document.createElement("div");
+        dailyFill.className = "concept-sidebar-daily-fill";
+        dailyFill.style.width = `${Math.round((dailyTotal > 0 ? dailyDone / dailyTotal : 1) * 100)}%`;
+        dailyTrack.append(dailyFill);
+        daily.append(dailyLabel, dailyTrack);
+        sidebar.append(daily);
+
         const scores = document.createElement("div");
         scores.className = "concept-sidebar-scores";
         const scoreTitle = document.createElement("strong");
         scoreTitle.textContent = "Section scores";
         scores.append(scoreTitle);
-        for (const score of payload.sectionScores || []) {
+
+        // Projected MCAT total = sum of the four section readiness estimates (472-528
+        // scale). Computed in the backend so it never sticks at 0: it starts near the
+        // ~500 median and moves toward demonstrated performance as coverage grows.
+        if (payload.hasProjection && payload.projectedTotal) {
+            const proj = document.createElement("div");
+            proj.className = "concept-sidebar-projection";
+            const total = Math.round(payload.projectedTotal);
+            const lo = Math.round(payload.projectedTotalLower || payload.projectedTotal);
+            const hi = Math.round(payload.projectedTotalUpper || payload.projectedTotal);
+            const score = document.createElement("span");
+            score.className = "concept-sidebar-projection-score";
+            score.textContent = total;
+            const meta = document.createElement("span");
+            meta.className = "concept-sidebar-projection-meta";
+            meta.textContent = `projected MCAT · likely ${lo}–${hi} · scale 472–528`;
+            proj.append(score, meta);
+            scores.append(proj);
+        }
+
+        // Per section: performance = accuracy on answered cards (from nodes); readiness
+        // = the backend's projected section score (118-132), matched by section label.
+        const SECTION_LABELS = { Bio_Biochem: "Bio/Biochem", Chem_Phys: "Chem/Phys", Psych_Soc: "Psych/Soc", CARS: "CARS" };
+        const readinessBySection = {};
+        for (const s of (payload.sectionScores || [])) { readinessBySection[s.section] = s; }
+        const bySection = new Map();
+        for (const node of payload.nodes) {
+            const sec = sectionOf(node.id);
+            if (!SECTION_LABELS[sec]) { continue; }
+            if (!bySection.has(sec)) { bySection.set(sec, []); }
+            bySection.get(sec).push(node);
+        }
+        for (const sec of Object.keys(SECTION_LABELS)) {
+            const label = SECTION_LABELS[sec];
+            const group = bySection.get(sec) || [];
+            const back = readinessBySection[label];
+            let correct = 0, answered = 0, memSum = 0, memCount = 0;
+            for (const node of group) {
+                correct += node.positive;
+                answered += node.positive + node.negative;
+                if (node.memory) { memSum += node.memory; memCount += 1; }
+            }
+            // Show readiness as a RANGE (the backend's confidence band), not a
+            // single point, to convey uncertainty honestly.
+            const readinessRange = back
+                ? `${Math.round(back.readinessLower)}–${Math.round(back.readinessUpper)}`
+                : null;
             const row = document.createElement("div");
             row.className = "concept-sidebar-score-row";
-            if (score.enoughEvidence && score.coverage >= 0.6) {
-                row.textContent = `${score.section}: performance ${scoreRange(score, "performance")} · readiness ${scoreRange(score, "readiness")}`;
+            // Keep the longer range text inside the fixed-width sidebar: wrap
+            // anywhere and use a compact size instead of overflowing/clipping.
+            row.style.fontSize = "0.8rem";
+            row.style.lineHeight = "1.35";
+            row.style.overflowWrap = "anywhere";
+            if (answered > 0) {
+                let text = `${label}: ${percent(correct / answered)} correct`;
+                if (readinessRange) { text += ` · readiness ${readinessRange}`; }
+                if (memCount > 0) { text += ` · memory ${percent(memSum / memCount)}`; }
+                row.textContent = text;
+            } else if (payload.hasProjection && readinessRange) {
+                row.textContent = `${label}: readiness ${readinessRange} (baseline — no cards yet)`;
             } else {
-                row.textContent = `${score.section}: ${percent(score.coverage)} coverage`;
-            }
-            if (score.sectionHasMemory) {
-                row.textContent += ` · memory ${percent(score.sectionMemory)}`;
+                row.textContent = `${label}: no cards answered yet`;
             }
             scores.append(row);
         }
         sidebar.append(scores);
 
-        const graph = document.createElement("div");
-        graph.className = "concept-sidebar-graph";
-        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", "0 0 100 100");
-        svg.setAttribute("preserveAspectRatio", "none");
-        graph.append(svg);
+        // Colour key for the graph, shown ABOVE the graph.
+        const legend = document.createElement("div");
+        legend.className = "concept-sidebar-legend";
+        for (const [label, color] of [["Bio/Biochem", "#4f74d6"], ["Chem/Phys", "#d65f5f"], ["Psych/Soc", "#5aa469"], ["CARS", "#c99a3a"]]) {
+            const item = document.createElement("span");
+            const swatch = document.createElement("span");
+            swatch.className = "concept-sidebar-legend-dot";
+            swatch.style.background = color;
+            item.append(swatch, document.createTextNode(label));
+            legend.append(item);
+        }
+        const readyItem = document.createElement("span");
+        const readySwatch = document.createElement("span");
+        readySwatch.className = "concept-sidebar-legend-dot ready";
+        readyItem.append(readySwatch, document.createTextNode("ready to start"));
+        legend.append(readyItem);
+        const suggestItem = document.createElement("span");
+        const suggestSwatch = document.createElement("span");
+        suggestSwatch.className = "concept-sidebar-legend-dot suggest";
+        suggestItem.append(suggestSwatch, document.createTextNode("suggested next"));
+        legend.append(suggestItem);
+        const currentItem = document.createElement("span");
+        const currentSwatch = document.createElement("span");
+        currentSwatch.className = "concept-sidebar-legend-star";
+        currentSwatch.textContent = "\u2605";
+        currentItem.append(currentSwatch, document.createTextNode("current"));
+        legend.append(currentItem);
+        const masteredItem = document.createElement("span");
+        const masteredSwatch = document.createElement("span");
+        masteredSwatch.className = "concept-sidebar-legend-check";
+        masteredSwatch.textContent = "\u2713";
+        masteredItem.append(masteredSwatch, document.createTextNode("mastered"));
+        legend.append(masteredItem);
+        const legendHint = document.createElement("span");
+        legendHint.className = "concept-sidebar-legend-hint";
+        legendHint.textContent = "size = importance · hover a dot for its concept";
+        legend.append(legendHint);
+        sidebar.append(legend);
 
-        for (const edge of payload.edges) {
-            const start = pointFor(edge.prerequisiteId, 0);
-            const end = pointFor(edge.targetId, 0);
+        // Decide what to show: the focused neighbourhood (default, a handful of
+        // circles) or the full layered map you can scroll and zoom to look around.
+        const allNodeIds = payload.nodes.map((node) => node.id);
+        const focusId = payload.focusKc && allNodeIds.includes(payload.focusKc)
+            ? payload.focusKc
+            : null;
+        const fullMap = _showFullMap || !focusId;
+
+        const deps = dependentsMap(payload.edges);
+        const maxDep = Math.max(1, ...Object.values(deps));
+
+        let shownSet;
+        if (fullMap) {
+            shownSet = new Set(allNodeIds);
+        } else {
+            // Focused view: only the current KC + its DIRECT prerequisites and
+            // dependents (1 hop) — the clean "builds on -> this -> unlocks" 3-column
+            // picture. (2 hops pulled in grandparents/grandchildren and turned
+            // well-connected KCs into a hairball.)
+            shownSet = new Set([focusId]);
+            for (const edge of payload.edges) {
+                if (edge.targetId === focusId) { shownSet.add(edge.prerequisiteId); }
+                if (edge.prerequisiteId === focusId) { shownSet.add(edge.targetId); }
+            }
+        }
+        const shownNodes = payload.nodes.filter((node) => shownSet.has(node.id));
+        const shownEdges = payload.edges.filter(
+            (edge) => shownSet.has(edge.prerequisiteId) && shownSet.has(edge.targetId),
+        );
+        const units = layeredUnits(shownNodes.map((node) => node.id), shownEdges);
+
+        // header: title + zoom controls + focused/full toggle
+        const graphHead = document.createElement("div");
+        graphHead.className = "concept-sidebar-graph-head";
+        const graphTitle = document.createElement("strong");
+        const readyCount = shownNodes.filter((node) => node.fringe === "outer").length;
+        graphTitle.textContent = fullMap
+            ? `Full map · ${readyCount} ready to start`
+            : "Nearby concepts";
+        graphHead.append(graphTitle);
+        const controls = document.createElement("span");
+        controls.className = "concept-graph-controls";
+        const addBtn = (label, title, fn) => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.textContent = label;
+            b.title = title;
+            b.addEventListener("click", fn);
+            controls.append(b);
+        };
+        addBtn("\u2212", "Zoom out", () => setZoom(_graphZoom / 1.2, true));
+        addBtn("Fit", "Fit to view", () => fitZoom());
+        addBtn("+", "Zoom in", () => setZoom(_graphZoom * 1.2, true));
+        if (focusId) {
+            addBtn(fullMap ? "Nearby" : "Map", fullMap ? "Show nearby only" : "Show full map", () => {
+                _showFullMap = !_showFullMap;
+                window._renderConceptGraphSidebar(_lastConceptPayload);
+            });
+        }
+        graphHead.append(controls);
+        sidebar.append(graphHead);
+
+        // scrollable + zoomable canvas
+        const graph = document.createElement("div");
+        graph.className = "concept-sidebar-graph scroll";
+        if (shownNodes.length > 16) { graph.classList.add("dense"); }
+        const canvas = document.createElement("div");
+        canvas.className = "concept-graph-canvas";
+        graph.append(canvas);
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        canvas.append(svg);
+
+        const COLW = 150, ROWH = 40, PAD = 22, LABELPAD = 116;
+        const nx = (u, z) => PAD + u.col * COLW * z;
+        const ny = (u, z) => PAD + u.row * ROWH * z;
+
+        const lines = [];
+        for (const edge of shownEdges) {
+            const a = units.pos[edge.prerequisiteId];
+            const b = units.pos[edge.targetId];
+            if (!a || !b) { continue; }
             const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            line.setAttribute("x1", String(start.x));
-            line.setAttribute("y1", String(start.y));
-            line.setAttribute("x2", String(end.x));
-            line.setAttribute("y2", String(end.y));
             svg.append(line);
+            lines.push({ line, a, b });
         }
 
-        payload.nodes.forEach((node, index) => {
-            const point = pointFor(node.id, index);
+        const markers = [];
+        shownNodes.forEach((node) => {
+            const u = units.pos[node.id];
+            if (!u) { return; }
             const marker = document.createElement("div");
             marker.className = `concept-sidebar-node ${node.fringe}`;
-            marker.style.left = `${point.x}%`;
-            marker.style.top = `${point.y}%`;
-            marker.title = node.id;
+            const startable = node.fringe === "outer";
+            // ★ marks the concept you're currently studying (the focus).
+            if (node.id === focusId) {
+                marker.classList.add("focus");
+                const star = document.createElement("span");
+                star.className = "concept-sidebar-star";
+                star.textContent = "\u2605";
+                marker.append(star);
+            }
+            if (startable) { marker.classList.add("available"); }
+            // A pulsing glow marks the suggested-next topics.
+            if (node.recommended) { marker.classList.add("recommended"); }
+            // ✓ marks a mastered (inner-fringe) concept.
+            if (node.fringe === "inner") {
+                const check = document.createElement("span");
+                check.className = "concept-sidebar-check";
+                check.textContent = "\u2713";
+                marker.append(check);
+            }
+            // Ready-to-start (outer-fringe) nodes can be clicked to pick them as next.
+            if (startable) {
+                marker.style.cursor = "pointer";
+                marker.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    pycmd("conceptStart:" + node.id);
+                });
+            }
+            // Tooltip names the subject + concept so hovering a dot tells you what it is.
+            const subject = disciplineOf(node.id);
+            const conceptName = node.id.split("::").at(-1).replaceAll("_", " ");
+            marker.title = `${subject} · ${conceptName}`
+                + (node.id === focusId ? " · current" : "")
+                + (node.recommended ? " · suggested next" : "")
+                + (node.fringe === "inner" ? " · mastered" : "")
+                + (startable ? " · click to start" : "");
 
             const dot = document.createElement("span");
             dot.className = "concept-sidebar-dot";
+            // colour by MCAT section; size by how many concepts build on it
+            dot.style.background = sectionColor(node.id);
+            const dep = deps[node.id] ?? 0;
+            const size = 0.5 + 0.8 * Math.sqrt(dep / maxDep);
+            dot.style.width = `${size}rem`;
+            dot.style.height = `${size}rem`;
             marker.append(dot);
 
             const label = document.createElement("span");
             label.className = "concept-sidebar-node-label";
             label.textContent = shortGraphLabel(node.id);
             marker.append(label);
-            graph.append(marker);
-        });
-        sidebar.append(graph);
 
-        const list = document.createElement("div");
-        list.className = "concept-sidebar-list";
-        for (const node of payload.nodes) {
+            canvas.append(marker);
+            markers.push({ marker, u });
+        });
+
+        const paint = () => {
+            const z = _graphZoom;
+            const w = PAD * 2 + Math.max(units.cols - 1, 0) * COLW * z + LABELPAD;
+            const h = PAD * 2 + Math.max(units.rows - 1, 0) * ROWH * z + ROWH;
+            canvas.style.width = `${w}px`;
+            canvas.style.height = `${h}px`;
+            svg.style.position = "absolute";
+            svg.style.left = "0";
+            svg.style.top = "0";
+            svg.style.width = `${w}px`;
+            svg.style.height = `${h}px`;
+            svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+            for (const { line, a, b } of lines) {
+                line.setAttribute("x1", String(nx(a, z)));
+                line.setAttribute("y1", String(ny(a, z)));
+                line.setAttribute("x2", String(nx(b, z)));
+                line.setAttribute("y2", String(ny(b, z)));
+            }
+            const showLabels = z >= 0.85;
+            for (const { marker, u } of markers) {
+                marker.style.left = `${nx(u, z)}px`;
+                marker.style.top = `${ny(u, z)}px`;
+                marker.classList.toggle("nolabel", !showLabels);
+            }
+        };
+        const setZoom = (z, keepCenter) => {
+            const prev = _graphZoom;
+            _graphZoom = Math.min(2.2, Math.max(0.4, z));
+            paint();
+            if (keepCenter) {
+                const r = _graphZoom / prev;
+                graph.scrollLeft = (graph.scrollLeft + graph.clientWidth / 2) * r - graph.clientWidth / 2;
+                graph.scrollTop = (graph.scrollTop + graph.clientHeight / 2) * r - graph.clientHeight / 2;
+            }
+        };
+        const fitZoom = () => {
+            const availW = graph.clientWidth - PAD * 2 - LABELPAD;
+            const availH = graph.clientHeight - PAD * 2 - ROWH;
+            const zW = availW / Math.max((units.cols - 1) * COLW, 1);
+            const zH = availH / Math.max((units.rows - 1) * ROWH, 1);
+            _graphZoom = Math.min(2.2, Math.max(0.4, Math.min(zW, zH) || 1));
+            paint();
+        };
+        sidebar.append(graph);
+        paint();
+
+        // ctrl/cmd + wheel zooms (anchored at cursor); plain wheel scrolls natively
+        graph.addEventListener("wheel", (e) => {
+            if (!(e.ctrlKey || e.metaKey)) { return; }
+            e.preventDefault();
+            const rect = graph.getBoundingClientRect();
+            const ox = e.clientX - rect.left;
+            const oy = e.clientY - rect.top;
+            const prev = _graphZoom;
+            _graphZoom = Math.min(2.2, Math.max(0.4, prev * (e.deltaY < 0 ? 1.12 : 1 / 1.12)));
+            const r = _graphZoom / prev;
+            paint();
+            graph.scrollLeft = (graph.scrollLeft + ox) * r - ox;
+            graph.scrollTop = (graph.scrollTop + oy) * r - oy;
+        }, { passive: false });
+
+        // On open: fit the focused neighbourhood to the box so the whole "builds on
+        // -> this -> unlocks" picture is visible at once; for the full map, keep the
+        // current zoom and just scroll the current KC to the centre.
+        requestAnimationFrame(() => {
+            if (!fullMap) {
+                fitZoom();
+            } else if (focusId && units.pos[focusId]) {
+                graph.scrollLeft = nx(units.pos[focusId], _graphZoom) - graph.clientWidth / 2;
+                graph.scrollTop = ny(units.pos[focusId], _graphZoom) - graph.clientHeight / 2;
+            }
+        });
+
+        // Scrollable node descriptions below the graph, so every KC's stats are
+        // readable even for concepts that are hard to pick out on the map.
+        const descs = document.createElement("div");
+        descs.className = "concept-sidebar-list";
+        const descsTitle = document.createElement("strong");
+        descsTitle.textContent = "Concepts";
+        descs.append(descsTitle);
+        const sortedNodes = payload.nodes.slice().sort((a, b) => {
+            const sa = sectionOf(a.id), sb = sectionOf(b.id);
+            if (sa !== sb) { return sa < sb ? -1 : 1; }
+            return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
+        });
+        for (const node of sortedNodes) {
             const row = document.createElement("div");
             row.className = `concept-sidebar-row ${node.fringe}`;
-            row.textContent = `${node.id}: ${node.answered} answered, ${node.positive} correct, ${node.negative} incorrect${masteryText(node)}`;
-            list.append(row);
+            const attempts = node.positive + node.negative;
+            const acc = attempts > 0 ? ` · ${percent(node.positive / attempts)} correct` : "";
+            const mem = node.memory ? ` · memory ${percent(node.memory)}` : "";
+            row.textContent = `${node.id.replace(/_/g, " ")}: ${node.answered} answered${acc}${mem}`;
+            descs.append(row);
         }
-        sidebar.append(list);
+        sidebar.append(descs);
+
+    };
+
+    // -- MCAT multiple-choice quiz -------------------------------------------
+    // Renders the current MC card as clickable choices. A correct pick is
+    // auto-rated Good; a wrong pick lets the learner choose the rating.
+    let _mcatState = null;
+    const _mcatPanel = () => document.getElementById("_mcat_quiz");
+    const _mcatTypeset = (el) => {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            try { window.MathJax.typesetPromise([el]); } catch (e) { /* ignore */ }
+        }
+    };
+
+    window._hideMcatQuiz = () => {
+        const panel = _mcatPanel();
+        if (panel) { panel.hidden = true; panel.replaceChildren(); }
+        document.body.classList.remove("mcat-quiz-active");
+        _mcatState = null;
+    };
+
+    // Build the question + choices + feedback area into an existing card shell.
+    // Choices come from _mcatState so this can run after an async reword.
+    const _mcatBuildBody = (card, question, reworded) => {
+        const q = document.createElement("div");
+        q.className = "mcat-quiz-question";
+        q.innerHTML = question;
+        card.append(q);
+
+        if (reworded) {
+            const badge = document.createElement("div");
+            badge.className = "mcat-quiz-reworded";
+            badge.textContent = "Reworded for you";
+            card.append(badge);
+        } else {
+            // On-demand reword: rewrite this stem in different words (same meaning)
+            // via the user's AI key. Works even when auto-reword is off.
+            const rewordRow = document.createElement("div");
+            rewordRow.className = "mcat-quiz-reword-row";
+            const rewordBtn = document.createElement("button");
+            rewordBtn.type = "button";
+            rewordBtn.className = "mcat-quiz-reword";
+            rewordBtn.textContent = "Reword with AI";
+            rewordBtn.title = "Rewrite this question in different words (same meaning)";
+            rewordBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!_mcatState || _mcatState.answered) { return; }
+                rewordBtn.disabled = true;
+                rewordBtn.textContent = "Rewording…";
+                pycmd("mcatReword");
+            });
+            rewordRow.append(rewordBtn);
+            card.append(rewordRow);
+        }
+
+        const choices = document.createElement("div");
+        choices.className = "mcat-quiz-choices";
+        (_mcatState.choices || []).forEach((choice, i) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "mcat-quiz-choice";
+            const letter = document.createElement("span");
+            letter.className = "mcat-quiz-letter";
+            letter.textContent = String.fromCharCode(65 + i);
+            const txt = document.createElement("span");
+            txt.className = "mcat-quiz-choice-text";
+            txt.innerHTML = choice;
+            btn.append(letter, txt);
+            btn.addEventListener("click", () => _mcatChoose(i));
+            choices.append(btn);
+        });
+        card.append(choices);
+
+        const feedback = document.createElement("div");
+        feedback.className = "mcat-quiz-feedback";
+        feedback.hidden = true;
+        card.append(feedback);
+
+        _mcatTypeset(card);
+    };
+
+    window._renderMcatQuiz = (payload) => {
+        const panel = _mcatPanel();
+        if (!panel || !payload) { return; }
+        _mcatState = {
+            answered: false,
+            correctIndex: payload.correctIndex,
+            explanation: payload.explanation || "",
+            choices: payload.choices || [],
+            loading: !!payload.loading,
+        };
+        document.body.classList.add("mcat-quiz-active");
+        panel.hidden = false;
+        panel.replaceChildren();
+
+        const card = document.createElement("div");
+        card.className = "mcat-quiz-card";
+
+        if (payload.kc) {
+            const kc = document.createElement("div");
+            kc.className = "mcat-quiz-kc";
+            kc.textContent = payload.kc;
+            card.append(kc);
+        }
+
+        if (payload.loading) {
+            // Rewording in flight: show a spinner instead of the raw question,
+            // then swap in the body via _mcatFinishReword when the call returns.
+            const loading = document.createElement("div");
+            loading.className = "mcat-quiz-loading";
+            const spinner = document.createElement("div");
+            spinner.className = "mcat-quiz-spinner";
+            const text = document.createElement("div");
+            text.className = "mcat-quiz-loading-text";
+            text.textContent = "Rewording this question\u2026";
+            loading.append(spinner, text);
+            card.append(loading);
+        } else {
+            _mcatBuildBody(card, payload.question, !!payload.reworded);
+        }
+
+        panel.append(card);
+        _mcatTypeset(panel);
+    };
+
+    // Called when an async reword finishes (success or fallback). The body is
+    // normally already shown with the original stem, so swap the stem text in
+    // place and add the "Reworded for you" badge, leaving the choices (and any
+    // in-progress selection) untouched. No-op once the card is answered.
+    window._mcatFinishReword = (question, reworded) => {
+        if (!_mcatState || _mcatState.answered) { return; }
+        const panel = _mcatPanel();
+        if (!panel) { return; }
+        const card = panel.querySelector(".mcat-quiz-card");
+        if (!card) { return; }
+        // Legacy/edge path: if the body hasn't been built yet, build it now.
+        const loading = card.querySelector(".mcat-quiz-loading");
+        if (loading) { loading.remove(); }
+        if (!card.querySelector(".mcat-quiz-choices")) {
+            _mcatState.loading = false;
+            _mcatBuildBody(card, question, !!reworded);
+            return;
+        }
+        const q = card.querySelector(".mcat-quiz-question");
+        if (q) { q.innerHTML = question; }
+        const rewordRow = card.querySelector(".mcat-quiz-reword-row");
+        if (reworded) {
+            // Success: drop the manual button and show the badge.
+            if (rewordRow) { rewordRow.remove(); }
+            if (q && !card.querySelector(".mcat-quiz-reworded")) {
+                const badge = document.createElement("div");
+                badge.className = "mcat-quiz-reworded";
+                badge.textContent = "Reworded for you";
+                q.insertAdjacentElement("afterend", badge);
+            }
+        } else {
+            // Fallback (mismatch/error): re-enable the button so it can be retried.
+            const rewordBtn = rewordRow ? rewordRow.querySelector(".mcat-quiz-reword") : null;
+            if (rewordBtn) {
+                rewordBtn.disabled = false;
+                rewordBtn.textContent = "Reword with AI";
+            }
+        }
+        _mcatTypeset(card);
+    };
+
+    const _mcatChoose = (index) => {
+        if (!_mcatState || _mcatState.answered) { return; }
+        _mcatState.answered = true;
+        const panel = _mcatPanel();
+        const correct = _mcatState.correctIndex;
+        const isCorrect = index === correct;
+
+        panel.querySelectorAll(".mcat-quiz-choice").forEach((b, idx) => {
+            b.disabled = true;
+            if (idx === correct) { b.classList.add("correct"); }
+            if (idx === index && !isCorrect) { b.classList.add("wrong"); }
+        });
+
+        // Tell Python to move the card into the "answer" state.
+        pycmd("mcatChoice:" + index);
+
+        const feedback = panel.querySelector(".mcat-quiz-feedback");
+        feedback.hidden = false;
+        feedback.replaceChildren();
+
+        const verdict = document.createElement("div");
+        verdict.className = "mcat-quiz-verdict " + (isCorrect ? "correct" : "wrong");
+        verdict.textContent = isCorrect ? "\u2713 Correct" : "\u2717 Not quite";
+        feedback.append(verdict);
+
+        if (_mcatState.explanation) {
+            const exp = document.createElement("div");
+            exp.className = "mcat-quiz-explanation";
+            exp.innerHTML = _mcatState.explanation;
+            feedback.append(exp);
+        }
+
+        // Always ask how well they knew it — even on a correct answer, so an honest
+        // learner can flag a lucky guess and get it rescheduled sooner.
+        const prompt = document.createElement("div");
+        prompt.className = "mcat-quiz-rate-prompt";
+        prompt.textContent = isCorrect
+            ? "How well did you know it? Be honest \u2014 a lucky guess isn't mastery."
+            : "How well did you know it?";
+        feedback.append(prompt);
+
+        const actions = document.createElement("div");
+        actions.className = "mcat-quiz-actions";
+        const rateButtons = isCorrect
+            ? [[1, "Guessed"], [2, "Shaky"], [3, "Knew it"], [4, "Easy"]]
+            : [[1, "Again"], [2, "Hard"], [3, "Good"], [4, "Easy"]];
+        // Route every quiz button through pycmd, and hard-stop the browser's
+        // default click handling so a click can never turn into a navigation
+        // (which the embedding webview would open in an external browser).
+        const onTap = (cmd) => (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            pycmd(cmd);
+        };
+        for (const [ease, label] of rateButtons) {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "mcat-quiz-rate ease" + ease;
+            b.textContent = label;
+            b.addEventListener("click", onTap("mcatGrade:" + ease));
+            actions.append(b);
+        }
+        feedback.append(actions);
+
+        const ask = document.createElement("div");
+        ask.className = "mcat-quiz-ask-row";
+        const askBtn = document.createElement("button");
+        askBtn.type = "button";
+        askBtn.className = "mcat-quiz-ask";
+        askBtn.textContent = "Ask AI about this";
+        askBtn.title = "Chat with AI about this question and concept";
+        askBtn.addEventListener("click", onTap("mcatChatOpen"));
+        ask.append(askBtn);
+        // Lesson lives here (next to Ask AI), and glows only when the answer is wrong.
+        const lessonBtn = document.createElement("button");
+        lessonBtn.type = "button";
+        lessonBtn.className = "mcat-quiz-lesson" + (isCorrect ? "" : " glow");
+        lessonBtn.textContent = "Lesson";
+        lessonBtn.title = "Open the lesson for this concept";
+        lessonBtn.addEventListener("click", onTap("lesson"));
+        ask.append(lessonBtn);
+        feedback.append(ask);
+
+        _mcatTypeset(feedback);
+    };
+
+    // -- Ask AI chat ---------------------------------------------------------
+    const _mcatChatPanel = () => document.getElementById("_mcat_chat");
+    const _b64 = (s) => btoa(unescape(encodeURIComponent(s)));
+
+    window._hideMcatChat = () => {
+        const panel = _mcatChatPanel();
+        if (panel) { panel.hidden = true; panel.replaceChildren(); }
+    };
+
+    window._mcatChatAddMessage = (role, text) => {
+        const panel = _mcatChatPanel();
+        if (!panel) { return; }
+        const list = panel.querySelector(".mcat-chat-messages");
+        if (!list) { return; }
+        const pending = list.querySelector(".mcat-chat-pending");
+        if (pending) { pending.remove(); }
+        const msg = document.createElement("div");
+        msg.className = "mcat-chat-msg " + (role === "user" ? "user" : "ai");
+        msg.textContent = text;
+        list.append(msg);
+        list.scrollTop = list.scrollHeight;
+        _mcatTypeset(msg);
+    };
+
+    window._mcatChatSetPending = (on) => {
+        const panel = _mcatChatPanel();
+        if (!panel) { return; }
+        const list = panel.querySelector(".mcat-chat-messages");
+        const input = panel.querySelector(".mcat-chat-input");
+        const send = panel.querySelector(".mcat-chat-send");
+        if (send) { send.disabled = on; }
+        if (input) { input.disabled = on; }
+        if (on && list && !list.querySelector(".mcat-chat-pending")) {
+            const p = document.createElement("div");
+            p.className = "mcat-chat-msg ai mcat-chat-pending";
+            p.textContent = "\u2026";
+            list.append(p);
+            list.scrollTop = list.scrollHeight;
+        } else if (!on && list) {
+            const p = list.querySelector(".mcat-chat-pending");
+            if (p) { p.remove(); }
+            if (input) { input.focus(); }
+        }
+    };
+
+    window._renderMcatChat = (intro) => {
+        const panel = _mcatChatPanel();
+        if (!panel) { return; }
+        panel.hidden = false;
+        panel.replaceChildren();
+
+        const head = document.createElement("div");
+        head.className = "mcat-chat-head";
+        const title = document.createElement("strong");
+        title.textContent = "Ask AI about this question";
+        head.append(title);
+        const close = document.createElement("button");
+        close.type = "button";
+        close.className = "mcat-chat-close";
+        close.textContent = "\u2715";
+        close.title = "Close";
+        close.addEventListener("click", () => window._hideMcatChat());
+        head.append(close);
+        panel.append(head);
+
+        const list = document.createElement("div");
+        list.className = "mcat-chat-messages";
+        panel.append(list);
+
+        const row = document.createElement("div");
+        row.className = "mcat-chat-inputrow";
+        const input = document.createElement("textarea");
+        input.className = "mcat-chat-input";
+        input.rows = 2;
+        input.placeholder = "Ask about this question or concept\u2026";
+        const send = document.createElement("button");
+        send.type = "button";
+        send.className = "mcat-chat-send";
+        send.textContent = "Send";
+        const submit = () => {
+            const text = input.value.trim();
+            if (!text) { return; }
+            window._mcatChatAddMessage("user", text);
+            input.value = "";
+            window._mcatChatSetPending(true);
+            pycmd("mcatChatSend:" + _b64(text));
+        };
+        send.addEventListener("click", submit);
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
+        });
+        row.append(input, send);
+        panel.append(row);
+
+        if (intro) { window._mcatChatAddMessage("ai", intro); }
+        input.focus();
     };
 })();
 </script>
@@ -502,6 +1972,7 @@ __CONCEPT_EXTRA__
             js=[
                 "js/mathjax.js",
                 "js/vendor/mathjax/tex-chtml-full.js",
+                "js/vendor/mermaid.min.js",
                 "js/reviewer.js",
             ],
             context=self,
@@ -564,6 +2035,8 @@ __CONCEPT_EXTRA__
                 answered=node.answered,
                 positive=node.positive,
                 negative=node.negative,
+                memory=node.memory,
+                recommended=node.recommended,
             )
             for node in status.graph.nodes
         ]
@@ -580,6 +2053,7 @@ __CONCEPT_EXTRA__
                     coverage=score.coverage,
                     performanceLower=score.performance_lower,
                     performanceUpper=score.performance_upper,
+                    readinessCenter=score.readiness_center,
                     readinessLower=score.readiness_lower,
                     readinessUpper=score.readiness_upper,
                     sectionMemory=score.section_memory,
@@ -591,7 +2065,35 @@ __CONCEPT_EXTRA__
             totalEvidence=status.counters.total_seen_cards,
             overallMemory=status.overall_memory,
             hasMemory=status.has_memory,
+            projectedTotal=status.projected_total,
+            projectedTotalLower=status.projected_total_lower,
+            projectedTotalUpper=status.projected_total_upper,
+            hasProjection=status.has_projection,
+            focusKc=(self._concept_labels(card)[:1] or [""])[0],
+            **self._daily_progress(),
         )
+
+    def _daily_progress(self) -> dict[str, int]:
+        """Cards done vs left for today, for the sidebar's daily progress bar."""
+        remaining = 0
+        try:
+            _idx, counts = self._v3.counts()
+            remaining = int(sum(counts))
+        except Exception:
+            remaining = 0
+        done = 0
+        try:
+            cutoff = self.mw.col.sched.day_cutoff
+            done = (
+                self.mw.col.db.scalar(
+                    "select count() from revlog where id >= ?",
+                    (cutoff - 86_400) * 1000,
+                )
+                or 0
+            )
+        except Exception:
+            done = 0
+        return {"dailyDone": int(done), "dailyRemaining": remaining}
 
     def _concept_section_label(self, section: int) -> str:
         if section == 0:
@@ -616,12 +2118,481 @@ __CONCEPT_EXTRA__
         if self._concept_graph_visible:
             self.web.eval(f"_renderConceptGraphSidebar({json.dumps(payload)});")
 
+    def _start_concept_topic(self, topic: str) -> None:
+        from anki.scheduler_pb2 import SetConceptSelectedTopicRequest
+
+        topic = topic.strip()
+        if not topic:
+            return
+        try:
+            self.mw.col._backend.set_concept_selected_topic(
+                SetConceptSelectedTopicRequest(
+                    deck_id=self.card.current_deck_id(), topic=topic
+                )
+            )
+        except Exception as exc:
+            tooltip(f"Couldn't start that topic: {exc}")
+            return
+        # Save the choice only — no lesson pop-up. The lesson becomes available
+        # (with a pulsing Lesson button) once the learner answers the topic's cards.
+        short = topic.split("::")[-1].replace("_", " ")
+        tooltip(
+            f"\u2705 Next up: <b>{short}</b><br>Its cards will lead the next block.",
+            period=3500,
+        )
+        self._update_concept_graph_sidebar(self.card)
+
+    def _lesson_payload(self, kc: str) -> dict[str, Any] | None:
+        try:
+            lesson = self.mw.col._backend.get_concept_lesson(kc)
+        except Exception as exc:
+            print("concept lesson lookup failed for", kc, ":", exc)
+            return None
+        if not lesson.exists:
+            return None
+        # A diagram may be an inline image "![alt](path)": inline the SVG when we can
+        # find it, and always keep the alt text as a caption/fallback.
+        diagram_text = ""
+        diagram_svg = ""
+        raw = lesson.diagram
+        image = re.match(r"^!\[(.*?)\]\((.*?)\)\s*$", raw)
+        if image:
+            diagram_text = image.group(1)
+            diagram_svg = self._load_lesson_diagram(image.group(2))
+        elif raw.lstrip().startswith("<"):
+            # Inline SVG/HTML embedded directly in the lesson: ships inside the
+            # lesson string (works in packaged builds too, no external file).
+            diagram_svg = raw
+        elif raw:
+            diagram_text = raw
+        return dict(
+            kc=lesson.kc,
+            title=lesson.title,
+            section=lesson.section,
+            overview=lesson.overview,
+            keyConcepts=list(lesson.key_concepts),
+            prerequisiteReminder=lesson.prerequisite_reminder,
+            workedExample=lesson.worked_example,
+            commonMisconception=lesson.common_misconception,
+            firstRetrievalPrompt=lesson.first_retrieval_prompt,
+            diagram=diagram_text,
+            diagramSvg=diagram_svg,
+            diagramMermaid=lesson.diagram_mermaid,
+            relatedKcs=list(lesson.related_kcs),
+        )
+
+    def _load_lesson_diagram(self, relpath: str) -> str:
+        """Inline the SVG for a lesson diagram referenced relative to the repo's
+        `added features/` folder. Returns "" if it can't be found (installed builds
+        won't ship the folder; the panel then shows the alt-text caption)."""
+        from pathlib import Path
+
+        try:
+            base = (Path(__file__).resolve().parents[2] / "added features").resolve()
+            path = (base / relpath).resolve()
+            if (
+                path.is_relative_to(base)
+                and path.suffix.lower() == ".svg"
+                and path.is_file()
+            ):
+                svg = path.read_text(encoding="utf-8")
+                # Strip any XML prolog / DOCTYPE so it inlines cleanly via innerHTML.
+                svg = re.sub(r"^\s*<\?xml.*?\?>\s*", "", svg, flags=re.DOTALL)
+                svg = re.sub(r"^\s*<!DOCTYPE.*?>\s*", "", svg, flags=re.DOTALL)
+                return svg
+        except Exception as exc:
+            print("lesson diagram load failed for", relpath, ":", exc)
+        return ""
+
+    def _open_lesson_for_kc(self, kc: str) -> bool:
+        payload = self._lesson_payload(kc)
+        if payload is None:
+            return False
+        self.web.eval(f"_renderLessonPanel({json.dumps(payload)});")
+        return True
+
+    def _open_lesson_for_current_card(self) -> None:
+        # Anti-peek gate: the current card's lesson is only available once the card
+        # is answered, so it can't be used to look up the answer mid-question. (The
+        # lesson-first teaching flow uses a different entry point and is unaffected.)
+        if self.state != "answer":
+            tooltip("Answer first — the lesson unlocks once you've responded.")
+            return
+        labels = self._concept_labels(self.card) if self.card else []
+        kc = labels[0] if labels else ""
+        if not kc or not self._open_lesson_for_kc(kc):
+            tooltip("No lesson for this concept yet.")
+
     def _toggle_concept_graph_sidebar(self) -> None:
         self._concept_graph_visible = not self._concept_graph_visible
         if self._concept_graph_visible and self.card:
             self._update_concept_graph_sidebar(self.card)
         else:
             self.web.eval("_hideConceptGraphSidebar();")
+
+    # MCAT multiple-choice quiz
+    ##########################################################################
+
+    _MCAT_BREAK_RE = re.compile(r"<br\s*/?>\s*<br\s*/?>", re.IGNORECASE)
+    _MCAT_LINE_RE = re.compile(r"<br\s*/?>", re.IGNORECASE)
+    _MCAT_CHOICE_RE = re.compile(r"^\s*([A-Z])[.)]\s*(.*\S)\s*$", re.DOTALL)
+    _MCAT_CORRECT_RE = re.compile(
+        r"correct:?\s*(?:</b>|</strong>)?\s*([A-Z])\b", re.IGNORECASE
+    )
+
+    def _mcat_mc_payload(self, card: Card) -> dict[str, Any] | None:
+        """Parse a concept (KC-tagged) card into structured multiple-choice data.
+
+        Returns None for anything that is not a recognisable MC card, so normal
+        Anki study is untouched.
+        """
+        note = card.note()
+        if not any(tag.startswith("KC::") for tag in note.tags):
+            return None
+        fields = note.fields
+        if len(fields) < 2:
+            return None
+
+        front, back = fields[0], fields[1]
+        front_parts = self._MCAT_BREAK_RE.split(front, maxsplit=1)
+        if len(front_parts) != 2:
+            return None
+        question = front_parts[0].strip()
+        choices: list[str] = []
+        letters: list[str] = []
+        for raw in self._MCAT_LINE_RE.split(front_parts[1]):
+            text = raw.strip()
+            if not text:
+                continue
+            match = self._MCAT_CHOICE_RE.match(text)
+            if not match:
+                continue
+            letters.append(match.group(1).upper())
+            choices.append(match.group(2).strip())
+        if len(choices) < 2 or not question:
+            return None
+
+        correct_match = self._MCAT_CORRECT_RE.search(back)
+        if not correct_match:
+            return None
+        correct_letter = correct_match.group(1).upper()
+        if correct_letter not in letters:
+            return None
+        correct_index = letters.index(correct_letter)
+
+        explanation = ""
+        back_parts = self._MCAT_BREAK_RE.split(back, maxsplit=1)
+        if len(back_parts) == 2:
+            explanation = back_parts[1].strip()
+
+        kc_label = next(
+            (
+                tag.removeprefix("KC::").replace("::", " · ")
+                for tag in note.tags
+                if tag.startswith("KC::")
+            ),
+            "",
+        )
+        kc_id = next(
+            (tag.removeprefix("KC::") for tag in note.tags if tag.startswith("KC::")),
+            "",
+        )
+        return {
+            "kc": kc_label,
+            "kcId": kc_id,
+            "question": question,
+            "choices": choices,
+            "correctIndex": correct_index,
+            "explanation": explanation,
+            "reworded": False,
+        }
+
+    def _mcat_enhance(self, payload: dict[str, Any]) -> dict[str, Any]:
+        """Apply synchronous transforms: shuffle the answer choices (task #2).
+
+        Rewording is done asynchronously (see `_mcat_start_reword`) so a slow
+        network call never blocks showing the card.
+        """
+        choices = payload.get("choices") or []
+        if aqt.mw.pm.mcat_shuffle_choices_enabled() and len(choices) > 1:
+            order = list(range(len(choices)))
+            random.shuffle(order)
+            payload["choices"] = [choices[i] for i in order]
+            payload["correctIndex"] = order.index(payload["correctIndex"])
+        return payload
+
+    def _mcat_will_reword(self, card: Card) -> bool:
+        """Whether this card is eligible for an AI reword (used to gate both the
+        current-card reword and next-card prefetch). False when disabled, no key,
+        or already cached / in flight."""
+        pm = aqt.mw.pm
+        if not pm.mcat_reword_enabled():
+            return False
+        if card.id in self._mcat_reword_cache or card.id in self._mcat_reword_inflight:
+            return False
+        from aqt.mcat_ai import resolve_openai_key
+
+        return bool(resolve_openai_key(pm))
+
+    def _mcat_start_reword(self, card_id: int, stem: str) -> None:
+        """Reword one MC stem with the user's OpenAI key, off the UI thread, and
+        cache the result by card id. Used for both the current card and to
+        prefetch the next one, so OpenAI is called at most once per card per
+        session.
+
+        A second call verifies the reworded stem means the same as the original;
+        on mismatch or any error the original stem is kept. When the result
+        arrives and that card is the one on screen (and still unanswered), the
+        stem is hot-swapped in place — there is no blocking spinner.
+        """
+        if card_id in self._mcat_reword_cache or card_id in self._mcat_reword_inflight:
+            return
+        pm = aqt.mw.pm
+        from aqt.mcat_ai import (
+            OpenAIClient,
+            resolve_openai_key,
+            resolve_openai_model,
+        )
+
+        key = resolve_openai_key(pm)
+        if not key:
+            return
+
+        # Cap the timeout so a slow call can't tie up a worker for the full
+        # network timeout.
+        timeout = min(pm.network_timeout() or 20, 20)
+        client = OpenAIClient(key, resolve_openai_model(pm), timeout)
+        original = stem
+        self._mcat_reword_inflight.add(card_id)
+
+        def task() -> str | None:
+            reworded = client.reword_question(original)
+            if not reworded or not client.questions_equivalent(original, reworded):
+                return None
+            return reworded
+
+        def on_done(fut: Any) -> None:
+            self._mcat_reword_inflight.discard(card_id)
+            try:
+                reworded = fut.result()
+            except Exception:
+                reworded = None
+            # Success -> reworded stem; failure/mismatch -> keep the original.
+            final, was_reworded = (reworded, True) if reworded else (original, False)
+            # Cache so this card never calls OpenAI again this session.
+            self._mcat_reword_cache[card_id] = (final, was_reworded)
+            # Hot-swap only if this card is on screen and still unanswered
+            # (true for the current card, or the next card once we advance to it
+            # while its prefetch was still in flight).
+            if (
+                self.card is None
+                or self.card.id != card_id
+                or self.state != "question"
+                or self._mcat_current is None
+            ):
+                return
+            self._mcat_current["question"] = final
+            self._mcat_current["reworded"] = was_reworded
+            self.web.eval(
+                "if (window._mcatFinishReword) { _mcatFinishReword(%s, %s); }"
+                % (json.dumps(final), json.dumps(was_reworded))
+            )
+
+        aqt.mw.taskman.run_in_background(task, on_done)
+
+    def _mcat_reword_current(self) -> None:
+        """Reword the current (unanswered) MC question on demand from the in-card
+        'Reword with AI' button. Independent of the auto-reword toggle: it only
+        needs an OpenAI key. Reuses _mcat_start_reword's cache + hot-swap so a card
+        is never reworded twice per session."""
+        if self.state != "question" or self._mcat_current is None or self.card is None:
+            # Can't reword now; just release the button's loading state without
+            # touching the stem (a no-op once the card is answered).
+            q = self._mcat_current["question"] if self._mcat_current else ""
+            self.web.eval(
+                "if (window._mcatFinishReword) { _mcatFinishReword(%s, false); }" % json.dumps(q)
+            )
+            return
+        from aqt.mcat_ai import resolve_openai_key
+
+        if not resolve_openai_key(aqt.mw.pm):
+            tooltip("Add your OpenAI key in Tools → MCAT AI to reword questions.")
+            self.mw.on_mcat_ai_settings()
+            # Re-enable the button (nothing was reworded).
+            self.web.eval("if (window._mcatFinishReword) { _mcatFinishReword(%s, false); }" % json.dumps(self._mcat_current["question"]))
+            return
+        card_id = self.card.id
+        cached = self._mcat_reword_cache.get(card_id)
+        if cached is not None:
+            # Already resolved this session: apply it immediately (no second call).
+            final, was_reworded = cached
+            self._mcat_current["question"] = final
+            self._mcat_current["reworded"] = was_reworded
+            self.web.eval(
+                "if (window._mcatFinishReword) { _mcatFinishReword(%s, %s); }"
+                % (json.dumps(final), json.dumps(was_reworded))
+            )
+            return
+        # Not yet cached/in-flight: kick off the reword; on_done hot-swaps the stem.
+        self._mcat_start_reword(card_id, self._mcat_current["question"])
+
+    def _mcat_prefetch_next(self) -> None:
+        """Prefetch the AI reword of the NEXT queued MC card while the current one
+        is on screen, so advancing to it is instant (no loading state).
+
+        Best-effort and idempotent: peeking the queue does not consume it, and
+        results are cached by card id, so it is safe to call on every question.
+        If the user rates in a way that changes the queue, the peeked card simply
+        isn't shown next; its cached reword is still reused whenever it appears.
+        """
+        if not aqt.mw.pm.mcat_reword_enabled():
+            return
+        try:
+            # Idempotent peek: cards[0] is the current card, cards[1] the next.
+            output = self.mw.col.sched.get_queued_cards(fetch_limit=2)
+        except Exception:
+            return
+        if len(output.cards) < 2:
+            return
+        try:
+            nxt = Card(self.mw.col, backend_card=output.cards[1].card)
+        except Exception:
+            return
+        if not self._mcat_will_reword(nxt):
+            return
+        payload = self._mcat_mc_payload(nxt)
+        if payload is None:
+            return
+        self._mcat_start_reword(nxt.id, payload["question"])
+
+    def _mcat_on_choice(self, index: int) -> None:
+        if self.state != "question" or self._mcat_current is None:
+            return
+        # Remember the chosen answer so the "Ask AI" chat can tell the tutor what
+        # the student picked.
+        self._mcat_selected_index = index
+        # Enter the answer state WITHOUT the full _showAnswer(): the in-card quiz
+        # panel already renders the reveal + grade/Ask-AI/Lesson buttons. Running
+        # the normal reveal (`_showAnswer` -> `_updateQA`/`scrollToAnswer`/repaint
+        # on the hidden #qa card) can leave the reviewer in a state where those
+        # in-card buttons stop responding. So just flip state + reveal the lesson.
+        self.state = "answer"
+        self._set_lesson_button_visible(True)
+        gui_hooks.reviewer_did_show_answer(self.card)
+
+    def _mcat_chat_open(self) -> None:
+        """Open the 'Ask AI' chat for the current MC card, scoped to this question."""
+        payload = self._mcat_current
+        if payload is None:
+            return
+        from aqt.mcat_ai import resolve_openai_key
+
+        if not resolve_openai_key(aqt.mw.pm):
+            tooltip("Add your OpenAI key in Tools → MCAT AI to use Ask AI.")
+            self.mw.on_mcat_ai_settings()
+            return
+
+        choices = payload.get("choices") or []
+        letters = [chr(ord("A") + i) for i in range(len(choices))]
+        correct_i = payload.get("correctIndex", 0)
+        selected_i = self._mcat_selected_index
+        choice_lines = "\n".join(f"{letters[i]}. {choices[i]}" for i in range(len(choices)))
+        correct_line = (
+            f"{letters[correct_i]}. {choices[correct_i]}"
+            if 0 <= correct_i < len(choices)
+            else "unknown"
+        )
+        if selected_i is not None and 0 <= selected_i < len(choices):
+            verdict = "correct" if selected_i == correct_i else "incorrect"
+            selected_desc = f"{letters[selected_i]}. {choices[selected_i]} ({verdict})"
+        else:
+            selected_desc = "not recorded"
+
+        # Scoped system prompt: the tutor may only discuss THIS question and its
+        # MCAT concept, and must decline off-topic requests.
+        self._mcat_chat_system = (
+            "You are an MCAT tutor helping a student with ONE specific practice "
+            "question. Be concise, accurate, and encouraging. ALWAYS illustrate "
+            "your explanations with at least one concrete example or analogy — a "
+            "short worked example, a realistic MCAT-style scenario, or a memorable "
+            "analogy — so the concept sticks. When helpful, give a couple of quick "
+            "contrasting examples (e.g. what would change the answer).\n\n"
+            f"Topic (knowledge component): {payload.get('kc', '')}\n"
+            f"Question: {payload.get('question', '')}\n"
+            f"Choices:\n{choice_lines}\n"
+            f"Correct answer: {correct_line}\n"
+            f"Student selected: {selected_desc}\n"
+            f"Explanation: {payload.get('explanation', '')}\n\n"
+            "Only discuss THIS question and the directly related MCAT concept and "
+            "science. If the student asks anything off-topic (unrelated subjects, "
+            "chit-chat, personal tasks, coding, current events, etc.), politely "
+            "decline in one sentence and steer them back to this question. Do not "
+            "answer off-topic requests."
+        )
+        self._mcat_chat_history = []
+        intro = (
+            "Ask me anything about this question or the concept behind it — "
+            "I'll walk through examples too."
+        )
+        self.web.eval(
+            "if (window._renderMcatChat) { _renderMcatChat(%s); }" % json.dumps(intro)
+        )
+
+    def _mcat_chat_send(self, encoded: str) -> None:
+        import base64
+
+        if self._mcat_chat_system is None:
+            return
+        try:
+            text = base64.b64decode(encoded).decode("utf-8").strip()
+        except Exception:
+            text = ""
+        if not text:
+            self.web.eval(
+                "if (window._mcatChatSetPending) { _mcatChatSetPending(false); }"
+            )
+            return
+
+        from aqt.mcat_ai import (
+            OpenAIClient,
+            resolve_openai_key,
+            resolve_openai_model,
+        )
+
+        pm = aqt.mw.pm
+        key = resolve_openai_key(pm)
+
+        def reply_js(text: str) -> str:
+            return (
+                "if (window._mcatChatSetPending) { _mcatChatSetPending(false); } "
+                "if (window._mcatChatAddMessage) { _mcatChatAddMessage('ai', %s); }"
+                % json.dumps(text)
+            )
+
+        if not key:
+            self.web.eval(reply_js("No OpenAI key set. Add one in Tools → MCAT AI."))
+            return
+
+        self._mcat_chat_history.append({"role": "user", "content": text})
+        # Cap the history sent so requests don't grow without bound.
+        history = self._mcat_chat_history[-12:]
+        messages = [{"role": "system", "content": self._mcat_chat_system}, *history]
+        timeout = min(pm.network_timeout() or 30, 30)
+        client = OpenAIClient(key, resolve_openai_model(pm), timeout)
+
+        def task() -> str:
+            return client.chat(messages)
+
+        def on_done(fut: Any) -> None:
+            try:
+                answer = fut.result()
+            except Exception as exc:
+                self.web.eval(reply_js(f"Sorry, that request failed: {exc}"))
+                return
+            self._mcat_chat_history.append({"role": "assistant", "content": answer})
+            self.web.eval(reply_js(answer))
+
+        aqt.mw.taskman.run_in_background(task, on_done)
 
     def _showQuestion(self) -> None:
         self._reps += 1
@@ -649,17 +2620,62 @@ __CONCEPT_EXTRA__
         bodyclass = theme_manager.body_classes_for_card_ord(c.ord)
         a = self.mw.col.media.escape_media_filenames(c.answer())
 
-        self.web.eval(
-            f"_showQuestion({json.dumps(q)}, {json.dumps(a)}, '{bodyclass}');"
-        )
+        # Compute the MC payload BEFORE rendering so, for MC cards, the quiz is
+        # rendered in the SAME web.eval as _showQuestion. _showQuestion resets
+        # document.body's classes (dropping mcat-quiz-active); splitting this into
+        # two evals lets the raw card (#qa) flash for one frame before the quiz
+        # takes over. A single eval runs atomically, so nothing flashes.
+        payload = self._mcat_mc_payload(c)
+        start_current_reword = False
+        if payload is not None:
+            payload = self._mcat_enhance(payload)
+            cached = self._mcat_reword_cache.get(c.id)
+            if cached is not None:
+                # Prefetched while on the previous card (or already seen): use the
+                # reworded stem instantly, no API call, no loading state.
+                payload["question"], payload["reworded"] = cached
+            elif self._mcat_will_reword(c):
+                # Not prefetched in time: show the original stem right away and
+                # hot-swap the reworded stem in when it arrives (no spinner).
+                start_current_reword = True
+        # New card: reset the per-card "Ask AI" chat state (any open chat is closed
+        # by _hideMcatChat below).
+        self._mcat_selected_index = None
+        self._mcat_chat_system = None
+        self._mcat_chat_history = []
+        self._mcat_current = payload
+        if payload is not None:
+            # _showQuestion sets document.body.className = bodyclass asynchronously
+            # (via _queueAction/_updateQA), which would drop mcat-quiz-active and
+            # reveal the raw #qa card under the quiz. Bake the class into bodyclass
+            # so #qa stays hidden the whole time (no flash, no leftover text).
+            bodyclass = f"{bodyclass} mcat-quiz-active"
+        show_js = f"_showQuestion({json.dumps(q)}, {json.dumps(a)}, '{bodyclass}');"
+        show_js += " if (window._hideMcatChat) { _hideMcatChat(); }"
+        if payload is not None:
+            show_js += f" if (window._renderMcatQuiz) {{ _renderMcatQuiz({json.dumps(payload)}); }}"
+        else:
+            show_js += " if (window._hideMcatQuiz) { _hideMcatQuiz(); }"
+        self.web.eval(show_js)
         self._update_flag_icon()
         self._update_mark_icon()
         self._update_concept_badge(c)
         self._update_concept_graph_sidebar(c)
-        self._showAnswerButton()
+        if payload is not None:
+            # Graded via the in-card choice/rating buttons, so blank the bottom bar.
+            self.bottom.web.eval('showQuestion("", 0);')
+            if start_current_reword:
+                self._mcat_start_reword(c.id, payload["question"])
+        else:
+            self._showAnswerButton()
+        # Hide the lesson until the card is answered (anti-peek gate).
+        self._set_lesson_button_visible(False)
         self.mw.web.setFocus()
         # user hook
         gui_hooks.reviewer_did_show_question(c)
+        # Prefetch the next card's AI reword in the background so advancing to it
+        # is instant (this is what removes the "Rewording…" wait).
+        self._mcat_prefetch_next()
         self._auto_advance_to_answer_if_enabled()
 
     def _auto_advance_to_answer_if_enabled(self) -> None:
@@ -737,7 +2753,12 @@ __CONCEPT_EXTRA__
         self.web.eval(f"_showAnswer({json.dumps(a)});")
         self._update_concept_badge(c)
         self._update_concept_graph_sidebar(c)
-        self._showEaseButtons()
+        # MC cards are graded via the in-card choice buttons, so the bottom ease
+        # buttons are suppressed for them.
+        if self._mcat_current is None:
+            self._showEaseButtons()
+        # The card is answered now, so the lesson can no longer be used to cheat.
+        self._set_lesson_button_visible(True)
         self.mw.web.setFocus()
         # user hook
         gui_hooks.reviewer_did_show_answer(c)
@@ -942,6 +2963,30 @@ __CONCEPT_EXTRA__
             self.showContextMenu()
         elif url == "conceptGraph":
             self._toggle_concept_graph_sidebar()
+        elif url == "mcatAi":
+            self.mw.on_mcat_ai_settings()
+        elif url == "mcatChatOpen":
+            self._mcat_chat_open()
+        elif url == "mcatReword":
+            self._mcat_reword_current()
+        elif url.startswith("mcatChatSend:"):
+            self._mcat_chat_send(url[len("mcatChatSend:") :])
+        elif url.startswith("conceptStart:"):
+            self._start_concept_topic(url[len("conceptStart:") :])
+        elif url == "lesson":
+            self._open_lesson_for_current_card()
+        elif url.startswith("mcatChoice:"):
+            try:
+                self._mcat_on_choice(int(url[len("mcatChoice:") :]))
+            except ValueError:
+                pass
+        elif url.startswith("mcatGrade:"):
+            try:
+                grade = int(url[len("mcatGrade:") :])
+            except ValueError:
+                return
+            if grade in (1, 2, 3, 4):
+                self._answerCard(cast(Literal[1, 2, 3, 4], grade))
         elif url.startswith("play:"):
             play_clicked_audio(url, self.card)
         elif url.startswith("updateToolbar"):
@@ -1069,8 +3114,30 @@ __CONCEPT_EXTRA__
     # Bottom bar
     ##########################################################################
 
+    def _set_lesson_button_visible(self, visible: bool) -> None:
+        # The lesson is gated behind answering so it can't be used to peek at the
+        # answer: it's hidden in the question state and revealed once the card is
+        # answered (Show Answer, or picking an MC choice).
+        display = "inline-block" if visible else "none"
+        self.bottom.web.eval(
+            "(() => { const b = document.getElementById('lessonbut');"
+            f" if (b) {{ b.style.display = '{display}'; }} }})();"
+        )
+
     def _bottomHTML(self) -> str:
         return """
+<style>
+.mcat-topbtn {
+    font-weight: 600;
+    color: #2f6fed;
+    border: 1px solid rgba(79, 116, 214, 0.55) !important;
+    border-radius: 6px;
+    margin-right: 4px;
+}
+.mcat-topbtn:hover { background: rgba(79, 116, 214, 0.14); }
+.nightMode .mcat-topbtn { color: #9dc0ff; border-color: rgba(157, 192, 255, 0.5) !important; }
+.nightMode .mcat-topbtn:hover { background: rgba(157, 192, 255, 0.16); }
+</style>
 <center id=outer>
 <table id=innertable width=100%% cellspacing=0 cellpadding=0>
 <tr>
@@ -1079,6 +3146,7 @@ __CONCEPT_EXTRA__
 <td align=start valign=top id=middle>
 </td>
 <td align=end valign=top class=stat>
+<button class=mcat-topbtn title="MCAT AI settings — securely add your OpenAI key to reword questions" onclick="pycmd('mcatAi');">AI</button>
 <button title="Show or hide Concept Scheduler progress" onclick="pycmd('conceptGraph');">Progress</button>
 <button title="%(morekey)s" onclick="pycmd('more');">
 %(more)s %(downArrow)s

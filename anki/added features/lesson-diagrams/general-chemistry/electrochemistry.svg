@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Electrochemistry: a galvanic (voltaic) cell</title>
+  <desc id="d">A zinc-copper galvanic cell. Zinc is oxidized at the anode (negative) and releases electrons that flow through the external wire and voltmeter to the copper cathode (positive), where copper ions are reduced. A salt bridge connects the two half-cells. The standard cell potential is plus 1.10 volts.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Electrochemistry &#8212; galvanic (voltaic) cell</text>
+
+  <!-- external circuit -->
+  <polyline points="130,150 130,100 410,100 410,150" fill="none" stroke="#37474f" stroke-width="2"/>
+  <circle cx="270" cy="100" r="16" fill="#ffffff" stroke="#37474f" stroke-width="2"/>
+  <text x="270" y="105" text-anchor="middle" font-size="13" font-weight="700" fill="#37474f">V</text>
+  <line x1="170" y1="84" x2="240" y2="84" stroke="#1565c0" stroke-width="2"/>
+  <polygon points="240,79 240,89 250,84" fill="#1565c0"/>
+  <line x1="300" y1="84" x2="370" y2="84" stroke="#1565c0" stroke-width="2"/>
+  <polygon points="370,79 370,89 380,84" fill="#1565c0"/>
+  <text x="205" y="76" text-anchor="middle" font-size="11" fill="#1565c0">e&#8722;</text>
+  <text x="335" y="76" text-anchor="middle" font-size="11" fill="#1565c0">e&#8722;</text>
+
+  <!-- salt bridge -->
+  <path d="M175,210 C175,158 365,158 365,210" fill="none" stroke="#b0bec5" stroke-width="10"/>
+  <text x="270" y="150" text-anchor="middle" font-size="10" fill="#607d8b">salt bridge</text>
+
+  <!-- beakers -->
+  <path d="M70,200 L70,320 Q70,340 90,340 L170,340 Q190,340 190,320 L190,200" fill="#e3f2fd" stroke="#90a4ae" stroke-width="2"/>
+  <path d="M350,200 L350,320 Q350,340 370,340 L450,340 Q470,340 470,320 L470,200" fill="#e3f2fd" stroke="#90a4ae" stroke-width="2"/>
+
+  <!-- electrodes -->
+  <rect x="124" y="150" width="12" height="150" fill="#90a4ae"/>
+  <rect x="404" y="150" width="12" height="150" fill="#ef6c00"/>
+
+  <text x="130" y="360" text-anchor="middle" font-size="12" font-weight="700" fill="#37474f">Zn anode (&#8722;)</text>
+  <text x="410" y="360" text-anchor="middle" font-size="12" font-weight="700" fill="#37474f">Cu cathode (+)</text>
+  <text x="130" y="230" text-anchor="middle" font-size="10" fill="#607d8b">Zn2+</text>
+  <text x="410" y="230" text-anchor="middle" font-size="10" fill="#607d8b">Cu2+</text>
+
+  <text x="130" y="392" text-anchor="middle" font-size="10" fill="#c62828">oxidation: Zn &#8594; Zn2+ + 2e&#8722;</text>
+  <text x="410" y="392" text-anchor="middle" font-size="10" fill="#2e7d32">reduction: Cu2+ + 2e&#8722; &#8594; Cu</text>
+
+  <text x="270" y="414" text-anchor="middle" font-size="12" font-weight="700" fill="#263238">E&#176;cell = E&#176;cathode &#8722; E&#176;anode = +0.34 &#8722; (&#8722;0.76) = +1.10 V</text>
+</svg>

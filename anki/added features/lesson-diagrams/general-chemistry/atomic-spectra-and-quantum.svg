@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Atomic spectra: quantized energy levels and line emission</title>
+  <desc id="d">Left: quantized hydrogen energy levels n=1 through n=5 that converge at higher n. Electrons dropping to a lower level emit a photon; drops to n=2 fall in the visible range while a drop to n=1 is ultraviolet. Right: the emitted photons appear as discrete bright lines rather than a continuous rainbow.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="32" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Atomic spectra &#8212; quantized levels emit discrete lines</text>
+
+  <g stroke="#37474f" stroke-width="2">
+    <line x1="60" y1="360" x2="250" y2="360"/>
+    <line x1="60" y1="250" x2="250" y2="250"/>
+    <line x1="60" y1="190" x2="250" y2="190"/>
+    <line x1="60" y1="158" x2="250" y2="158"/>
+    <line x1="60" y1="140" x2="250" y2="140"/>
+  </g>
+  <g font-size="12" fill="#37474f">
+    <text x="256" y="364">n=1</text>
+    <text x="256" y="254">n=2</text>
+    <text x="256" y="194">n=3</text>
+    <text x="256" y="162">n=4</text>
+    <text x="256" y="144">n=5</text>
+  </g>
+
+  <g stroke="#6a1b9a" stroke-width="2.5">
+    <line x1="100" y1="253" x2="100" y2="352"/>
+  </g>
+  <polygon points="95,350 105,350 100,360" fill="#6a1b9a"/>
+  <text x="86" y="300" font-size="10" fill="#6a1b9a">UV</text>
+
+  <g stroke="#c62828" stroke-width="2.5">
+    <line x1="150" y1="193" x2="150" y2="242"/>
+  </g>
+  <polygon points="145,240 155,240 150,250" fill="#c62828"/>
+  <text x="156" y="222" font-size="10" fill="#c62828">red</text>
+
+  <g stroke="#1565c0" stroke-width="2.5">
+    <line x1="200" y1="161" x2="200" y2="242"/>
+  </g>
+  <polygon points="195,240 205,240 200,250" fill="#1565c0"/>
+  <text x="206" y="205" font-size="10" fill="#1565c0">blue</text>
+
+  <text x="150" y="392" text-anchor="middle" font-size="11" fill="#607d8b">drops to n=2 = visible</text>
+
+  <rect x="300" y="150" width="216" height="60" rx="4" fill="#212121"/>
+  <line x1="332" y1="150" x2="332" y2="210" stroke="#6a1b9a" stroke-width="3"/>
+  <line x1="360" y1="150" x2="360" y2="210" stroke="#1565c0" stroke-width="3"/>
+  <line x1="472" y1="150" x2="472" y2="210" stroke="#c62828" stroke-width="3"/>
+  <text x="408" y="232" text-anchor="middle" font-size="12" fill="#37474f">discrete emission lines</text>
+  <text x="408" y="252" text-anchor="middle" font-size="11" fill="#607d8b">(a fingerprint, not a rainbow)</text>
+
+  <text x="270" y="410" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">E = hf = hc / &#955;</text>
+  <text x="270" y="428" text-anchor="middle" font-size="11" fill="#607d8b">only photons matching a gap between levels are absorbed or emitted</text>
+</svg>

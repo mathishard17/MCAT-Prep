@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Alcohol classes and oxidation</title>
+  <desc id="d">Primary, secondary, and tertiary alcohols classified by the number of carbons on the carbinol carbon, which equals the number of alpha C-H bonds. Primary (2 alpha H) oxidizes to an aldehyde then carboxylic acid; secondary (1 alpha H) oxidizes to a ketone and stops; tertiary (0 alpha H) resists oxidation. The hydroxyl group hydrogen bonds, is weakly acidic, and is a poor leaving group that must be activated.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Alcohols: classes and oxidation</text>
+
+  <rect x="22" y="58" width="156" height="252" rx="10" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+  <rect x="192" y="58" width="156" height="252" rx="10" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+  <rect x="362" y="58" width="156" height="252" rx="10" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+
+  <g stroke="#78909c" stroke-width="2.5">
+    <line x1="100" y1="129" x2="100" y2="114"/>
+    <line x1="89" y1="150" x2="70" y2="166"/>
+  </g>
+  <circle cx="100" cy="142" r="13" fill="#37474f"/><text x="100" y="147" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">C</text>
+  <text x="100" y="106" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">OH</text>
+  <text x="62" y="170" text-anchor="middle" font-size="12" fill="#455a64">R</text>
+
+  <g stroke="#78909c" stroke-width="2.5">
+    <line x1="270" y1="129" x2="270" y2="114"/>
+    <line x1="259" y1="150" x2="240" y2="166"/>
+    <line x1="281" y1="150" x2="300" y2="166"/>
+  </g>
+  <circle cx="270" cy="142" r="13" fill="#37474f"/><text x="270" y="147" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">C</text>
+  <text x="270" y="106" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">OH</text>
+  <text x="232" y="170" text-anchor="middle" font-size="12" fill="#455a64">R</text>
+  <text x="308" y="170" text-anchor="middle" font-size="12" fill="#455a64">R</text>
+
+  <g stroke="#78909c" stroke-width="2.5">
+    <line x1="430" y1="129" x2="430" y2="114"/>
+    <line x1="419" y1="150" x2="400" y2="166"/>
+    <line x1="441" y1="150" x2="460" y2="166"/>
+    <line x1="430" y1="155" x2="430" y2="178"/>
+  </g>
+  <circle cx="430" cy="142" r="13" fill="#37474f"/><text x="430" y="147" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">C</text>
+  <text x="430" y="106" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">OH</text>
+  <text x="392" y="170" text-anchor="middle" font-size="12" fill="#455a64">R</text>
+  <text x="468" y="170" text-anchor="middle" font-size="12" fill="#455a64">R</text>
+  <text x="430" y="192" text-anchor="middle" font-size="12" fill="#455a64">R</text>
+
+  <text x="100" y="220" text-anchor="middle" font-size="22" font-weight="700" fill="#1565c0">1&#176;</text>
+  <text x="270" y="220" text-anchor="middle" font-size="22" font-weight="700" fill="#2e7d32">2&#176;</text>
+  <text x="430" y="220" text-anchor="middle" font-size="22" font-weight="700" fill="#6a1b9a">3&#176;</text>
+  <text x="100" y="240" text-anchor="middle" font-size="12" fill="#37474f">primary</text>
+  <text x="270" y="240" text-anchor="middle" font-size="12" fill="#37474f">secondary</text>
+  <text x="430" y="240" text-anchor="middle" font-size="12" fill="#37474f">tertiary</text>
+  <text x="100" y="258" text-anchor="middle" font-size="11" fill="#607d8b">2 alpha C&#8722;H</text>
+  <text x="270" y="258" text-anchor="middle" font-size="11" fill="#607d8b">1 alpha C&#8722;H</text>
+  <text x="430" y="258" text-anchor="middle" font-size="11" fill="#607d8b">0 alpha C&#8722;H</text>
+  <text x="100" y="282" text-anchor="middle" font-size="10.5" fill="#546e7a">oxidize to aldehyde</text>
+  <text x="100" y="296" text-anchor="middle" font-size="10.5" fill="#546e7a">then carboxylic acid</text>
+  <text x="270" y="282" text-anchor="middle" font-size="10.5" fill="#546e7a">oxidize to ketone</text>
+  <text x="270" y="296" text-anchor="middle" font-size="10.5" fill="#546e7a">(stops there)</text>
+  <text x="430" y="282" text-anchor="middle" font-size="10.5" fill="#546e7a">not oxidized</text>
+  <text x="430" y="296" text-anchor="middle" font-size="10.5" fill="#546e7a">(no alpha C&#8722;H)</text>
+
+  <text x="270" y="342" text-anchor="middle" font-size="13" font-weight="700" fill="#37474f">The hydroxyl (&#8722;OH) group</text>
+  <text x="270" y="364" text-anchor="middle" font-size="11.5" fill="#546e7a">hydrogen bonds &#8594; higher bp and water solubility; weakly acidic (pKa &#8776; 16)</text>
+  <text x="270" y="386" text-anchor="middle" font-size="11.5" fill="#546e7a">poor leaving group &#8594; activate it: protonate, form a tosylate, or use PBr3 / SOCl2</text>
+</svg>

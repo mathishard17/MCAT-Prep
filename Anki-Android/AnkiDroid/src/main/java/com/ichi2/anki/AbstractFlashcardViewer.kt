@@ -2491,6 +2491,36 @@ abstract class AbstractFlashcardViewer :
                 return true
             }
 
+            // MCAT clickable multiple-choice quiz (injected into the card WebView). A tapped choice
+            // reveals the answer; a tapped rating grades the card. Mirrors the desktop reviewer's
+            // `mcatChoice:` / `mcatGrade:` link handlers.
+            // Schemes are lowercase: the WebView lowercases URL schemes, so camelCase
+            // never matches here and falls through to the external-intent path below.
+            if (url.startsWith("mcatchoice:")) {
+                url.substringAfter(":").toIntOrNull()?.let { onMcatChoice(it) }
+                return true
+            }
+            if (url.startsWith("mcatgrade:")) {
+                url.substringAfter(":").toIntOrNull()?.let { onMcatGrade(it) }
+                return true
+            }
+            if (url.startsWith("mcatchatopen")) {
+                onMcatChatOpen()
+                return true
+            }
+            if (url.startsWith("mcatchatsend:")) {
+                onMcatChatSend(decodeUrl(url.substringAfter(":")))
+                return true
+            }
+            if (url.startsWith("mcatreword:")) {
+                onMcatReword()
+                return true
+            }
+            if (url.startsWith("mcatlesson:")) {
+                onMcatLesson()
+                return true
+            }
+
             when (url.toSignal()) {
                 Signal.SIGNAL_UNHANDLED -> {}
                 Signal.SIGNAL_NOOP -> return true
@@ -2661,6 +2691,60 @@ abstract class AbstractFlashcardViewer :
 
     protected open fun onStateMutationError() {
         Timber.w("state mutation error, see console log")
+    }
+
+    /**
+     * Called when the learner taps an answer choice in the injected MCAT multiple-choice quiz.
+     * [Reviewer] overrides this; the base implementation is a no-op.
+     *
+     * @param index the index of the tapped choice
+     */
+    protected open fun onMcatChoice(index: Int) {
+        // handled in Reviewer
+    }
+
+    /**
+     * Called when the learner taps a rating button in the injected MCAT multiple-choice quiz.
+     * [Reviewer] overrides this; the base implementation is a no-op.
+     *
+     * @param ease the selected ease (1 = Again, 2 = Hard, 3 = Good, 4 = Easy)
+     */
+    protected open fun onMcatGrade(ease: Int) {
+        // handled in Reviewer
+    }
+
+    /**
+     * Called when the learner taps "Ask AI about this" in the MCAT quiz. [Reviewer] overrides this;
+     * the base implementation is a no-op.
+     */
+    protected open fun onMcatChatOpen() {
+        // handled in Reviewer
+    }
+
+    /**
+     * Called when the learner sends a message in the MCAT "Ask AI" chat. [Reviewer] overrides this;
+     * the base implementation is a no-op.
+     *
+     * @param text the (decoded) message text
+     */
+    protected open fun onMcatChatSend(text: String) {
+        // handled in Reviewer
+    }
+
+    /**
+     * Called when the learner taps "Reword with AI" on an MCAT question. [Reviewer] overrides this to
+     * reword the current stem on demand; the base implementation is a no-op.
+     */
+    protected open fun onMcatReword() {
+        // handled in Reviewer
+    }
+
+    /**
+     * Called when the learner taps "Lesson" in the MCAT quiz feedback. [Reviewer] overrides this to
+     * open the current concept's lesson; the base implementation is a no-op.
+     */
+    protected open fun onMcatLesson() {
+        // handled in Reviewer
     }
 
     internal fun displayCouldNotFindMediaSnackbar(filename: String?) {

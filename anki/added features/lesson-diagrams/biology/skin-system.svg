@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Skin layers</title>
+  <desc id="d">Cross-section of skin. The thin epidermis on top is the protective barrier. The thicker dermis below holds a hair follicle, a sweat gland with a duct to the surface, a blood-vessel loop, and a sensory nerve ending. The hypodermis beneath is fatty subcutaneous tissue. Sweating and dermal blood-vessel dilation release heat.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Skin &#8212; layers and thermoregulation</text>
+
+  <rect x="40" y="68" width="460" height="54" fill="#ffe0b2" stroke="#fb8c00" stroke-width="2"/>
+  <rect x="40" y="122" width="460" height="158" fill="#ffccbc" stroke="#ff7043" stroke-width="2"/>
+  <rect x="40" y="280" width="460" height="88" fill="#fff3e0" stroke="#ffb74d" stroke-width="2"/>
+  <text x="50" y="100" font-size="12" font-weight="700" fill="#e65100">Epidermis</text>
+  <text x="50" y="142" font-size="12" font-weight="700" fill="#d84315">Dermis</text>
+  <text x="50" y="326" font-size="12" font-weight="700" fill="#ef6c00">Hypodermis (fat)</text>
+
+  <line x1="150" y1="52" x2="150" y2="68" stroke="#6d4c41" stroke-width="3"/>
+  <g stroke="#8d6e63" stroke-width="2" fill="none">
+    <path d="M143 68 L158 258"/><path d="M157 68 L172 258"/>
+  </g>
+  <ellipse cx="165" cy="260" rx="12" ry="9" fill="#ffcc80" stroke="#ff7043" stroke-width="1.5"/>
+  <line x1="172" y1="150" x2="196" y2="150" stroke="#90a4ae" stroke-width="1"/>
+  <text x="200" y="154" font-size="10" fill="#5d4037">Hair follicle</text>
+
+  <path d="M300 68 Q296 150 306 208" fill="none" stroke="#29b6f6" stroke-width="2"/>
+  <circle cx="312" cy="230" r="16" fill="none" stroke="#29b6f6" stroke-width="2"/>
+  <path d="M302 230 Q312 220 322 230 Q312 240 302 230" fill="none" stroke="#29b6f6" stroke-width="1.5"/>
+  <text x="300" y="62" text-anchor="middle" font-size="8" fill="#0277bd">Sweat pore</text>
+  <line x1="328" y1="230" x2="336" y2="230" stroke="#90a4ae" stroke-width="1"/>
+  <text x="340" y="234" font-size="10" fill="#0277bd">Sweat gland</text>
+
+  <path d="M406 128 L406 240 Q406 262 420 250 L420 130" fill="none" stroke="#c62828" stroke-width="2"/>
+  <line x1="422" y1="196" x2="432" y2="196" stroke="#90a4ae" stroke-width="1"/>
+  <text x="436" y="200" font-size="10" fill="#b71c1c">Blood vessel</text>
+
+  <ellipse cx="238" cy="250" rx="11" ry="8" fill="#ab47bc" stroke="#6a1b9a" stroke-width="1.5"/>
+  <line x1="248" y1="258" x2="258" y2="266" stroke="#90a4ae" stroke-width="1"/>
+  <text x="260" y="270" font-size="10" fill="#6a1b9a">Nerve ending</text>
+
+  <text x="270" y="394" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Epidermis = barrier; dermis holds vessels, glands, and nerves.</text>
+  <text x="270" y="416" text-anchor="middle" font-size="12" fill="#607d8b">To cool down: sweat evaporates and dermal vessels dilate to shed heat.</text>
+</svg>

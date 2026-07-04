@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 400" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">UV-Vis absorption and the HOMO-LUMO gap</title>
+  <desc id="d">Two molecular-orbital energy diagrams. An isolated C double bond C (ethene) has a large HOMO-LUMO gap and absorbs in the far UV, so it is colorless. Extended conjugation shrinks the gap, so the molecule absorbs visible light and appears colored. More conjugation means a smaller gap and a longer wavelength absorbed. Beer-Lambert law relates absorbance to concentration.</desc>
+  <rect x="6" y="6" width="548" height="388" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="280" y="32" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">UV-Vis: conjugation and the HOMO-LUMO gap</text>
+
+  <rect x="40" y="56" width="200" height="232" rx="10" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+  <rect x="320" y="56" width="200" height="232" rx="10" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+
+  <text x="140" y="82" text-anchor="middle" font-size="12.5" font-weight="700" fill="#37474f">isolated C=C (ethene)</text>
+  <line x1="95" y1="130" x2="185" y2="130" stroke="#455a64" stroke-width="2.5"/>
+  <line x1="95" y1="240" x2="185" y2="240" stroke="#455a64" stroke-width="2.5"/>
+  <text x="90" y="126" text-anchor="end" font-size="10.5" fill="#607d8b">LUMO</text>
+  <text x="90" y="252" text-anchor="end" font-size="10.5" fill="#607d8b">HOMO</text>
+  <line x1="140" y1="238" x2="140" y2="134" stroke="#6a1b9a" stroke-width="2"/>
+  <polygon points="140,130 136,140 144,140" fill="#6a1b9a"/>
+  <text x="152" y="190" font-size="11" font-weight="700" fill="#6a1b9a">large gap</text>
+  <text x="140" y="266" text-anchor="middle" font-size="10.5" fill="#546e7a">absorbs far UV (~170 nm)</text>
+  <text x="140" y="281" text-anchor="middle" font-size="10.5" fill="#607d8b">colorless</text>
+
+  <text x="420" y="82" text-anchor="middle" font-size="12.5" font-weight="700" fill="#37474f">extended conjugation</text>
+  <line x1="375" y1="165" x2="465" y2="165" stroke="#455a64" stroke-width="2.5"/>
+  <line x1="375" y1="210" x2="465" y2="210" stroke="#455a64" stroke-width="2.5"/>
+  <text x="370" y="161" text-anchor="end" font-size="10.5" fill="#607d8b">LUMO</text>
+  <text x="370" y="222" text-anchor="end" font-size="10.5" fill="#607d8b">HOMO</text>
+  <line x1="420" y1="208" x2="420" y2="169" stroke="#2e7d32" stroke-width="2"/>
+  <polygon points="420,165 416,175 424,175" fill="#2e7d32"/>
+  <text x="432" y="192" font-size="11" font-weight="700" fill="#2e7d32">small gap</text>
+  <text x="420" y="266" text-anchor="middle" font-size="10.5" fill="#546e7a">absorbs visible light</text>
+  <rect x="392" y="274" width="12" height="12" rx="2" fill="#ef6c00"/><text x="430" y="284" text-anchor="middle" font-size="10.5" fill="#607d8b">colored</text>
+
+  <line x1="252" y1="176" x2="306" y2="176" stroke="#37474f" stroke-width="1.8"/>
+  <polygon points="310,176 302,172 302,180" fill="#37474f"/>
+  <text x="280" y="158" text-anchor="middle" font-size="10.5" fill="#37474f">more</text>
+  <text x="280" y="170" text-anchor="middle" font-size="10.5" fill="#37474f">conjugation</text>
+
+  <text x="280" y="316" text-anchor="middle" font-size="11.5" fill="#546e7a">More conjugation &#8594; smaller HOMO-LUMO gap &#8594; longer wavelength absorbed.</text>
+  <text x="280" y="340" text-anchor="middle" font-size="11.5" fill="#546e7a">Extended chromophores absorb visible light, so we see color (e.g. beta-carotene).</text>
+  <text x="280" y="366" text-anchor="middle" font-size="11.5" fill="#607d8b">Beer-Lambert law: A = &#949; b c (absorbance is proportional to concentration).</text>
+</svg>

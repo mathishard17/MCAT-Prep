@@ -211,6 +211,11 @@
         android:title="@string/concept_scheduler_status_do_not_translate"
         ankidroid:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_mcat_ai"
+        android:icon="@drawable/ic_star"
+        android:title="@string/mcat_ai_title"
+        ankidroid:showAsAction="never" />
+    <item
         android:id="@+id/action_toggle_auto_advance"
         android:icon="@drawable/ic_fast_forward"
         android:title="@string/toggle_auto_advance" />

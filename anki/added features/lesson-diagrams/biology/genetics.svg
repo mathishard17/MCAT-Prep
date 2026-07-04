@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Punnett square for Aa by Aa</title>
+  <desc id="d">A two by two Punnett square for a monohybrid cross between two heterozygotes. Parent gametes A and a label the columns and rows. The four offspring cells are AA, Aa, Aa, and aa, giving a genotype ratio of 1 AA to 2 Aa to 1 aa and a phenotype ratio of 3 dominant to 1 recessive.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Punnett square &#8212; monohybrid cross Aa &#215; Aa</text>
+
+  <text x="290" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#37474f">Parent 1 gametes</text>
+  <g font-size="20" font-weight="700" fill="#263238" text-anchor="middle">
+    <text x="235" y="126">A</text>
+    <text x="345" y="126">a</text>
+  </g>
+
+  <text x="126" y="252" text-anchor="middle" font-size="13" font-weight="700" fill="#37474f" transform="rotate(-90 126 252)">Parent 2 gametes</text>
+  <g font-size="20" font-weight="700" fill="#263238" text-anchor="middle">
+    <text x="163" y="199">A</text>
+    <text x="163" y="309">a</text>
+  </g>
+
+  <g stroke="#90a4ae" stroke-width="2">
+    <rect x="180" y="137" width="110" height="110" fill="#e8f5e9"/>
+    <rect x="290" y="137" width="110" height="110" fill="#e8f5e9"/>
+    <rect x="180" y="247" width="110" height="110" fill="#e8f5e9"/>
+    <rect x="290" y="247" width="110" height="110" fill="#fff3e0"/>
+  </g>
+
+  <g font-size="26" font-weight="700" text-anchor="middle">
+    <text x="235" y="201" fill="#2e7d32">AA</text>
+    <text x="345" y="201" fill="#2e7d32">Aa</text>
+    <text x="235" y="311" fill="#2e7d32">Aa</text>
+    <text x="345" y="311" fill="#ef6c00">aa</text>
+  </g>
+
+  <text x="270" y="390" text-anchor="middle" font-size="13" font-weight="600" fill="#37474f">Genotype 1 AA : 2 Aa : 1 aa</text>
+  <text x="270" y="414" text-anchor="middle" font-size="12" fill="#607d8b">Phenotype 3 dominant (green) : 1 recessive (orange)</text>
+</svg>

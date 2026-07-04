@@ -327,6 +327,7 @@ class Editor:
         self._concept_guessing: QDoubleSpinBox | None = None
         self._concept_panel_toggle: QPushButton | None = None
         self._concept_panel_box: QGroupBox | None = None
+        self._concept_ai_btn: QPushButton | None = None
         self._syncing_concept_metadata = False
         self._concept_section_manually_overridden = False
         self.on_concept_metadata_changed: Callable[[], None] | None = None
@@ -1027,6 +1028,13 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
         irt_layout.addWidget(self._concept_guessing, 1, 1)
         metadata_layout.addLayout(irt_layout)
         concept_layout.addLayout(metadata_layout, 2, 1)
+        self._concept_ai_btn = QPushButton("Suggest tags with AI", self.widget)
+        self._concept_ai_btn.setToolTip(
+            "Use your OpenAI key (Tools \u2192 MCAT AI) to suggest a KC, difficulty, "
+            "and IRT values from the card text. Review and adjust before adding."
+        )
+        qconnect(self._concept_ai_btn.clicked, self._on_concept_ai_suggest)
+        concept_layout.addWidget(self._concept_ai_btn, 3, 0, 1, 2)
         concept_box.setLayout(concept_layout)
 
         qconnect(self._concept_topic.itemChanged, self._on_concept_topic_changed)
@@ -1079,7 +1087,9 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
         self._syncing_concept_metadata = False
         self._on_concept_metadata_changed()
 
-    def _on_concept_topic_changed(self, _item: QListWidgetItem) -> None:
+    def _on_concept_topic_changed(
+        self, _item: QListWidgetItem | None = None
+    ) -> None:
         if not self._concept_section_manually_overridden:
             self._syncing_concept_metadata = True
             self._set_checked_concept_values(
@@ -1128,6 +1138,95 @@ require("anki/ui").loaded.then(() => require("anki/NoteEditor").instances[0].too
         gui_hooks.editor_did_update_tags(self.note)
         if not self.addMode:
             self._save_current_note()
+
+    def _on_concept_ai_suggest(self) -> None:
+        # Flush in-progress field edits into the note first, then suggest tags.
+        self.call_after_note_saved(self._concept_ai_suggest_impl, keepFocus=True)
+
+    def _concept_ai_suggest_impl(self) -> None:
+        from aqt.mcat_ai import (
+            OpenAIClient,
+            resolve_openai_key,
+            resolve_openai_model,
+        )
+
+        if not self.note:
+            return
+        key = resolve_openai_key(self.mw.pm)
+        if not key:
+            showInfo(
+                "Add your OpenAI API key first (Tools \u2192 MCAT AI). "
+                "AI tagging is optional \u2014 you can always tag manually.",
+                parent=self.widget,
+            )
+            return
+        card_text = self._concept_card_text()
+        if not card_text:
+            tooltip("Enter the card's text first.", parent=self.widget)
+            return
+        allowed = [value for _label, value in CONCEPT_TOPIC_OPTIONS if value]
+        client = OpenAIClient(
+            key, resolve_openai_model(self.mw.pm), self.mw.pm.network_timeout()
+        )
+        button = self._concept_ai_btn
+        if button is not None:
+            button.setEnabled(False)
+            button.setText("Suggesting\u2026")
+
+        def task() -> dict[str, Any]:
+            return client.suggest_card_tags(card_text, allowed)
+
+        def on_done(future: Any) -> None:
+            if button is not None:
+                button.setEnabled(True)
+                button.setText("Suggest tags with AI")
+            try:
+                suggestion = future.result()
+            except Exception as exc:
+                showWarning(f"AI tag suggestion failed: {exc}", parent=self.widget)
+                return
+            self._apply_ai_tag_suggestion(suggestion)
+
+        self.mw.taskman.run_in_background(task, on_done)
+
+    def _concept_card_text(self) -> str:
+        if not self.note:
+            return ""
+        parts: list[str] = []
+        for value in self.note.fields:
+            text = re.sub(r"<[^>]+>", " ", value or "")
+            text = html.unescape(text)
+            text = re.sub(r"\s+", " ", text).strip()
+            if text:
+                parts.append(text)
+        return "\n".join(parts)[:4000]
+
+    def _apply_ai_tag_suggestion(self, suggestion: dict[str, Any]) -> None:
+        self._syncing_concept_metadata = True
+        try:
+            self._set_checked_concept_values(
+                self._concept_topic, set(suggestion["kcs"])
+            )
+            self._set_checked_concept_values(
+                self._concept_difficulty, {str(suggestion["difficulty"])}
+            )
+            if self._concept_discrimination is not None:
+                self._concept_discrimination.setValue(
+                    float(suggestion["discrimination"])
+                )
+            if self._concept_guessing is not None:
+                self._concept_guessing.setValue(float(suggestion["guessing"]))
+            # Re-derive the MCAT section(s) from the newly suggested KC(s).
+            self._concept_section_manually_overridden = False
+        finally:
+            self._syncing_concept_metadata = False
+        self._on_concept_topic_changed()
+        summary = ", ".join(suggestion["kcs"])
+        tooltip(
+            f"AI suggested {summary} \u00b7 Difficulty {suggestion['difficulty']}. "
+            "Review and adjust before adding.",
+            parent=self.widget,
+        )
 
     def _apply_concept_metadata_tags(self, include_typed_concepts: bool = True) -> None:
         assert self.note is not None

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Cytoskeleton filament types</title>
+  <desc id="d">The three cytoskeletal filaments compared. Microfilaments are thin two-stranded actin helices about 7 nanometers wide that support cell shape, crawling, and cytokinesis. Intermediate filaments are rope-like braided strands about 10 nanometers wide that give mechanical strength. Microtubules are hollow tubes of tubulin about 25 nanometers wide that act as transport tracks and form the mitotic spindle and cilia and flagella.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Cytoskeleton &#8212; three filament types</text>
+
+  <text x="40" y="70" font-size="13" font-weight="700" fill="#00695c">1. Microfilaments (actin) &#183; ~7 nm</text>
+  <g fill="none" stroke-linecap="round">
+    <path d="M60 96 Q90 82 120 96 Q150 110 180 96 Q210 82 240 96 Q270 110 300 96 Q330 82 360 96 Q390 110 420 96 Q450 82 480 96" stroke="#26a69a" stroke-width="5"/>
+    <path d="M60 96 Q90 110 120 96 Q150 82 180 96 Q210 110 240 96 Q270 82 300 96 Q330 110 360 96 Q390 82 420 96 Q450 110 480 96" stroke="#4db6ac" stroke-width="5"/>
+  </g>
+  <text x="40" y="128" font-size="11" fill="#37474f">Thin two-stranded helix; drives cell shape, crawling, and cytokinesis.</text>
+
+  <text x="40" y="168" font-size="13" font-weight="700" fill="#6a1b9a">2. Intermediate filaments &#183; ~10 nm</text>
+  <g fill="none" stroke-linecap="round">
+    <path d="M60 192 Q95 180 130 192 Q165 204 200 192 Q235 180 270 192 Q305 204 340 192 Q375 180 410 192 Q445 204 480 192" stroke="#ab47bc" stroke-width="3"/>
+    <path d="M60 192 Q95 204 130 192 Q165 180 200 192 Q235 204 270 192 Q305 180 340 192 Q375 204 410 192 Q445 180 480 192" stroke="#ce93d8" stroke-width="3"/>
+    <path d="M60 190 Q95 182 130 190 Q165 198 200 190 Q235 182 270 190 Q305 198 340 190 Q375 182 410 190 Q445 198 480 190" stroke="#ba68c8" stroke-width="2"/>
+  </g>
+  <text x="40" y="226" font-size="11" fill="#37474f">Rope-like braided strands; provide mechanical strength.</text>
+
+  <text x="40" y="266" font-size="13" font-weight="700" fill="#1565c0">3. Microtubules (tubulin) &#183; ~25 nm</text>
+  <rect x="60" y="282" width="420" height="30" rx="8" fill="#e3f2fd" stroke="#1e88e5" stroke-width="2"/>
+  <g stroke="#90caf9" stroke-width="1">
+    <line x1="90" y1="282" x2="90" y2="312"/><line x1="120" y1="282" x2="120" y2="312"/><line x1="150" y1="282" x2="150" y2="312"/><line x1="180" y1="282" x2="180" y2="312"/><line x1="210" y1="282" x2="210" y2="312"/><line x1="240" y1="282" x2="240" y2="312"/><line x1="270" y1="282" x2="270" y2="312"/><line x1="300" y1="282" x2="300" y2="312"/><line x1="330" y1="282" x2="330" y2="312"/><line x1="360" y1="282" x2="360" y2="312"/><line x1="390" y1="282" x2="390" y2="312"/><line x1="420" y1="282" x2="420" y2="312"/><line x1="450" y1="282" x2="450" y2="312"/>
+  </g>
+  <text x="40" y="346" font-size="11" fill="#37474f">Hollow tubes; transport tracks, the mitotic spindle, and cilia/flagella (9+2).</text>
+
+  <text x="270" y="420" text-anchor="middle" font-size="12" font-weight="600" fill="#607d8b">Motor proteins (kinesin, dynein, myosin) walk along filaments using ATP.</text>
+</svg>

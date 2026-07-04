@@ -1472,6 +1472,12 @@ class Collection(
     fun getConceptSchedulerStatusRaw(input: ByteArray): ByteArray = backend.getConceptSchedulerStatusRaw(input = input)
 
     @NotInPyLib
+    fun setConceptSelectedTopicRaw(input: ByteArray): ByteArray = backend.setConceptSelectedTopicRaw(input = input)
+
+    @NotInPyLib
+    fun getConceptLessonRaw(input: ByteArray): ByteArray = backend.getConceptLessonRaw(input = input)
+
+    @NotInPyLib
     fun setSchedulingStatesRaw(input: ByteArray): ByteArray = backend.setSchedulingStatesRaw(input = input)
 
     @NotInPyLib

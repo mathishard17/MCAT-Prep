@@ -267,6 +267,25 @@ open class PrefsRepository(
 
     //endregion
 
+    //region MCAT AI (bring-your-own OpenAI key)
+
+    // These are stored in the app's local SharedPreferences only: never synced, logged, or committed.
+    // They power the reviewer's clickable multiple-choice quiz (shuffle) and AI question rewording.
+
+    /** The user's own OpenAI API key, or null when unset. Stored locally only. */
+    var mcatOpenAiKey by stringPref(R.string.mcat_openai_key_key)
+
+    /** OpenAI model id. `null`/blank falls back to [com.ichi2.anki.mcat.OpenAIClient.DEFAULT_MODEL]. */
+    var mcatOpenAiModel by stringPref(R.string.mcat_openai_model_key)
+
+    /** Whether to reword MCAT question stems with AI while studying (requires a key). On by default. */
+    val mcatRewordEnabled by booleanPref(R.string.mcat_reword_enabled_key, defaultValue = true)
+
+    /** Whether to shuffle MCAT answer choices client-side (independent of the AI key). */
+    val mcatShuffleChoices by booleanPref(R.string.mcat_shuffle_choices_key, defaultValue = true)
+
+    //endregion
+
     /**
      * Whether the sync process has requested notification permissions before.
      * We only want to request notification permissions for the sync feature if the dialog has never been shown

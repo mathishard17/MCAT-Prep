@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Double-slit interference of light</title>
+  <desc id="d">Plane light waves reach a barrier with two narrow slits. Each slit acts as a source of spreading circular waves. Where the waves arrive in phase they add to make bright fringes, and where they arrive out of phase they cancel to make dark fringes, producing an alternating pattern on the screen.</desc>
+  <defs>
+    <marker id="ak" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#455a64"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Double-slit interference</text>
+
+  <g stroke="#90a4ae" stroke-width="2" fill="none">
+    <line x1="70" y1="110" x2="70" y2="360"/>
+    <line x1="90" y1="110" x2="90" y2="360"/>
+    <line x1="110" y1="110" x2="110" y2="360"/>
+    <line x1="130" y1="110" x2="130" y2="360"/>
+  </g>
+  <text x="100" y="378" text-anchor="middle" font-size="10" fill="#607d8b">incoming light</text>
+
+  <rect x="150" y="90" width="8" height="118" fill="#455a64"/>
+  <rect x="150" y="222" width="8" height="26" fill="#455a64"/>
+  <rect x="150" y="262" width="8" height="118" fill="#455a64"/>
+  <text x="176" y="216" font-size="10" fill="#607d8b">slit 1</text>
+  <text x="176" y="272" font-size="10" fill="#607d8b">slit 2</text>
+
+  <g stroke="#b0bec5" stroke-width="1.4" fill="none">
+    <path d="M158,160 A55,55 0 0,1 158,270"/>
+    <path d="M158,110 A105,105 0 0,1 158,320"/>
+    <path d="M158,200 A55,55 0 0,1 158,310"/>
+    <path d="M158,155 A100,100 0 0,1 158,355"/>
+  </g>
+
+  <rect x="452" y="90" width="8" height="290" fill="#546e7a"/>
+  <text x="456" y="398" text-anchor="middle" font-size="10" fill="#607d8b">screen</text>
+
+  <g fill="#1565c0">
+    <ellipse cx="448" cy="235" rx="6" ry="12"/>
+    <ellipse cx="448" cy="188" rx="5" ry="10"/>
+    <ellipse cx="448" cy="282" rx="5" ry="10"/>
+    <ellipse cx="448" cy="146" rx="4" ry="8"/>
+    <ellipse cx="448" cy="324" rx="4" ry="8"/>
+  </g>
+  <text x="486" y="238" text-anchor="middle" font-size="10" fill="#1565c0">bright</text>
+  <text x="486" y="212" text-anchor="middle" font-size="10" fill="#607d8b">dark</text>
+
+  <text x="270" y="402" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Overlapping waves interfere: in phase = bright, out of phase = dark</text>
+  <text x="270" y="422" text-anchor="middle" font-size="12" fill="#607d8b">bright fringes where path difference d sin&#952; = m&#955;</text>
+</svg>

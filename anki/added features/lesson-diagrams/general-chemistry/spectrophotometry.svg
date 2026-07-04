@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Spectrophotometry: the Beer-Lambert calibration curve</title>
+  <desc id="d">Absorbance versus concentration. In the dilute range the plot is a straight line through the origin, following A equals molar absorptivity times path length times concentration. At high concentration the line bends and flattens, so readings must stay in the linear range. Dashed guides read an unknown concentration from its measured absorbance.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="32" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Spectrophotometry &#8212; Beer-Lambert law</text>
+
+  <line x1="80" y1="70" x2="80" y2="350" stroke="#37474f" stroke-width="2"/>
+  <line x1="80" y1="350" x2="500" y2="350" stroke="#37474f" stroke-width="2"/>
+  <text x="46" y="220" font-size="12" fill="#37474f" transform="rotate(-90 46 220)">Absorbance (A)</text>
+  <text x="290" y="384" text-anchor="middle" font-size="12" fill="#37474f">Concentration (c)</text>
+
+  <line x1="80" y1="350" x2="300" y2="150" stroke="#1565c0" stroke-width="2.5"/>
+  <path d="M300,150 Q380,110 470,102" fill="none" stroke="#1565c0" stroke-width="2.5" stroke-dasharray="6 4"/>
+
+  <line x1="80" y1="255" x2="184" y2="255" stroke="#c62828" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="184" y1="255" x2="184" y2="350" stroke="#c62828" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <circle cx="184" cy="255" r="4" fill="#c62828"/>
+  <text x="92" y="248" font-size="10" fill="#c62828">measured A</text>
+  <text x="188" y="368" font-size="10" fill="#c62828">unknown c</text>
+
+  <text x="200" y="230" font-size="11" fill="#1565c0">linear range</text>
+  <text x="360" y="140" font-size="11" fill="#607d8b">deviation at high c</text>
+
+  <text x="270" y="406" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">A = &#949; &#183; b &#183; c   (A = &#8722;log T)</text>
+</svg>

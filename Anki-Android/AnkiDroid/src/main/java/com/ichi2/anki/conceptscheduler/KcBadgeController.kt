@@ -23,17 +23,31 @@ import android.widget.TextView
  * (Concept Scheduler demo). Mirrors the reviewer's `CardMarker`/`PreviousAnswerIndicator` pattern: a
  * thin controller over a single view, updated when a new card is displayed.
  *
- * The label is derived purely from the note's tags, so it needs no backend call.
+ * The label is derived purely from the note's tags, so it needs no backend call. Tapping the badge
+ * invokes [onClick] with the card's full KC id (e.g. `Bio::DNA`) so the host can open its lesson
+ * (parity with the desktop's clickable KC badge).
  */
 class KcBadgeController(
     private val badge: TextView,
+    onClick: (String) -> Unit = {},
 ) {
+    /** Full KC id of the currently shown card (e.g. `Bio::DNA`), or null when the badge is hidden. */
+    private var currentKc: String? = null
+
+    init {
+        badge.setOnClickListener {
+            currentKc?.let(onClick)
+        }
+    }
+
     /** Updates the badge from a note's [tags]; hides it when the note has no `KC::` tag. */
     fun displayForTags(tags: List<String>) {
         val label = kcBadgeLabel(tags)
         if (label == null) {
+            currentKc = null
             badge.visibility = View.GONE
         } else {
+            currentKc = kcIdFromTags(tags)
             badge.text = label
             badge.visibility = View.VISIBLE
         }
@@ -42,6 +56,17 @@ class KcBadgeController(
     fun hide() {
         badge.visibility = View.GONE
     }
+}
+
+/**
+ * Extracts the full KC id (without the `KC::` prefix) from a note's tags, e.g. `["KC::Bio::DNA"]` ->
+ * `"Bio::DNA"`. This is the id used by the concept graph and lesson lookup. Returns null when there is
+ * no `KC::` tag.
+ */
+fun kcIdFromTags(tags: List<String>): String? {
+    val normalized = tags.map { normalizeConceptTag(it) }
+    val kc = normalized.firstOrNull { it.startsWith("KC::") } ?: return null
+    return kc.removePrefix("KC::")
 }
 
 /**

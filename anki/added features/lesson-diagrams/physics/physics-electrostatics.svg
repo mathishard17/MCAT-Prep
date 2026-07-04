@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Electric field lines of a dipole</title>
+  <desc id="d">A positive charge and a negative charge form a dipole. Electric field lines start on the positive charge and end on the negative charge, curving symmetrically above and below the axis. The lines never cross, and the arrows show the field points from positive toward negative.</desc>
+  <defs>
+    <marker id="af" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#455a64"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Electric field lines of a dipole</text>
+
+  <g fill="none" stroke="#78909c" stroke-width="2">
+    <line x1="191" y1="235" x2="345" y2="235" marker-end="url(#af)"/>
+    <path d="M186,222 C230,175 310,175 352,222" marker-end="url(#af)"/>
+    <path d="M182,210 C220,132 320,132 356,210" marker-end="url(#af)"/>
+    <path d="M186,248 C230,295 310,295 352,248" marker-end="url(#af)"/>
+    <path d="M182,260 C220,338 320,338 356,260" marker-end="url(#af)"/>
+  </g>
+
+  <circle cx="175" cy="235" r="17" fill="#c62828"/>
+  <text x="175" y="241" text-anchor="middle" font-size="20" font-weight="700" fill="#ffffff">+</text>
+  <circle cx="365" cy="235" r="17" fill="#1565c0"/>
+  <text x="365" y="242" text-anchor="middle" font-size="22" font-weight="700" fill="#ffffff">&#8722;</text>
+  <text x="150" y="212" text-anchor="middle" font-size="13" font-weight="700" fill="#c62828">+q</text>
+  <text x="392" y="212" text-anchor="middle" font-size="13" font-weight="700" fill="#1565c0">&#8722;q</text>
+
+  <text x="270" y="402" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Field lines run from + to &#8722; and never cross</text>
+  <text x="270" y="422" text-anchor="middle" font-size="12" fill="#607d8b">E is a vector, away from + and toward &#8722; &#183; Coulomb F = k q1 q2 / r&#178;</text>
+</svg>

@@ -232,6 +232,85 @@ all prerequisite KCs have P(mastery) >= 0.70
 
 Only outer-fringe KCs are considered for new-topic recommendations in the MVP.
 
+## Bayesian Network Model
+
+The scheduler is a **Bayesian network laid over the MCAT prerequisite graph**: the
+Knowledge Component DAG is the network structure, and every KC node carries a
+latent *mastered / not-mastered* belief `P(mastery)` that is updated with Bayes'
+rule after each answer (Bayesian Knowledge Tracing over the graph). Prerequisite
+edges gate progression — a node only becomes startable once its parents' beliefs
+cross the unlock threshold. It is deliberately **per-node belief + prerequisite
+gating, not a full joint network with conditional-probability tables across
+nodes**: that keeps every answer an O(1) update and keeps the model explainable.
+
+All of this lives in `rslib/src/scheduler/concept.rs`.
+
+### Nodes and prior
+
+Each `ConceptMasteryState` holds `mastery` (`P(mastery)`) plus `answered` /
+`positive` / `negative` counts. The prior is `initial_mastery = 0.20` — kept below
+both the `0.70` prerequisite-unlock gate and the `0.85` mastered bar so an unseen
+KC never vacuously satisfies its children (a config-schema migration rewrites the
+older `0.25` prior in place rather than leaving stale state).
+
+### Update rule
+
+`bayes_update()` applies, per answer:
+
+```text
+P(M | E) = P(E | M) P(M) / [ P(E | M) P(M) + P(E | ¬M) P(¬M) ]
+```
+
+with Good/Easy → positive evidence and Again/Hard → negative.
+
+### Conditional likelihoods (specific implementation)
+
+Static defaults are `P(+|M) = 0.90`, `P(−|M) = 0.10`, `P(−|¬M) = 0.80`. The one
+non-constant term is `P(+|¬M)` — the chance an *unmastered* KC is answered
+correctly. Instead of a flat guess rate it uses a **partial-mastery lift**
+(`effective_likelihoods`):
+
+```text
+P(+ | ¬M) = clamp(GUESS_FLOOR + PARTIAL_MASTERY_LIFT * P(mastery), 0, P(+|M))
+          = clamp(0.25 + 0.5 * P(mastery), 0, 0.90)
+```
+
+So a partly-learned KC is expected to beat pure four-choice guessing, the two
+states grow less distinguishable as mastery climbs, and correct answers become
+*weaker* evidence near the top — which stops the belief from sprinting to
+certainty off a couple of lucky answers.
+
+### Data-driven likelihoods (specific implementation)
+
+Those defaults are only a cold start. Every answer is tallied into
+`LikelihoodObservations`, split by whether the model *already believed the KC
+mastered* (`P(mastery) ≥ 0.85`) at answer time. Once a group collects more than
+`LIKELIHOOD_MIN_OBSERVATIONS = 20` observations, that group's conditional
+likelihood switches from the constant to the learner's own **Laplace-smoothed
+empirical rate**:
+
+```text
+P(E | group) = (count + 1) / (total + 2)
+```
+
+The mastered and unmastered groups cross over to empirical rates independently;
+the prior `P(mastery)` itself stays fixed. Net effect: the network starts from
+sensible priors and then calibrates its evidence strength to the actual learner.
+
+### Network gating
+
+The belief + graph drive progression (`is_inner_fringe`, `is_outer_fringe`,
+`readiness_score`):
+
+```text
+inner fringe (mastered foundation): P(mastery) ≥ 0.85 and answered ≥ 3
+outer fringe (startable frontier):  not inner, and every prerequisite ≥ 0.70
+new-topic priority:                 min(parent P(mastery)) * (1 - P(target))
+```
+
+State is persisted per deck as versioned JSON and read by the UI through
+`GetConceptSchedulerStatus`; the frontend never recomputes beliefs.
+
 ## Bayesian Mastery Update
 
 Ratings become binary evidence:
@@ -259,23 +338,36 @@ P(positive evidence | unmastered) = 0.20
 P(negative evidence | mastered)   = 0.10
 P(negative evidence | unmastered) = 0.80
 
-Initial P(mastery) = 0.25
+Initial P(mastery) = 0.20   # low base rate; must stay below the 0.70 unlock gate
 ```
+
+These four conditional likelihoods are **defaults that become data-driven**: the
+scheduler tallies correct/wrong outcomes split by whether the KC was mastered at
+answer time, and once a group passes 20 observations that group's conditional
+probability switches to the learner's own Laplace-smoothed empirical rate
+`(count+1)/(total+2)` instead of the constant (the mastered and unmastered groups
+cross over independently). The prior `P(mastery)` itself stays fixed.
+
+The prior is deliberately low ("assume an unseen KC is not yet mastered") and kept
+well under the `0.70` prerequisite-unlock threshold and the `0.85` mastered bar — if
+it were `>= 0.70`, every prerequisite would count as satisfied on day one and the
+prerequisite DAG would collapse to "everything unlocked". It also matches
+`P(E+ | not M) = 0.20`, so an unseen KC behaves like an unmastered one.
 
 Example for one positive answer from an unseen KC:
 
 ```text
-P(M) = 0.25
+P(M) = 0.20
 P(E+ | M) = 0.90
 P(E+ | not M) = 0.20
 
 P(M | E+) =
-  0.90 * 0.25
+  0.90 * 0.20
   ---------------------------
-  0.90 * 0.25 + 0.20 * 0.75
+  0.90 * 0.20 + 0.20 * 0.80
 
-= 0.225 / 0.375
-= 0.60
+= 0.18 / 0.34
+= 0.53
 ```
 
 ## New-Topic Readiness Score

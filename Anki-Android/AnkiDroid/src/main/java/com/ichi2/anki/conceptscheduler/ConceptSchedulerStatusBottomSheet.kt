@@ -46,6 +46,7 @@ import com.ichi2.compose.theme.AnkiDroidTheme
  */
 class ConceptSchedulerStatusBottomSheet : BottomSheetDialogFragment() {
     private var status by mutableStateOf<ConceptSchedulerStatusResponse?>(null)
+    private val deckId: DeckId by lazy { requireArguments().requireLong(ARG_DECK_ID) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,7 +59,12 @@ class ConceptSchedulerStatusBottomSheet : BottomSheetDialogFragment() {
                 AnkiDroidTheme {
                     when (val s = status) {
                         null -> LoadingBox()
-                        else -> ConceptSchedulerStatusScreen(s)
+                        else ->
+                            ConceptSchedulerStatusScreen(
+                                s,
+                                onSelectTopic = { selectTopic(it) },
+                                onOpenLesson = { openLesson(it) },
+                            )
                     }
                 }
             }
@@ -69,20 +75,44 @@ class ConceptSchedulerStatusBottomSheet : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        val deckId = requireArguments().requireLong(ARG_DECK_ID)
         launchCatchingTask {
             status = withCol { backend.getConceptSchedulerStatus(deckId) }
         }
+    }
+
+    /** Selects [kc] as the next topic (reorders the study queue), then refreshes the read model. */
+    private fun selectTopic(kc: String) {
+        // Bind to a distinct name so the request DSL's own `deckId` doesn't shadow the fragment's.
+        val selectedDeckId = deckId
+        launchCatchingTask {
+            withCol {
+                backend.setConceptSelectedTopic(
+                    anki.scheduler.setConceptSelectedTopicRequest {
+                        this.deckId = selectedDeckId
+                        topic = kc
+                    },
+                )
+            }
+            status = withCol { backend.getConceptSchedulerStatus(selectedDeckId) }
+        }
+    }
+
+    private fun openLesson(kc: String) {
+        ConceptLessonBottomSheet
+            .newInstance(kc)
+            .show(parentFragmentManager, ConceptLessonBottomSheet.TAG)
     }
 
     companion object {
         const val TAG = "ConceptSchedulerStatusBottomSheet"
         private const val ARG_DECK_ID = "conceptSchedulerDeckId"
 
-        fun newInstance(deckId: DeckId): ConceptSchedulerStatusBottomSheet =
-            ConceptSchedulerStatusBottomSheet().apply {
-                arguments = Bundle().apply { putLong(ARG_DECK_ID, deckId) }
-            }
+        fun newInstance(deckId: DeckId): ConceptSchedulerStatusBottomSheet {
+            // Build args before the fragment's `apply` to keep `deckId` unambiguously the parameter and
+            // clear of the fragment's same-named lazy property (which reads not-yet-set arguments).
+            val args = Bundle().apply { putLong(ARG_DECK_ID, deckId) }
+            return ConceptSchedulerStatusBottomSheet().apply { arguments = args }
+        }
     }
 }
 

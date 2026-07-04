@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Effect of inhibitors on Michaelis-Menten curves</title>
+  <desc id="d">Rate versus substrate concentration. A competitive inhibitor raises the apparent Km while Vmax is unchanged, because excess substrate overcomes it. A noncompetitive inhibitor lowers Vmax while Km is unchanged, because added substrate cannot restore the rate.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="36" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Enzyme inhibition &#8212; curve shifts</text>
+
+  <line x1="90" y1="80" x2="90" y2="360" stroke="#607d8b" stroke-width="2"/>
+  <line x1="90" y1="360" x2="480" y2="360" stroke="#607d8b" stroke-width="2"/>
+  <text transform="rotate(-90 48 220)" x="48" y="220" text-anchor="middle" font-size="12" fill="#37474f">v (rate)</text>
+  <text x="285" y="392" text-anchor="middle" font-size="12" fill="#37474f">[S]</text>
+
+  <line x1="90" y1="112" x2="480" y2="112" stroke="#cfd8dc" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="476" y="108" text-anchor="end" font-size="10" fill="#607d8b">Vmax (control &amp; competitive)</text>
+  <line x1="90" y1="210" x2="480" y2="210" stroke="#f0c0c0" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="476" y="206" text-anchor="end" font-size="10" fill="#c62828">lower Vmax (noncompetitive)</text>
+
+  <line x1="170" y1="360" x2="170" y2="236" stroke="#cfd8dc" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <text x="170" y="374" text-anchor="middle" font-size="10" fill="#37474f">Km</text>
+  <line x1="250" y1="360" x2="250" y2="236" stroke="#ffe0b2" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <text x="256" y="374" text-anchor="start" font-size="10" fill="#ef6c00">Km' (higher)</text>
+
+  <path d="M90,360 C 120,300 150,255 170,236 C 250,196 360,128 480,116" fill="none" stroke="#1565c0" stroke-width="3"/>
+  <path d="M90,360 C 140,330 200,270 250,236 C 330,196 420,140 480,120" fill="none" stroke="#ef6c00" stroke-width="2.5" stroke-dasharray="7 5"/>
+  <path d="M90,360 C 120,336 150,300 170,285 C 250,250 360,214 480,206" fill="none" stroke="#c62828" stroke-width="2.5" stroke-dasharray="2 4"/>
+
+  <g>
+    <line x1="300" y1="300" x2="330" y2="300" stroke="#1565c0" stroke-width="3"/>
+    <text x="336" y="304" text-anchor="start" font-size="11" fill="#1565c0">control</text>
+    <line x1="300" y1="322" x2="330" y2="322" stroke="#ef6c00" stroke-width="2.5" stroke-dasharray="7 5"/>
+    <text x="336" y="326" text-anchor="start" font-size="11" fill="#ef6c00">competitive: Km up, Vmax same</text>
+    <line x1="300" y1="344" x2="330" y2="344" stroke="#c62828" stroke-width="2.5" stroke-dasharray="2 4"/>
+    <text x="336" y="348" text-anchor="start" font-size="11" fill="#c62828">noncompetitive: Vmax down, Km same</text>
+  </g>
+</svg>

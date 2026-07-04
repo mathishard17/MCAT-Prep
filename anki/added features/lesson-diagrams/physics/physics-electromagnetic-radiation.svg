@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">The electromagnetic spectrum</title>
+  <desc id="d">The electromagnetic spectrum from radio waves on the left to gamma rays on the right. Moving right, frequency and photon energy increase while wavelength decreases. The narrow visible band in the middle is shown as a rainbow from red at lower frequency to violet at higher frequency. All electromagnetic waves travel at the speed of light.</desc>
+  <defs>
+    <marker id="ak" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#455a64"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">The electromagnetic spectrum</text>
+
+  <line x1="95" y1="118" x2="448" y2="118" stroke="#455a64" stroke-width="2" marker-end="url(#ak)"/>
+  <text x="272" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#455a64">frequency f and photon energy E increase &#8594;</text>
+
+  <rect x="70" y="150" width="57" height="42" fill="#cfd8dc"/>
+  <rect x="127" y="150" width="57" height="42" fill="#b0bec5"/>
+  <rect x="184" y="150" width="57" height="42" fill="#e57373"/>
+  <rect x="241" y="150" width="9.5" height="42" fill="#e53935"/>
+  <rect x="250.5" y="150" width="9.5" height="42" fill="#fb8c00"/>
+  <rect x="260" y="150" width="9.5" height="42" fill="#fdd835"/>
+  <rect x="269.5" y="150" width="9.5" height="42" fill="#43a047"/>
+  <rect x="279" y="150" width="9.5" height="42" fill="#1e88e5"/>
+  <rect x="288.5" y="150" width="9.5" height="42" fill="#8e24aa"/>
+  <rect x="298" y="150" width="58" height="42" fill="#9575cd"/>
+  <rect x="356" y="150" width="57" height="42" fill="#7986cb"/>
+  <rect x="413" y="150" width="57" height="42" fill="#5c6bc0"/>
+  <rect x="70" y="150" width="400" height="42" fill="none" stroke="#607d8b" stroke-width="2"/>
+
+  <g font-size="10" fill="#37474f" text-anchor="middle">
+    <text x="98" y="208">Radio</text>
+    <text x="155" y="224">Microwave</text>
+    <text x="212" y="208">Infrared</text>
+    <text x="269" y="224">Visible</text>
+    <text x="327" y="208">Ultraviolet</text>
+    <text x="384" y="224">X-ray</text>
+    <text x="441" y="208">Gamma</text>
+  </g>
+
+  <line x1="448" y1="262" x2="95" y2="262" stroke="#455a64" stroke-width="2" marker-end="url(#ak)"/>
+  <text x="272" y="280" text-anchor="middle" font-size="12" font-weight="700" fill="#455a64">wavelength &#955; increases &#8592;</text>
+
+  <text x="98" y="304" text-anchor="middle" font-size="11" fill="#607d8b">long &#955;, low E</text>
+  <text x="441" y="304" text-anchor="middle" font-size="11" fill="#607d8b">short &#955;, high E</text>
+
+  <text x="270" y="402" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">All EM waves travel at c in vacuum, with c = f &#955;</text>
+  <text x="270" y="422" text-anchor="middle" font-size="12" fill="#607d8b">photon energy E = h f, so shorter wavelength means higher energy</text>
+</svg>

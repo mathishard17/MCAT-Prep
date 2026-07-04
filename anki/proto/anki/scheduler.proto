@@ -67,6 +67,11 @@ service SchedulerService {
   rpc GetConceptSchedulerStatus(GetConceptSchedulerStatusRequest)
       returns (ConceptSchedulerStatusResponse);
   rpc ImportMcatDemoDeck(generic.Empty) returns (decks.DeckId);
+  rpc SetConceptSelectedTopic(SetConceptSelectedTopicRequest)
+      returns (generic.Empty);
+  rpc SetConceptExamSettings(SetConceptExamSettingsRequest)
+      returns (generic.Empty);
+  rpc GetConceptLesson(GetConceptLessonRequest) returns (ConceptLesson);
 }
 
 // Implicitly includes any of the above methods that are not listed in the
@@ -157,6 +162,45 @@ message GetConceptSchedulerStatusRequest {
   int64 deck_id = 1;
 }
 
+message SetConceptSelectedTopicRequest {
+  int64 deck_id = 1;
+  // Unset clears the selection and returns to automatic (first readiness-sorted).
+  optional string topic = 2;
+}
+
+message SetConceptExamSettingsRequest {
+  int64 deck_id = 1;
+  // Epoch seconds of the exam date; unset clears it (recall projected to "now").
+  optional int64 exam_timestamp = 2;
+  // Desired MCAT total score (472-528); unset clears the target.
+  optional uint32 target_total_score = 3;
+}
+
+message GetConceptLessonRequest {
+  string kc = 1;
+}
+
+// One authored lesson page for a KC (the seven Track C sections + a diagram).
+message ConceptLesson {
+  string kc = 1;
+  string title = 2;
+  string section = 3;
+  string overview = 4;
+  repeated string key_concepts = 5;
+  string prerequisite_reminder = 6;
+  string worked_example = 7;
+  string common_misconception = 8;
+  string first_retrieval_prompt = 9;
+  repeated string related_kcs = 10;
+  // Markdown for a figure: either an inline image "![alt](path)" or prose.
+  string diagram = 11;
+  // False when no (ungated) lesson exists for the KC.
+  bool exists = 12;
+  // Raw Mermaid flowchart source (the body of a ```mermaid fence), when the
+  // lesson supplies one. Empty otherwise. Rendered client-side as a diagram.
+  string diagram_mermaid = 13;
+}
+
 message ConceptSchedulerStatusResponse {
   bool enabled = 1;
   bool active = 2;
@@ -171,6 +215,19 @@ message ConceptSchedulerStatusResponse {
   // and readiness.
   float overall_memory = 9;
   bool has_memory = 10;
+  // Projected MCAT total = sum of the four section readiness estimates (~472-528)
+  // with a confidence band. has_projection is false until some cards are answered.
+  float projected_total = 11;
+  float projected_total_lower = 12;
+  float projected_total_upper = 13;
+  bool has_projection = 14;
+  // Exam date (epoch seconds) driving the retention projection; 0 when unset.
+  int64 exam_timestamp = 15;
+  // Target total score and the model's probability of reaching it by the exam
+  // date. has_target is false (and probability 0) until a target is set.
+  uint32 target_total_score = 16;
+  float probability_hit_target = 17;
+  bool has_target = 18;
 }
 
 message ConceptEvidenceStatus {
@@ -227,6 +284,9 @@ message ConceptGraphNode {
   uint32 negative = 8;
   // Average recall probability of this KC's studied cards (0 when none studied).
   float memory = 9;
+  // True when this KC is one of the suggested next topics (2 in the current
+  // section + 1 in each other section), so clients can badge it in the graph.
+  bool recommended = 10;
 }
 
 message ConceptGraphEdge {

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Size-exclusion chromatography</title>
+  <desc id="d">Three stages of a size-exclusion (gel-filtration) column packed with porous beads. Large molecules cannot enter the pores, so they take the shorter path around the beads and elute first; small molecules enter the pores, are delayed, and elute later.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Size-exclusion chromatography</text>
+
+  <g>
+    <circle cx="120" cy="62" r="8" fill="#2e7d32" stroke="#1b5e20" stroke-width="1.5"/>
+    <text x="134" y="66" text-anchor="start" font-size="11" fill="#2e7d32">large (skips pores)</text>
+    <circle cx="330" cy="62" r="5" fill="#ef6c00" stroke="#e65100" stroke-width="1.5"/>
+    <text x="342" y="66" text-anchor="start" font-size="11" fill="#ef6c00">small (enters pores)</text>
+  </g>
+
+  <g fill="#dfe6ea" stroke="#b0bec5" stroke-width="1.5">
+    <rect x="90" y="100" width="70" height="232" rx="8" fill="#f7f9fa"/>
+    <rect x="235" y="100" width="70" height="232" rx="8" fill="#f7f9fa"/>
+    <rect x="380" y="100" width="70" height="232" rx="8" fill="#f7f9fa"/>
+  </g>
+
+  <g fill="#dfe6ea" stroke="#b0bec5" stroke-width="1">
+    <circle cx="108" cy="150" r="9"/><circle cx="140" cy="150" r="9"/>
+    <circle cx="108" cy="188" r="9"/><circle cx="140" cy="188" r="9"/>
+    <circle cx="108" cy="226" r="9"/><circle cx="140" cy="226" r="9"/>
+    <circle cx="108" cy="264" r="9"/><circle cx="140" cy="264" r="9"/>
+    <circle cx="108" cy="302" r="9"/><circle cx="140" cy="302" r="9"/>
+    <circle cx="253" cy="150" r="9"/><circle cx="285" cy="150" r="9"/>
+    <circle cx="253" cy="188" r="9"/><circle cx="285" cy="188" r="9"/>
+    <circle cx="253" cy="226" r="9"/><circle cx="285" cy="226" r="9"/>
+    <circle cx="253" cy="264" r="9"/><circle cx="285" cy="264" r="9"/>
+    <circle cx="253" cy="302" r="9"/><circle cx="285" cy="302" r="9"/>
+    <circle cx="398" cy="150" r="9"/><circle cx="430" cy="150" r="9"/>
+    <circle cx="398" cy="188" r="9"/><circle cx="430" cy="188" r="9"/>
+    <circle cx="398" cy="226" r="9"/><circle cx="430" cy="226" r="9"/>
+    <circle cx="398" cy="264" r="9"/><circle cx="430" cy="264" r="9"/>
+    <circle cx="398" cy="302" r="9"/><circle cx="430" cy="302" r="9"/>
+  </g>
+
+  <g fill="#2e7d32" stroke="#1b5e20" stroke-width="1.5">
+    <circle cx="120" cy="122" r="8"/><circle cx="142" cy="130" r="8"/>
+    <circle cx="262" cy="252" r="8"/><circle cx="290" cy="242" r="8"/>
+    <circle cx="412" cy="308" r="8"/><circle cx="434" cy="318" r="8"/>
+    <circle cx="415" cy="360" r="8"/>
+  </g>
+  <g fill="#ef6c00" stroke="#e65100" stroke-width="1.5">
+    <circle cx="112" cy="140" r="5"/><circle cx="150" cy="124" r="5"/><circle cx="130" cy="150" r="5"/>
+    <circle cx="270" cy="176" r="5"/><circle cx="252" cy="190" r="5"/><circle cx="292" cy="182" r="5"/>
+    <circle cx="400" cy="212" r="5"/><circle cx="430" cy="222" r="5"/><circle cx="414" cy="198" r="5"/>
+  </g>
+
+  <g fill="#b0bec5">
+    <polygon points="111,332 129,332 120,352"/>
+    <polygon points="256,332 274,332 265,352"/>
+    <polygon points="401,332 419,332 410,352"/>
+  </g>
+
+  <text x="125" y="374" text-anchor="middle" font-size="11" fill="#37474f">1. load mixture</text>
+  <text x="270" y="374" text-anchor="middle" font-size="11" fill="#37474f">2. large moves faster</text>
+  <text x="415" y="374" text-anchor="middle" font-size="11" fill="#37474f">3. large elutes first</text>
+
+  <text x="270" y="410" text-anchor="middle" font-size="12" fill="#607d8b">Large molecules skip the beads' pores and elute first; small molecules are retained</text>
+</svg>

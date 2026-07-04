@@ -755,6 +755,34 @@ create table if not exists profiles
     def ankihub_username(self) -> str | None:
         return self.profile.get("thirdPartyAnkiHubUsername")
 
+    # MCAT AI (bring-your-own OpenAI key). Stored per profile only; never synced,
+    # logged, or committed. Used by the reviewer to reword MCAT questions.
+    def mcat_openai_key(self) -> str | None:
+        return self.profile.get("mcatOpenaiKey") or None
+
+    def set_mcat_openai_key(self, val: str | None) -> None:
+        self.profile["mcatOpenaiKey"] = (val or "").strip()
+
+    def mcat_openai_model(self) -> str:
+        return self.profile.get("mcatOpenaiModel") or "gpt-4o-mini"
+
+    def set_mcat_openai_model(self, val: str | None) -> None:
+        self.profile["mcatOpenaiModel"] = (val or "").strip() or "gpt-4o-mini"
+
+    def mcat_reword_enabled(self) -> bool:
+        # Default on so a provided key (settings or .env) rewords "as you go";
+        # users can turn it off in Tools → MCAT AI.
+        return self.profile.get("mcatRewordEnabled", True)
+
+    def set_mcat_reword_enabled(self, on: bool) -> None:
+        self.profile["mcatRewordEnabled"] = on
+
+    def mcat_shuffle_choices_enabled(self) -> bool:
+        return self.profile.get("mcatShuffleChoices", True)
+
+    def set_mcat_shuffle_choices_enabled(self, on: bool) -> None:
+        self.profile["mcatShuffleChoices"] = on
+
     def allowed_url_schemes(self) -> list[str]:
         return self.profile.get("allowedUrlSchemes", [])
 

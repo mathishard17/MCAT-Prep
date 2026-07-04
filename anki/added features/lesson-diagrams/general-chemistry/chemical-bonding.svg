@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Chemical bonding: electronegativity difference sets bond character</title>
+  <desc id="d">A scale of electronegativity difference. A difference near zero gives a nonpolar covalent bond (equal sharing), an intermediate difference gives a polar covalent bond with partial charges, and a large difference gives an ionic bond by electron transfer. Examples: H-H, H-Cl, and Na+ Cl-.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="32" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Chemical bonding &#8212; a continuum set by &#916;EN</text>
+
+  <rect x="70" y="84" width="48" height="16" fill="#2e7d32"/>
+  <rect x="118" y="84" width="158" height="16" fill="#1565c0"/>
+  <rect x="276" y="84" width="194" height="16" fill="#c62828"/>
+  <g font-size="11" fill="#37474f">
+    <text x="70" y="118">0.0</text>
+    <text x="110" y="118">0.4</text>
+    <text x="268" y="118">1.7</text>
+    <text x="462" y="118">3.3</text>
+  </g>
+  <g font-size="11" fill="#607d8b" text-anchor="middle">
+    <text x="94" y="134">nonpolar</text>
+    <text x="197" y="134">polar covalent</text>
+    <text x="373" y="134">ionic</text>
+  </g>
+
+  <g>
+    <rect x="70" y="158" width="128" height="196" rx="8" fill="#f5f7f8" stroke="#cfd8dc"/>
+    <rect x="206" y="158" width="128" height="196" rx="8" fill="#f5f7f8" stroke="#cfd8dc"/>
+    <rect x="342" y="158" width="128" height="196" rx="8" fill="#f5f7f8" stroke="#cfd8dc"/>
+  </g>
+
+  <text x="134" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="#2e7d32">Nonpolar covalent</text>
+  <text x="134" y="248" text-anchor="middle" font-size="22" font-weight="700" fill="#263238">H &#8212; H</text>
+  <text x="134" y="286" text-anchor="middle" font-size="11" fill="#607d8b">equal sharing</text>
+  <text x="134" y="336" text-anchor="middle" font-size="12" fill="#37474f">&#916;EN &#8776; 0</text>
+
+  <text x="270" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="#1565c0">Polar covalent</text>
+  <text x="238" y="238" text-anchor="middle" font-size="13" fill="#c62828">&#948;+</text>
+  <text x="304" y="238" text-anchor="middle" font-size="13" fill="#1565c0">&#948;&#8722;</text>
+  <text x="270" y="258" text-anchor="middle" font-size="22" font-weight="700" fill="#263238">H &#8212; Cl</text>
+  <line x1="248" y1="276" x2="298" y2="276" stroke="#1565c0" stroke-width="2"/>
+  <polygon points="298,271 298,281 308,276" fill="#1565c0"/>
+  <text x="270" y="300" text-anchor="middle" font-size="11" fill="#607d8b">unequal sharing, dipole</text>
+  <text x="270" y="336" text-anchor="middle" font-size="12" fill="#37474f">&#916;EN &#8776; 0.9</text>
+
+  <text x="406" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">Ionic</text>
+  <text x="380" y="252" text-anchor="middle" font-size="20" font-weight="700" fill="#263238">Na+</text>
+  <text x="432" y="252" text-anchor="middle" font-size="20" font-weight="700" fill="#263238">Cl&#8722;</text>
+  <line x1="392" y1="228" x2="424" y2="228" stroke="#c62828" stroke-width="2"/>
+  <polygon points="424,223 424,233 434,228" fill="#c62828"/>
+  <text x="406" y="220" text-anchor="middle" font-size="10" fill="#c62828">e&#8722; transfer</text>
+  <text x="406" y="286" text-anchor="middle" font-size="11" fill="#607d8b">electron transferred</text>
+  <text x="406" y="336" text-anchor="middle" font-size="12" fill="#37474f">&#916;EN &#8776; 2.1</text>
+
+  <text x="270" y="386" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Bigger &#916;EN &#8594; more polar &#8594; eventually ionic</text>
+  <text x="270" y="410" text-anchor="middle" font-size="11" fill="#607d8b">geometry can still cancel bond dipoles (e.g. linear CO2 is nonpolar overall)</text>
+</svg>

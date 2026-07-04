@@ -104,6 +104,7 @@ class HeaderFragment : SettingsFragment() {
 
                 index(R.xml.preferences_general)
                 index(R.xml.preferences_reviewing)
+                index(R.xml.preferences_mcat_ai)
                 index(R.xml.preferences_sync)
                 index(R.xml.preferences_custom_sync_server)
                     .addBreadcrumb(R.string.pref_cat_sync)
@@ -246,6 +247,7 @@ class HeaderFragment : SettingsFragment() {
                 is GeneralSettingsFragment -> R.string.pref_general_screen_key
                 is ReviewingSettingsFragment -> R.string.pref_reviewing_screen_key
                 is SyncSettingsFragment, is CustomSyncServerSettingsFragment -> R.string.pref_sync_screen_key
+                is McatAiSettingsFragment -> R.string.mcat_ai_screen_key
                 is NotificationsSettingsFragment -> R.string.pref_notifications_screen_key
                 is AppearanceSettingsFragment, is CustomButtonsSettingsFragment -> R.string.pref_appearance_screen_key
                 is ControlsSettingsFragment -> R.string.pref_controls_screen_key

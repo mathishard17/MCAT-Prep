@@ -54,6 +54,7 @@ import com.ichi2.anki.Whiteboard.Companion.createInstance
 import com.ichi2.anki.Whiteboard.OnPaintColorChangeListener
 import com.ichi2.anki.cardviewer.Gesture
 import com.ichi2.anki.cardviewer.ViewerCommand
+import com.ichi2.anki.conceptscheduler.ConceptLessonBottomSheet
 import com.ichi2.anki.conceptscheduler.ConceptSchedulerStatusBottomSheet
 import com.ichi2.anki.conceptscheduler.KcBadgeController
 import com.ichi2.anki.common.annotations.NeedsTest
@@ -75,6 +76,11 @@ import com.ichi2.anki.libanki.sched.Counts
 import com.ichi2.anki.libanki.sched.CurrentQueueState
 import com.ichi2.anki.libanki.undoAvailable
 import com.ichi2.anki.libanki.undoLabel
+import com.ichi2.anki.mcat.ChatMessage
+import com.ichi2.anki.mcat.McatMcPayload
+import com.ichi2.anki.mcat.McatMultipleChoice
+import com.ichi2.anki.mcat.OpenAIClient
+import com.ichi2.anki.mcat.OpenAIException
 import com.ichi2.anki.multimedia.audio.AudioRecordingController
 import com.ichi2.anki.multimedia.audio.AudioRecordingController.Companion.generateTempAudioFile
 import com.ichi2.anki.multimedia.audio.AudioRecordingController.Companion.isAudioRecordingSaved
@@ -86,6 +92,8 @@ import com.ichi2.anki.noteeditor.NoteEditorLauncher
 import com.ichi2.anki.observability.undoableOp
 import com.ichi2.anki.pages.PostRequestUri
 import com.ichi2.anki.pages.toIntent
+import com.ichi2.anki.preferences.McatAiSettingsFragment
+import com.ichi2.anki.preferences.PreferencesActivity
 import com.ichi2.anki.reviewer.ActionButtons
 import com.ichi2.anki.reviewer.AnswerButtons.Companion.getBackgroundColors
 import com.ichi2.anki.reviewer.AnswerButtons.Companion.getTextColors
@@ -204,6 +212,32 @@ open class Reviewer :
 
     /** Shows the current card's Knowledge Component badge (Concept Scheduler demo). */
     private var kcBadge: KcBadgeController? = null
+
+    /**
+     * Parsed MCAT multiple-choice data for the current card, or null for a normal card. When non-null,
+     * the card is shown as a clickable quiz injected into the WebView instead of the usual
+     * "Show Answer" flow (Feature A). Set on the front, cleared when a new card is shown.
+     */
+    private var mcatCurrent: McatMcPayload? = null
+
+    /**
+     * Cache of AI-reworded stems keyed by card id -> (question, wasReworded). Ensures OpenAI is called
+     * at most once per card per session; the fallback/original is cached too, so a failed card is not
+     * retried. Mirrors the desktop `_mcat_reword_cache`.
+     */
+    private val mcatRewordCache = mutableMapOf<Long, Pair<String, Boolean>>()
+
+    /** Card ids with a reword request in flight, so a redraw doesn't start a duplicate call. */
+    private val mcatRewordInflight = mutableSetOf<Long>()
+
+    /** The choice index the student selected on the current MC card (for the "Ask AI" chat scope). */
+    private var mcatSelectedIndex: Int? = null
+
+    /** Scoped "Ask AI" system prompt for the current MC card, or null when no chat is active. */
+    private var mcatChatSystem: String? = null
+
+    /** Running "Ask AI" conversation for the current MC card (capped when sent). */
+    private val mcatChatHistory = mutableListOf<ChatMessage>()
 
     // Preferences from the collection
     private var showRemainingCardCount = false
@@ -549,6 +583,10 @@ open class Reviewer :
                 Timber.i("Reviewer:: Concept Scheduler status")
                 openConceptSchedulerStatus()
             }
+            R.id.action_mcat_ai -> {
+                Timber.i("Reviewer:: MCAT AI settings")
+                openMcatAiSettings()
+            }
             R.id.user_action_1 -> userAction(1)
             R.id.user_action_2 -> userAction(2)
             R.id.user_action_3 -> userAction(3)
@@ -844,6 +882,16 @@ open class Reviewer :
                 .newInstance(deckId)
                 .show(supportFragmentManager, ConceptSchedulerStatusBottomSheet.TAG)
         }
+    }
+
+    /**
+     * Opens the lesson for a concept as a bottom sheet over the reviewer (parity with the desktop's
+     * clickable KC badge). The sheet shows "No lesson for this concept yet." when the backend has none.
+     */
+    private fun openConceptLesson(kc: String) {
+        ConceptLessonBottomSheet
+            .newInstance(kc)
+            .show(supportFragmentManager, ConceptLessonBottomSheet.TAG)
     }
 
     // Related to https://github.com/ankidroid/Anki-Android/pull/11061#issuecomment-1107868455
@@ -1232,6 +1280,7 @@ open class Reviewer :
         onMarkChanged()
         if (!displayAnswer) {
             runStateMutationHook()
+            renderMcatQuizIfNeeded(view)
         }
     }
 
@@ -1311,13 +1360,28 @@ open class Reviewer :
         statesMutated = false
         // show timer, if activated in the deck's preferences
         answerTimer.setupForCard(getColUnsafe, currentCard!!)
-        kcBadge?.displayForTags(currentCard!!.note(getColUnsafe).tags)
+        val note = currentCard!!.note(getColUnsafe)
+        kcBadge?.displayForTags(note.tags)
+        mcatCurrent = buildMcatPayload(note.tags, note.fields)
+        resetMcatCardState()
         delayedHide(100)
         super.displayCardQuestion()
+        if (mcatCurrent != null) {
+            // Hide the "Show Answer" button up front for MCAT quiz cards (re-applied after page load
+            // in renderMcatQuizIfNeeded); the quiz is graded via its own in-card rating buttons.
+            flipCardLayout?.visibility = View.GONE
+        }
     }
 
     @VisibleForTesting
     override fun displayCardAnswer() {
+        // MCAT multiple-choice cards are answered via the in-card quiz (Feature A): the explanation is
+        // shown inside the WebView and grading goes through the quiz's rating buttons. Ignore any
+        // attempt (gesture, keyboard, auto-advance) to flip to the normal answer side.
+        if (mcatCurrent != null) {
+            Timber.d("MCAT quiz card: answer handled in-quiz, ignoring displayCardAnswer()")
+            return
+        }
         if (queueState?.customSchedulingJs?.isEmpty() == true) {
             statesMutated = true
         }
@@ -1332,6 +1396,242 @@ open class Reviewer :
         }
         super.displayCardAnswer()
     }
+
+    // region MCAT clickable multiple-choice quiz (Feature A) + AI reword (Feature B)
+
+    /**
+     * Parse the current note into an MCAT multiple-choice quiz, applying the client-side answer-choice
+     * shuffle when enabled (Feature B, part 2). Returns null for non-MC cards so normal study is
+     * untouched. Mirrors the desktop `_mcat_mc_payload` + `_mcat_enhance`.
+     */
+    private fun buildMcatPayload(
+        tags: List<String>,
+        fields: List<String>,
+    ): McatMcPayload? {
+        val payload = McatMultipleChoice.parse(tags, fields) ?: return null
+        return if (Prefs.mcatShuffleChoices) McatMultipleChoice.shuffle(payload) else payload
+    }
+
+    /**
+     * If the current card is an MCAT multiple-choice card, render the clickable quiz into the WebView
+     * and suppress the "Show Answer" button (the quiz is graded via its own buttons). When an AI reword
+     * is eligible and not yet cached, a loading spinner is shown until the reword settles. No-op for
+     * normal cards. Mirrors the desktop `_showQuestion` gating.
+     */
+    private fun renderMcatQuizIfNeeded(view: WebView) {
+        val payload = mcatCurrent ?: return
+        // Hide the "Show Answer" button. This also disables auto-advance-to-answer, since
+        // `automaticShowAnswer()` only clicks the button when it is visible.
+        flipCardLayout?.visibility = View.GONE
+        val cardId = currentCard?.id
+        val cached = cardId?.let { mcatRewordCache[it] }
+        // AI is "on" only when a key is set; otherwise the card is just a flashcard
+        // (no "Ask AI" button, no rewording).
+        val aiEnabled = !Prefs.mcatOpenAiKey.isNullOrBlank()
+        when {
+            cached != null -> {
+                // Reworded (or fell back) earlier this session: use it instantly, no loading state.
+                val applied = payload.copy(question = cached.first, reworded = cached.second)
+                mcatCurrent = applied
+                view.evaluateJavascript(McatMultipleChoice.renderQuizScript(applied, aiEnabled = aiEnabled), null)
+            }
+            cardId != null && mcatWillReword(cardId) -> {
+                // Show a loading spinner while the reword runs; the body is revealed when it settles.
+                view.evaluateJavascript(McatMultipleChoice.renderQuizScript(payload, loading = true, aiEnabled = aiEnabled), null)
+                startReword(cardId, payload.question)
+            }
+            else -> {
+                view.evaluateJavascript(McatMultipleChoice.renderQuizScript(payload, aiEnabled = aiEnabled), null)
+            }
+        }
+    }
+
+    /**
+     * Whether the given card is eligible for an AI reword: rewording is enabled, a key is set, and the
+     * card is neither cached nor already in flight. Mirrors the desktop `_mcat_will_reword`.
+     */
+    private fun mcatWillReword(cardId: Long): Boolean {
+        if (!Prefs.mcatRewordEnabled) return false
+        if (mcatRewordCache.containsKey(cardId) || mcatRewordInflight.contains(cardId)) return false
+        return !Prefs.mcatOpenAiKey.isNullOrBlank()
+    }
+
+    /**
+     * Reword one MC stem with the user's OpenAI key, off the main thread, and cache the result by card
+     * id (Feature B). A second call verifies the reworded stem means the same as the original; on
+     * mismatch or any error the original stem is kept. The loading spinner is always resolved
+     * (success, non-equivalent, error, or timeout). Mirrors the desktop `_mcat_start_reword`.
+     */
+    private fun startReword(
+        cardId: Long,
+        stem: String,
+    ) {
+        if (mcatRewordInflight.contains(cardId) || mcatRewordCache.containsKey(cardId)) return
+        val key = Prefs.mcatOpenAiKey
+        if (key.isNullOrBlank()) return
+        // Cap the timeout (~20s) so a slow call can't hold the spinner for the full network timeout.
+        val timeout = (Prefs.networkTimeoutSecs.takeIf { it > 0 } ?: 20).coerceAtMost(20)
+        val client = OpenAIClient(key, Prefs.mcatOpenAiModel, timeout)
+        mcatRewordInflight.add(cardId)
+        lifecycleScope.launch {
+            val reworded =
+                try {
+                    val candidate = client.rewordQuestion(stem)
+                    if (candidate.isNotBlank() && client.questionsEquivalent(stem, candidate)) candidate else null
+                } catch (e: OpenAIException) {
+                    Timber.d(e, "MCAT reword failed; keeping original stem")
+                    null
+                } finally {
+                    mcatRewordInflight.remove(cardId)
+                }
+            val finalStem = reworded ?: stem
+            val wasReworded = reworded != null
+            // Cache (incl. the fallback) so this card never calls OpenAI again this session.
+            mcatRewordCache[cardId] = finalStem to wasReworded
+            // Resolve the loading state if this card is still shown and unanswered.
+            if (currentCard?.id == cardId && !displayAnswer && mcatCurrent != null) {
+                mcatCurrent = mcatCurrent?.copy(question = finalStem, reworded = wasReworded)
+                webView?.evaluateJavascript(McatMultipleChoice.finishRewordScript(finalStem, wasReworded), null)
+            }
+        }
+    }
+
+    /** A choice was tapped in the MCAT quiz; record it for the "Ask AI" chat scope. */
+    override fun onMcatChoice(index: Int) {
+        if (mcatCurrent == null) return
+        mcatSelectedIndex = index
+        Timber.d("MCAT choice tapped: %d", index)
+    }
+
+    /** A rating was tapped in the MCAT quiz; grade the card. Mirrors the desktop `mcatGrade:` handler. */
+    override fun onMcatGrade(ease: Int) {
+        if (mcatCurrent == null) return
+        val rating =
+            when (ease) {
+                1 -> Rating.AGAIN
+                2 -> Rating.HARD
+                3 -> Rating.GOOD
+                4 -> Rating.EASY
+                else -> return
+            }
+        answerCard(rating)
+    }
+
+    /**
+     * Open the "Ask AI" chat for the current MC card, scoped to this question (Feature B). Prompts the
+     * user to add a key if none is set. Mirrors the desktop `_mcat_chat_open`.
+     */
+    override fun onMcatChatOpen() {
+        val payload = mcatCurrent ?: return
+        if (Prefs.mcatOpenAiKey.isNullOrBlank()) {
+            showSnackbar(R.string.mcat_ai_chat_no_key)
+            openMcatAiSettings()
+            return
+        }
+        mcatChatSystem = McatMultipleChoice.buildChatSystemPrompt(payload, mcatSelectedIndex)
+        mcatChatHistory.clear()
+        // The card WebView is only focusable in touch mode for type-in-answer cards; enable it so the
+        // chat textarea accepts keyboard input.
+        webView?.isFocusableInTouchMode = true
+        webView?.evaluateJavascript(McatMultipleChoice.renderChatScript(McatMultipleChoice.CHAT_INTRO), null)
+    }
+
+    /**
+     * Send a chat message to the "Ask AI" tutor off the main thread and stream the reply back into the
+     * chat panel. Mirrors the desktop `_mcat_chat_send`.
+     */
+    override fun onMcatChatSend(text: String) {
+        val system = mcatChatSystem ?: return
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) {
+            webView?.evaluateJavascript(McatMultipleChoice.chatSetPendingScript(false), null)
+            return
+        }
+        val key = Prefs.mcatOpenAiKey
+        if (key.isNullOrBlank()) {
+            webView?.evaluateJavascript(
+                McatMultipleChoice.chatAddMessageScript("ai", getString(R.string.mcat_ai_chat_no_key)),
+                null,
+            )
+            webView?.evaluateJavascript(McatMultipleChoice.chatSetPendingScript(false), null)
+            return
+        }
+        mcatChatHistory.add(ChatMessage("user", trimmed))
+        // Cap the history sent so requests don't grow without bound.
+        val messages =
+            buildList {
+                add(ChatMessage("system", system))
+                addAll(mcatChatHistory.takeLast(12))
+            }
+        val timeout = (Prefs.networkTimeoutSecs.takeIf { it > 0 } ?: 30).coerceAtMost(30)
+        val client = OpenAIClient(key, Prefs.mcatOpenAiModel, timeout)
+        lifecycleScope.launch {
+            try {
+                val answer = client.chat(messages)
+                mcatChatHistory.add(ChatMessage("assistant", answer))
+                webView?.evaluateJavascript(McatMultipleChoice.chatAddMessageScript("ai", answer), null)
+            } catch (e: OpenAIException) {
+                Timber.d(e, "MCAT chat failed")
+                val msg = getString(R.string.mcat_ai_chat_error, e.message ?: "")
+                webView?.evaluateJavascript(McatMultipleChoice.chatAddMessageScript("ai", msg), null)
+            } finally {
+                webView?.evaluateJavascript(McatMultipleChoice.chatSetPendingScript(false), null)
+            }
+        }
+    }
+
+    /**
+     * Reword the current (unanswered) MCAT question on demand from the in-card "Reword with AI" button.
+     * Independent of the auto-reword toggle — it only needs an OpenAI key. Reuses [startReword]'s cache +
+     * resolve so a card is never reworded twice per session. Mirrors the desktop `_mcat_reword_current`.
+     */
+    override fun onMcatReword() {
+        val payload = mcatCurrent ?: return
+        val cardId = currentCard?.id
+        if (displayAnswer || cardId == null) {
+            // Nothing to reword now: just release the button's loading state.
+            webView?.evaluateJavascript(McatMultipleChoice.finishRewordScript(payload.question, payload.reworded), null)
+            return
+        }
+        if (Prefs.mcatOpenAiKey.isNullOrBlank()) {
+            showSnackbar(R.string.mcat_ai_chat_no_key)
+            openMcatAiSettings()
+            webView?.evaluateJavascript(McatMultipleChoice.finishRewordScript(payload.question, false), null)
+            return
+        }
+        val cached = mcatRewordCache[cardId]
+        if (cached != null) {
+            // Already resolved this session: apply it immediately (no second API call).
+            mcatCurrent = payload.copy(question = cached.first, reworded = cached.second)
+            webView?.evaluateJavascript(McatMultipleChoice.finishRewordScript(cached.first, cached.second), null)
+            return
+        }
+        // Not cached/in-flight: kick off; startReword resolves the button when it settles.
+        startReword(cardId, payload.question)
+    }
+
+    /**
+     * Open the current concept's lesson from the in-card "Lesson" button (parity with the desktop
+     * post-answer Lesson button and the clickable KC badge). Uses the card's KC id.
+     */
+    override fun onMcatLesson() {
+        val kc = mcatCurrent?.kcId?.takeIf { it.isNotBlank() } ?: return
+        openConceptLesson(kc)
+    }
+
+    /** Reset the per-card MCAT reword-render and chat state when a new card is shown. */
+    private fun resetMcatCardState() {
+        mcatSelectedIndex = null
+        mcatChatSystem = null
+        mcatChatHistory.clear()
+    }
+
+    /** Open the MCAT AI settings screen (bring-your-own OpenAI key). */
+    private fun openMcatAiSettings() {
+        startActivity(PreferencesActivity.getIntent(this, McatAiSettingsFragment::class))
+    }
+
+    // endregion
 
     private fun runStateMutationHook() {
         val state = queueState ?: return
@@ -1372,7 +1672,7 @@ open class Reviewer :
         val mark = topBarLayout!!.findViewById<ImageView>(R.id.mark_icon)
         val flag = topBarLayout!!.findViewById<ImageView>(R.id.flag_icon)
         cardMarker = CardMarker(mark, flag)
-        kcBadge = KcBadgeController(findViewById(R.id.kc_badge))
+        kcBadge = KcBadgeController(findViewById(R.id.kc_badge)) { kc -> openConceptLesson(kc) }
     }
 
     override fun switchTopBarVisibility(visible: Int) {

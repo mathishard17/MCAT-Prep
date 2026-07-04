@@ -15,3 +15,7 @@ target/
 # Local signing credentials
 Anki-Android/tools/fallback-release-keystore.jks
 
+dist/
+
+# Environment variables
+.env

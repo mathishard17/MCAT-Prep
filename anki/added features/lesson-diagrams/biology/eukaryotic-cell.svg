@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Eukaryotic cell organelles</title>
+  <desc id="d">Schematic animal eukaryotic cell bounded by a plasma membrane. Labeled organelles include the nucleus with nucleolus, rough and smooth endoplasmic reticulum with ribosomes, the Golgi apparatus, vesicles, a lysosome, and a mitochondrion, all within the cytoplasm. Membrane-bound compartments let one cell run many processes at once.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">The eukaryotic cell &#8212; organelles</text>
+
+  <ellipse cx="270" cy="236" rx="250" ry="168" fill="#f3f7f8" stroke="#90a4ae" stroke-width="3"/>
+  <text x="270" y="92" text-anchor="middle" font-size="11" fill="#607d8b">Plasma membrane (cell boundary)</text>
+  <text x="96" y="126" text-anchor="middle" font-size="11" fill="#90a4ae">Cytoplasm</text>
+
+  <circle cx="180" cy="212" r="66" fill="#c5cae9" stroke="#5c6bc0" stroke-width="2"/>
+  <circle cx="180" cy="212" r="22" fill="#7986cb"/>
+  <text x="180" y="158" text-anchor="middle" font-size="13" font-weight="700" fill="#283593">Nucleus</text>
+  <text x="180" y="216" text-anchor="middle" font-size="9" fill="#ffffff">Nucleolus</text>
+
+  <g stroke="#4db6ac" stroke-width="6" fill="none" stroke-linecap="round">
+    <path d="M240 158 Q275 146 316 160"/>
+    <path d="M245 176 Q280 165 320 180"/>
+    <path d="M250 194 Q285 184 322 198"/>
+  </g>
+  <text x="300" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#00695c">Rough ER</text>
+  <g fill="#00695c">
+    <circle cx="255" cy="152" r="3"/><circle cx="278" cy="148" r="3"/><circle cx="302" cy="157" r="3"/>
+    <circle cx="260" cy="170" r="3"/><circle cx="292" cy="172" r="3"/>
+    <circle cx="258" cy="189" r="3"/><circle cx="300" cy="193" r="3"/>
+    <circle cx="300" cy="330" r="3"/><circle cx="314" cy="336" r="3"/>
+  </g>
+  <text x="336" y="340" text-anchor="middle" font-size="11" fill="#37474f">Ribosomes</text>
+
+  <path d="M296 250 Q346 250 340 292 Q336 322 300 314" stroke="#26a69a" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <text x="330" y="246" text-anchor="middle" font-size="11" fill="#00695c">Smooth ER</text>
+
+  <g stroke="#ba68c8" stroke-width="7" fill="none" stroke-linecap="round">
+    <path d="M374 190 Q412 178 450 190"/>
+    <path d="M372 207 Q412 195 452 207"/>
+    <path d="M374 224 Q412 212 450 224"/>
+    <path d="M377 240 Q412 230 447 240"/>
+  </g>
+  <text x="412" y="168" text-anchor="middle" font-size="11" font-weight="700" fill="#6a1b9a">Golgi apparatus</text>
+
+  <g fill="none" stroke="#ba68c8" stroke-width="2">
+    <circle cx="400" cy="266" r="8"/><circle cx="424" cy="274" r="7"/><circle cx="444" cy="262" r="6"/>
+  </g>
+  <text x="424" y="298" text-anchor="middle" font-size="11" fill="#37474f">Vesicles</text>
+
+  <circle cx="436" cy="330" r="20" fill="#ffcc80" stroke="#ef6c00" stroke-width="2"/>
+  <text x="436" y="368" text-anchor="middle" font-size="11" font-weight="700" fill="#e65100">Lysosome</text>
+
+  <ellipse cx="176" cy="330" rx="54" ry="26" fill="#ef9a9a" stroke="#c62828" stroke-width="2"/>
+  <path d="M130 330 Q150 314 168 330 Q188 346 216 330" stroke="#c62828" stroke-width="2" fill="none"/>
+  <text x="176" y="372" text-anchor="middle" font-size="11" font-weight="700" fill="#b71c1c">Mitochondrion</text>
+
+  <text x="270" y="422" text-anchor="middle" font-size="12" fill="#607d8b">Membrane-bound organelles let one cell run many processes at once.</text>
+</svg>

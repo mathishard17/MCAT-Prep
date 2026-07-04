@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Gas exchange at the alveolus</title>
+  <desc id="d">An air-filled alveolus sits next to a blood capillary. Oxygen diffuses from the alveolus, where its partial pressure is about 100 millimeters of mercury, into venous blood where it is about 40. Carbon dioxide diffuses the other way, from blood at about 46 down to the alveolus at about 40. Each gas moves down its own partial-pressure gradient.</desc>
+  <defs>
+    <marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1565c0"/></marker>
+    <marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ef6c00"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Gas exchange at the alveolus</text>
+
+  <circle cx="170" cy="210" r="98" fill="#eceff1" stroke="#90a4ae" stroke-width="2"/>
+  <text x="150" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#607d8b">alveolus (air)</text>
+  <text x="150" y="205" text-anchor="middle" font-size="12" fill="#37474f">pO2 = 100 mmHg</text>
+  <text x="150" y="228" text-anchor="middle" font-size="12" fill="#37474f">pCO2 = 40 mmHg</text>
+
+  <rect x="300" y="130" width="158" height="160" rx="22" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+  <text x="379" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">capillary (blood)</text>
+  <ellipse cx="345" cy="170" rx="16" ry="10" fill="#e53935"/>
+  <ellipse cx="405" cy="215" rx="16" ry="10" fill="#e53935"/>
+  <ellipse cx="350" cy="258" rx="16" ry="10" fill="#e53935"/>
+
+  <line x1="276" y1="180" x2="322" y2="180" stroke="#1565c0" stroke-width="4" marker-end="url(#ab)"/>
+  <text x="299" y="168" text-anchor="middle" font-size="11" font-weight="700" fill="#1565c0">O2 in</text>
+  <line x1="322" y1="242" x2="276" y2="242" stroke="#ef6c00" stroke-width="4" marker-end="url(#ao)"/>
+  <text x="299" y="258" text-anchor="middle" font-size="11" font-weight="700" fill="#ef6c00">CO2 out</text>
+
+  <text x="379" y="312" text-anchor="middle" font-size="11" fill="#607d8b">blood in: pO2 40, pCO2 46</text>
+  <text x="379" y="328" text-anchor="middle" font-size="11" fill="#607d8b">blood out: pO2 100, pCO2 40</text>
+
+  <text x="270" y="402" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Each gas diffuses down its own partial-pressure gradient (Dalton)</text>
+  <text x="270" y="422" text-anchor="middle" font-size="12" fill="#607d8b">O2 into blood, CO2 out &#183; surfactant lowers surface tension to keep alveoli open</text>
+</svg>

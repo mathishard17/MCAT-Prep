@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Electron configuration: orbital energy ladder and filling rules</title>
+  <desc id="d">Left: subshells drawn by increasing energy, showing that the 4s subshell lies just below and fills before 3d (Aufbau). Right: orbital boxes for nitrogen 2s2 2p3, showing paired opposite spins in 2s (Pauli) and three singly occupied 2p orbitals with parallel spins (Hund).</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="32" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Electron configuration &#8212; filling order and rules</text>
+
+  <line x1="78" y1="392" x2="78" y2="120" stroke="#37474f" stroke-width="2"/>
+  <polygon points="73,128 83,128 78,116" fill="#37474f"/>
+  <text x="70" y="110" font-size="12" font-weight="600" fill="#37474f">Energy</text>
+
+  <g stroke="#1565c0" stroke-width="4">
+    <line x1="95" y1="368" x2="172" y2="368"/>
+    <line x1="95" y1="336" x2="172" y2="336"/>
+    <line x1="95" y1="312" x2="172" y2="312"/>
+    <line x1="95" y1="278" x2="172" y2="278"/>
+    <line x1="95" y1="255" x2="172" y2="255"/>
+    <line x1="95" y1="222" x2="172" y2="222"/>
+    <line x1="95" y1="202" x2="172" y2="202"/>
+    <line x1="95" y1="174" x2="172" y2="174"/>
+  </g>
+  <g font-size="12" fill="#37474f">
+    <text x="180" y="372">1s (2)</text>
+    <text x="180" y="340">2s (2)</text>
+    <text x="180" y="316">2p (6)</text>
+    <text x="180" y="282">3s (2)</text>
+    <text x="180" y="259">3p (6)</text>
+    <text x="180" y="226" font-weight="700" fill="#c62828">4s (2)</text>
+    <text x="180" y="206" font-weight="700" fill="#ef6c00">3d (10)</text>
+    <text x="180" y="178">4p (6)</text>
+  </g>
+  <rect x="90" y="194" width="150" height="38" rx="6" fill="none" stroke="#c62828" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="250" y="215" font-size="11" fill="#c62828">4s fills before 3d</text>
+
+  <text x="400" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#263238">Nitrogen: 1s2 2s2 2p3</text>
+
+  <rect x="378" y="150" width="30" height="30" rx="4" fill="#eceff1" stroke="#607d8b"/>
+  <text x="393" y="171" text-anchor="middle" font-size="16" fill="#1565c0">&#8593;&#8595;</text>
+  <text x="393" y="198" text-anchor="middle" font-size="12" fill="#37474f">2s</text>
+  <text x="470" y="171" font-size="11" fill="#607d8b">Pauli: paired,</text>
+  <text x="470" y="185" font-size="11" fill="#607d8b">opposite spins</text>
+
+  <g>
+    <rect x="352" y="250" width="30" height="30" rx="4" fill="#eceff1" stroke="#607d8b"/>
+    <rect x="390" y="250" width="30" height="30" rx="4" fill="#eceff1" stroke="#607d8b"/>
+    <rect x="428" y="250" width="30" height="30" rx="4" fill="#eceff1" stroke="#607d8b"/>
+    <text x="367" y="271" text-anchor="middle" font-size="16" fill="#1565c0">&#8593;</text>
+    <text x="405" y="271" text-anchor="middle" font-size="16" fill="#1565c0">&#8593;</text>
+    <text x="443" y="271" text-anchor="middle" font-size="16" fill="#1565c0">&#8593;</text>
+  </g>
+  <text x="405" y="298" text-anchor="middle" font-size="12" fill="#37474f">2p</text>
+  <text x="405" y="322" text-anchor="middle" font-size="11" fill="#607d8b">Hund: fill singly first, spins parallel</text>
+
+  <text x="270" y="418" text-anchor="middle" font-size="11" fill="#607d8b">Aufbau: lowest energy first &#183; ( ) = maximum electrons per subshell</text>
+</svg>
