@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Atomic structure: Bohr model of carbon-12</title>
+  <desc id="d">A dense central nucleus of 6 protons and 6 neutrons is surrounded by two electron shells: an inner shell holding 2 electrons and an outer (valence) shell holding 4 electrons. Isotopes of an element share the proton count but differ in neutron count.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Atomic structure &#8212; Bohr model of carbon-12</text>
+
+  <circle cx="180" cy="240" r="60" fill="none" stroke="#b0bec5" stroke-width="2"/>
+  <circle cx="180" cy="240" r="110" fill="none" stroke="#b0bec5" stroke-width="2"/>
+
+  <circle cx="180" cy="240" r="32" fill="#c62828"/>
+  <text x="180" y="237" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">6 p+</text>
+  <text x="180" y="253" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">6 n</text>
+
+  <circle cx="180" cy="180" r="9" fill="#1565c0"/>
+  <circle cx="180" cy="300" r="9" fill="#1565c0"/>
+
+  <circle cx="70" cy="240" r="9" fill="#1565c0"/>
+  <circle cx="290" cy="240" r="9" fill="#1565c0"/>
+  <circle cx="180" cy="130" r="9" fill="#1565c0"/>
+  <circle cx="180" cy="350" r="9" fill="#1565c0"/>
+
+  <text x="180" y="118" text-anchor="middle" font-size="10" fill="#607d8b">valence shell (n=2)</text>
+
+  <g font-size="12" fill="#37474f">
+    <text x="322" y="150">Nucleus: 6 p+ and 6 n</text>
+    <text x="322" y="172" fill="#607d8b">Z = 6 fixes the element (carbon)</text>
+    <text x="322" y="206">Mass number A = 6 + 6 = 12</text>
+    <text x="322" y="244">Electrons: 6, filling 2 then 4</text>
+    <text x="322" y="266" fill="#607d8b">4 valence electrons drive bonding</text>
+    <text x="322" y="304">Isotope: carbon-13 has 7 n</text>
+    <text x="322" y="326" fill="#607d8b">same Z (6), so it is still carbon</text>
+  </g>
+
+  <text x="270" y="402" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">A neutral atom has equal protons and electrons</text>
+  <text x="270" y="422" text-anchor="middle" font-size="12" fill="#607d8b">red = nucleus (p+ and n) &#183; blue = electrons (e&#8722;) &#183; rings = shells</text>
+</svg>

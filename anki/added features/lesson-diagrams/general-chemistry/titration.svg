@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Titration curve: weak acid with a strong base</title>
+  <desc id="d">pH versus volume of strong base added to a weak acid. The curve starts low, rises gently through a buffer region, passes through the half-equivalence point where pH equals pKa, then rises sharply at the equivalence point, which lies above pH 7 because the conjugate base remains. Finally it levels off at high pH.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Titration curve &#8212; weak acid + strong base</text>
+
+  <line x1="80" y1="70" x2="80" y2="350" stroke="#37474f" stroke-width="2"/>
+  <line x1="80" y1="350" x2="500" y2="350" stroke="#37474f" stroke-width="2"/>
+  <text x="46" y="210" font-size="12" fill="#37474f" transform="rotate(-90 46 210)">pH</text>
+  <text x="290" y="384" text-anchor="middle" font-size="12" fill="#37474f">Volume of strong base added &#8594;</text>
+
+  <line x1="80" y1="215" x2="500" y2="215" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="66" y="219" text-anchor="end" font-size="10" fill="#607d8b">7</text>
+
+  <polyline points="80,292 130,278 180,259 230,246 265,232 276,206 280,182 286,150 300,132 360,116 440,108 490,104" fill="none" stroke="#1565c0" stroke-width="2.5"/>
+
+  <line x1="80" y1="259" x2="180" y2="259" stroke="#2e7d32" stroke-width="1.3" stroke-dasharray="4 3"/>
+  <line x1="180" y1="259" x2="180" y2="350" stroke="#2e7d32" stroke-width="1.3" stroke-dasharray="4 3"/>
+  <circle cx="180" cy="259" r="4" fill="#2e7d32"/>
+  <text x="188" y="252" font-size="10" fill="#2e7d32">half-equiv: pH = pKa</text>
+
+  <line x1="280" y1="182" x2="280" y2="350" stroke="#c62828" stroke-width="1.3" stroke-dasharray="4 3"/>
+  <circle cx="280" cy="182" r="4" fill="#c62828"/>
+  <text x="288" y="176" font-size="10" fill="#c62828">equivalence point (pH &gt; 7)</text>
+  <text x="284" y="366" text-anchor="middle" font-size="10" fill="#c62828">Veq</text>
+
+  <text x="150" y="300" text-anchor="middle" font-size="10" fill="#607d8b">buffer region</text>
+
+  <text x="270" y="410" text-anchor="middle" font-size="11" fill="#607d8b">conjugate base left at equivalence makes the endpoint basic (above pH 7)</text>
+</svg>

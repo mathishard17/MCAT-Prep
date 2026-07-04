@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import anki.scheduler.ConceptSchedulerStatusResponse
 import com.ichi2.anki.CollectionManager.withCol
+import com.ichi2.anki.conceptscheduler.ConceptLessonBottomSheet
 import com.ichi2.anki.conceptscheduler.ConceptSchedulerStatusScreen
 import com.ichi2.anki.libanki.DeckId
 import com.ichi2.anki.utils.ext.requireLong
@@ -49,6 +50,7 @@ import com.ichi2.compose.theme.AnkiDroidTheme
  */
 class ConceptSchedulerStatusFragment : Fragment() {
     private var status by mutableStateOf<ConceptSchedulerStatusResponse?>(null)
+    private val deckId: DeckId by lazy { requireArguments().requireLong(ARG_DECK_ID) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,7 +66,13 @@ class ConceptSchedulerStatusFragment : Fragment() {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 CircularProgressIndicator()
                             }
-                        else -> ConceptSchedulerStatusScreen(s, Modifier.fillMaxSize())
+                        else ->
+                            ConceptSchedulerStatusScreen(
+                                s,
+                                Modifier.fillMaxSize(),
+                                onSelectTopic = { selectTopic(it) },
+                                onOpenLesson = { openLesson(it) },
+                            )
                     }
                 }
             }
@@ -75,11 +83,33 @@ class ConceptSchedulerStatusFragment : Fragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        val deckId = requireArguments().requireLong(ARG_DECK_ID)
         (activity as? AnkiActivity)?.supportActionBar?.title = "Concept Scheduler"
         launchCatchingTask {
             status = withCol { backend.getConceptSchedulerStatus(deckId) }
         }
+    }
+
+    /** Selects [kc] as the next topic (reorders the study queue), then refreshes the read model. */
+    private fun selectTopic(kc: String) {
+        // Bind to a distinct name so the request DSL's own `deckId` doesn't shadow the fragment's.
+        val selectedDeckId = deckId
+        launchCatchingTask {
+            withCol {
+                backend.setConceptSelectedTopic(
+                    anki.scheduler.setConceptSelectedTopicRequest {
+                        this.deckId = selectedDeckId
+                        topic = kc
+                    },
+                )
+            }
+            status = withCol { backend.getConceptSchedulerStatus(selectedDeckId) }
+        }
+    }
+
+    private fun openLesson(kc: String) {
+        ConceptLessonBottomSheet
+            .newInstance(kc)
+            .show(parentFragmentManager, ConceptLessonBottomSheet.TAG)
     }
 
     companion object {

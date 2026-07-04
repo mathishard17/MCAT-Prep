@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Phylogenetic tree (cladogram)</title>
+  <desc id="d">A rectangular cladogram with a root on the left branching to five tips labeled A through E on the right. Internal branch points mark common ancestors: A and B share the most recent common ancestor, then C joins them, then D, and E branches earliest. Relatedness is read from the branch points, not from how high or low a tip sits, and all living tips are equally modern.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Phylogenetic tree (cladogram)</text>
+
+  <g stroke="#37474f" stroke-width="3" fill="none" stroke-linecap="round">
+    <line x1="50" y1="288" x2="70" y2="288"/>
+    <line x1="70" y1="217" x2="70" y2="360"/>
+    <line x1="70" y1="217" x2="150" y2="217"/>
+    <line x1="70" y1="360" x2="430" y2="360"/>
+    <line x1="150" y1="165" x2="150" y2="270"/>
+    <line x1="150" y1="165" x2="230" y2="165"/>
+    <line x1="150" y1="270" x2="430" y2="270"/>
+    <line x1="230" y1="120" x2="230" y2="210"/>
+    <line x1="230" y1="120" x2="320" y2="120"/>
+    <line x1="230" y1="210" x2="430" y2="210"/>
+    <line x1="320" y1="90" x2="320" y2="150"/>
+    <line x1="320" y1="90" x2="430" y2="90"/>
+    <line x1="320" y1="150" x2="430" y2="150"/>
+  </g>
+
+  <g fill="#0288d1">
+    <circle cx="320" cy="120" r="5"/>
+    <circle cx="230" cy="165" r="5"/>
+    <circle cx="150" cy="217" r="5"/>
+    <circle cx="70" cy="288" r="5"/>
+  </g>
+
+  <g font-size="15" font-weight="700" fill="#263238">
+    <text x="446" y="95">A</text>
+    <text x="446" y="155">B</text>
+    <text x="446" y="215">C</text>
+    <text x="446" y="275">D</text>
+    <text x="446" y="365">E</text>
+  </g>
+
+  <text x="70" y="306" text-anchor="middle" font-size="10" fill="#90a4ae">root</text>
+  <text x="248" y="148" font-size="10" fill="#0277bd">branch point = common ancestor</text>
+
+  <text x="270" y="404" text-anchor="middle" font-size="12" fill="#607d8b">Relatedness is read from branch points (most recent common ancestor).</text>
+  <text x="270" y="424" text-anchor="middle" font-size="12" fill="#607d8b">All tips are equally modern; up or down does not mean "more evolved".</text>
+</svg>

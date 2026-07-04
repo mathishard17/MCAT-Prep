@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Core carbohydrate and lipid structures</title>
+  <desc id="d">Three families side by side: a monosaccharide drawn as a six-membered ring with a ring oxygen and an anomeric carbon; a triacylglycerol built from glycerol plus three fatty-acid tails joined by ester bonds; and an amphipathic phospholipid with a polar head and two nonpolar tails that build membranes.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Carbohydrates &amp; lipids &#8212; core structures</text>
+
+  <rect x="20" y="54" width="160" height="322" rx="10" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+  <text x="100" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#263238">Monosaccharide</text>
+  <text x="100" y="99" text-anchor="middle" font-size="11" fill="#607d8b">glucose ring</text>
+  <polygon points="100,152 142,176 142,220 100,244 58,220 58,176" fill="#ffffff" stroke="#6a1b9a" stroke-width="2.5"/>
+  <circle cx="142" cy="176" r="10" fill="#ede7f6" stroke="#6a1b9a" stroke-width="1.5"/>
+  <text x="142" y="180" text-anchor="middle" font-size="11" font-weight="700" fill="#4527a0">O</text>
+  <line x1="100" y1="152" x2="100" y2="132" stroke="#6a1b9a" stroke-width="2"/>
+  <text x="100" y="126" text-anchor="middle" font-size="10" fill="#4527a0">CH2OH</text>
+  <line x1="142" y1="220" x2="164" y2="232" stroke="#6a1b9a" stroke-width="2"/>
+  <text x="170" y="236" text-anchor="start" font-size="10" fill="#4527a0">OH</text>
+  <text x="150" y="212" text-anchor="start" font-size="9" fill="#607d8b">C1</text>
+  <text x="100" y="300" text-anchor="middle" font-size="10" fill="#607d8b">ring O + anomeric C1</text>
+  <text x="100" y="318" text-anchor="middle" font-size="10" fill="#607d8b">(alpha / beta)</text>
+  <text x="100" y="342" text-anchor="middle" font-size="10" fill="#607d8b">glycosidic bonds link</text>
+  <text x="100" y="356" text-anchor="middle" font-size="10" fill="#607d8b">sugars into polymers</text>
+
+  <rect x="190" y="54" width="160" height="322" rx="10" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+  <text x="270" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#263238">Triacylglycerol</text>
+  <text x="270" y="99" text-anchor="middle" font-size="11" fill="#607d8b">energy storage</text>
+  <line x1="224" y1="140" x2="224" y2="244" stroke="#455a64" stroke-width="3"/>
+  <text transform="rotate(-90 210 192)" x="210" y="192" text-anchor="middle" font-size="10" fill="#455a64">glycerol</text>
+  <g stroke="#c62828" stroke-width="2">
+    <line x1="224" y1="150" x2="250" y2="150"/>
+    <line x1="224" y1="192" x2="250" y2="192"/>
+    <line x1="224" y1="234" x2="250" y2="234"/>
+  </g>
+  <circle cx="252" cy="150" r="4" fill="#ffcdd2" stroke="#c62828"/>
+  <circle cx="252" cy="192" r="4" fill="#ffcdd2" stroke="#c62828"/>
+  <circle cx="252" cy="234" r="4" fill="#ffcdd2" stroke="#c62828"/>
+  <path d="M258,150 l12,-8 12,8 12,-8 12,8 12,-8" fill="none" stroke="#607d8b" stroke-width="2"/>
+  <path d="M258,192 l12,-8 12,8 10,10 12,-8 12,8" fill="none" stroke="#607d8b" stroke-width="2"/>
+  <path d="M258,234 l12,-8 12,8 12,-8 12,8 12,-8" fill="none" stroke="#607d8b" stroke-width="2"/>
+  <text x="284" y="128" text-anchor="middle" font-size="9" fill="#c62828">ester bonds</text>
+  <text x="300" y="176" text-anchor="middle" font-size="9" fill="#607d8b">saturated</text>
+  <text x="304" y="216" text-anchor="middle" font-size="9" fill="#607d8b">unsaturated (kink)</text>
+  <text x="270" y="330" text-anchor="middle" font-size="10" fill="#607d8b">3 fatty acids on glycerol</text>
+
+  <rect x="360" y="54" width="160" height="322" rx="10" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+  <text x="440" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#263238">Phospholipid</text>
+  <text x="440" y="99" text-anchor="middle" font-size="11" fill="#607d8b">amphipathic</text>
+  <circle cx="440" cy="150" r="20" fill="#1565c0" stroke="#0d47a1" stroke-width="2"/>
+  <text x="440" y="154" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">P</text>
+  <text x="440" y="124" text-anchor="middle" font-size="10" fill="#1565c0">polar head</text>
+  <path d="M432,170 l-6,16 6,16 -6,16 6,16 -6,16 6,16" fill="none" stroke="#607d8b" stroke-width="2"/>
+  <path d="M448,170 l6,16 -6,16 6,16 -6,16 6,16 -6,16" fill="none" stroke="#607d8b" stroke-width="2"/>
+  <text x="440" y="296" text-anchor="middle" font-size="10" fill="#607d8b">nonpolar tails</text>
+  <text x="440" y="330" text-anchor="middle" font-size="10" fill="#607d8b">builds the bilayer</text>
+
+  <text x="270" y="406" text-anchor="middle" font-size="12" fill="#607d8b">Lipids are grouped by low water solubility, not a shared monomer (not true polymers)</text>
+</svg>

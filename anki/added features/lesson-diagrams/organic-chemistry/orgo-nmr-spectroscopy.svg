@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 376" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">1H NMR of ethanol</title>
+  <desc id="d">A schematic proton NMR of ethanol with three signals. The CH3 (3H) is a triplet near 1.2 ppm, the CH2 (2H) is a quartet near 3.7 ppm and shifted downfield because it is next to oxygen, and the OH (1H) is a singlet near 2.6 ppm. Integration gives the ratio 3 to 2 to 1, and the n+1 rule sets the splitting.</desc>
+  <rect x="6" y="6" width="548" height="364" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="280" y="32" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">1H NMR of ethanol (CH3CH2OH)</text>
+
+  <g stroke="#455a64" stroke-width="1.6"><line x1="60" y1="60" x2="60" y2="270"/><line x1="60" y1="270" x2="510" y2="270"/></g>
+
+  <g stroke="#6a1b9a" stroke-width="2.5">
+    <line x1="137" y1="270" x2="137" y2="252"/><line x1="143" y1="270" x2="143" y2="230"/><line x1="149" y1="270" x2="149" y2="230"/><line x1="155" y1="270" x2="155" y2="252"/>
+    <line x1="251" y1="270" x2="251" y2="240"/>
+    <line x1="378" y1="270" x2="378" y2="246"/><line x1="385" y1="270" x2="385" y2="228"/><line x1="392" y1="270" x2="392" y2="246"/>
+  </g>
+
+  <g stroke="#cfd8dc" stroke-width="1"><line x1="146" y1="172" x2="146" y2="228"/><line x1="251" y1="172" x2="251" y2="238"/><line x1="385" y1="172" x2="385" y2="226"/></g>
+  <g text-anchor="middle">
+    <text x="146" y="150" font-size="12" font-weight="700" fill="#37474f">CH2 &#183; 2H</text><text x="146" y="166" font-size="10.5" fill="#607d8b">quartet, ~3.7 ppm</text>
+    <text x="251" y="150" font-size="12" font-weight="700" fill="#37474f">OH &#183; 1H</text><text x="251" y="166" font-size="10.5" fill="#607d8b">singlet, ~2.6 ppm</text>
+    <text x="385" y="150" font-size="12" font-weight="700" fill="#37474f">CH3 &#183; 3H</text><text x="385" y="166" font-size="10.5" fill="#607d8b">triplet, ~1.2 ppm</text>
+  </g>
+
+  <g font-size="10" fill="#607d8b" text-anchor="middle"><text x="118" y="286">4</text><text x="213" y="286">3</text><text x="309" y="286">2</text><text x="404" y="286">1</text><text x="500" y="286">0 (TMS)</text></g>
+  <text x="285" y="308" text-anchor="middle" font-size="11.5" fill="#546e7a">chemical shift (ppm) - downfield / deshielded at left</text>
+
+  <text x="280" y="334" text-anchor="middle" font-size="11" fill="#546e7a">3 signals = 3 distinct H environments; n neighbors &#8594; n+1 peaks (splitting).</text>
+  <text x="280" y="356" text-anchor="middle" font-size="11" fill="#607d8b">Integration 3 : 2 : 1 gives the ratio of H's; CH2 is downfield (next to O).</text>
+</svg>

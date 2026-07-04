@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 430" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Amino acid zwitterion and isoelectric point</title>
+  <desc id="d">Glycine changes charge with pH: at low pH it is a cation (+1) with protonated COOH and NH3+, near neutral it is the zwitterion (net 0) with COO minus and NH3+, and at high pH it is an anion (minus 1). A net-charge versus pH curve steps from +1 down to minus 1, crossing pKa1 near 2.3, the isoelectric point near 6.0, and pKa2 near 9.6. The pI is the average of the two flanking pKa values.</desc>
+  <rect x="6" y="6" width="548" height="418" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="280" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Amino acids: zwitterion and isoelectric point</text>
+
+  <rect x="200" y="78" width="160" height="24" rx="6" fill="#eaf5ec" stroke="#c8e6c9" stroke-width="1.2"/>
+  <text x="110" y="96" text-anchor="middle" font-size="12.5" fill="#263238">H3N+&#8722;CH2&#8722;COOH</text>
+  <text x="280" y="96" text-anchor="middle" font-size="12.5" fill="#263238">H3N+&#8722;CH2&#8722;COO&#8722;</text>
+  <text x="460" y="96" text-anchor="middle" font-size="12.5" fill="#263238">H2N&#8722;CH2&#8722;COO&#8722;</text>
+  <text x="110" y="124" text-anchor="middle" font-size="16" font-weight="700" fill="#c62828">+1</text>
+  <text x="280" y="124" text-anchor="middle" font-size="16" font-weight="700" fill="#2e7d32">0</text>
+  <text x="460" y="124" text-anchor="middle" font-size="16" font-weight="700" fill="#1565c0">&#8722;1</text>
+  <text x="110" y="146" text-anchor="middle" font-size="10" fill="#607d8b">cation (low pH)</text>
+  <text x="280" y="146" text-anchor="middle" font-size="10" fill="#607d8b">zwitterion (near pI)</text>
+  <text x="460" y="146" text-anchor="middle" font-size="10" fill="#607d8b">anion (high pH)</text>
+
+  <line x1="30" y1="166" x2="530" y2="166" stroke="#e0e0e0" stroke-width="1.5"/>
+  <text x="280" y="188" text-anchor="middle" font-size="13" font-weight="700" fill="#263238">Net charge vs pH</text>
+
+  <path d="M 72,224 L 140,224 L 185,258 L 385,258 L 430,292 L 498,292" fill="none" stroke="#1565c0" stroke-width="3"/>
+  <g font-size="12" font-weight="700" fill="#546e7a"><text x="56" y="228" text-anchor="middle">+1</text><text x="60" y="262" text-anchor="middle">0</text><text x="54" y="296" text-anchor="middle">&#8722;1</text></g>
+
+  <g stroke="#b0bec5" stroke-width="1.2" stroke-dasharray="4 4">
+    <line x1="162" y1="241" x2="162" y2="320"/>
+    <line x1="285" y1="258" x2="285" y2="320"/>
+    <line x1="408" y1="275" x2="408" y2="320"/>
+  </g>
+  <g fill="#00838f"><circle cx="285" cy="258" r="3.5"/></g>
+  <text x="162" y="334" text-anchor="middle" font-size="11" fill="#546e7a">pKa1 &#8776; 2.3</text>
+  <text x="285" y="334" text-anchor="middle" font-size="11" font-weight="700" fill="#00838f">pI &#8776; 6.0</text>
+  <text x="408" y="334" text-anchor="middle" font-size="11" fill="#546e7a">pKa2 &#8776; 9.6</text>
+  <text x="512" y="308" text-anchor="middle" font-size="11" fill="#607d8b">pH &#8594;</text>
+
+  <text x="280" y="362" text-anchor="middle" font-size="11.5" fill="#546e7a">pI = average of the two flanking pKa: (2.3 + 9.6) / 2 &#8776; 6.0</text>
+  <text x="280" y="384" text-anchor="middle" font-size="11.5" fill="#546e7a">Net charge is +1 in acid, &#8722;1 in base, and zero only near the pI.</text>
+  <text x="280" y="406" text-anchor="middle" font-size="11.5" fill="#607d8b">Peptide bonds form by nucleophilic acyl substitution (planar, unreactive amide).</text>
+</svg>

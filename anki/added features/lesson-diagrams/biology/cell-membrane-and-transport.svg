@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Cell membrane and transport</title>
+  <desc id="d">A phospholipid bilayer drawn as two rows of round phosphate heads with hydrophobic fatty-acid tails facing inward. An ion channel spans the membrane and lets a solute diffuse down its gradient without ATP (passive transport). A sodium-potassium pump spans the membrane and uses ATP to move 3 sodium ions out and 2 potassium ions in, against their gradients (active transport).</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Cell membrane &#8212; fluid mosaic bilayer</text>
+
+  <text x="270" y="86" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Extracellular fluid</text>
+  <text x="270" y="320" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Cytoplasm</text>
+  <text x="36" y="116" font-size="10" fill="#607d8b">High concentration</text>
+  <text x="36" y="252" font-size="10" fill="#607d8b">Low concentration</text>
+
+  <g stroke="#ffcc80" stroke-width="2" stroke-linecap="round">
+    <line x1="42" y1="145" x2="42" y2="176"/><line x1="48" y1="145" x2="48" y2="176"/><line x1="42" y1="205" x2="42" y2="184"/><line x1="48" y1="205" x2="48" y2="184"/>
+    <line x1="77" y1="145" x2="77" y2="176"/><line x1="83" y1="145" x2="83" y2="176"/><line x1="77" y1="205" x2="77" y2="184"/><line x1="83" y1="205" x2="83" y2="184"/>
+    <line x1="112" y1="145" x2="112" y2="176"/><line x1="118" y1="145" x2="118" y2="176"/><line x1="112" y1="205" x2="112" y2="184"/><line x1="118" y1="205" x2="118" y2="184"/>
+    <line x1="202" y1="145" x2="202" y2="176"/><line x1="208" y1="145" x2="208" y2="176"/><line x1="202" y1="205" x2="202" y2="184"/><line x1="208" y1="205" x2="208" y2="184"/>
+    <line x1="237" y1="145" x2="237" y2="176"/><line x1="243" y1="145" x2="243" y2="176"/><line x1="237" y1="205" x2="237" y2="184"/><line x1="243" y1="205" x2="243" y2="184"/>
+    <line x1="272" y1="145" x2="272" y2="176"/><line x1="278" y1="145" x2="278" y2="176"/><line x1="272" y1="205" x2="272" y2="184"/><line x1="278" y1="205" x2="278" y2="184"/>
+    <line x1="307" y1="145" x2="307" y2="176"/><line x1="313" y1="145" x2="313" y2="176"/><line x1="307" y1="205" x2="307" y2="184"/><line x1="313" y1="205" x2="313" y2="184"/>
+    <line x1="417" y1="145" x2="417" y2="176"/><line x1="423" y1="145" x2="423" y2="176"/><line x1="417" y1="205" x2="417" y2="184"/><line x1="423" y1="205" x2="423" y2="184"/>
+    <line x1="452" y1="145" x2="452" y2="176"/><line x1="458" y1="145" x2="458" y2="176"/><line x1="452" y1="205" x2="452" y2="184"/><line x1="458" y1="205" x2="458" y2="184"/>
+    <line x1="487" y1="145" x2="487" y2="176"/><line x1="493" y1="145" x2="493" y2="176"/><line x1="487" y1="205" x2="487" y2="184"/><line x1="493" y1="205" x2="493" y2="184"/>
+  </g>
+
+  <g fill="#ffb74d" stroke="#fb8c00" stroke-width="1">
+    <circle cx="45" cy="136" r="9"/><circle cx="80" cy="136" r="9"/><circle cx="115" cy="136" r="9"/><circle cx="205" cy="136" r="9"/><circle cx="240" cy="136" r="9"/><circle cx="275" cy="136" r="9"/><circle cx="310" cy="136" r="9"/><circle cx="420" cy="136" r="9"/><circle cx="455" cy="136" r="9"/><circle cx="490" cy="136" r="9"/>
+    <circle cx="45" cy="214" r="9"/><circle cx="80" cy="214" r="9"/><circle cx="115" cy="214" r="9"/><circle cx="205" cy="214" r="9"/><circle cx="240" cy="214" r="9"/><circle cx="275" cy="214" r="9"/><circle cx="310" cy="214" r="9"/><circle cx="420" cy="214" r="9"/><circle cx="455" cy="214" r="9"/><circle cx="490" cy="214" r="9"/>
+  </g>
+
+  <rect x="138" y="124" width="48" height="102" rx="8" fill="#90caf9" stroke="#1565c0" stroke-width="2"/>
+  <rect x="155" y="140" width="14" height="70" fill="#ffffff"/>
+  <rect x="340" y="124" width="52" height="102" rx="8" fill="#a5d6a7" stroke="#2e7d32" stroke-width="2"/>
+  <text x="366" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="#1b5e20">ATP</text>
+
+  <line x1="162" y1="108" x2="162" y2="250" stroke="#1565c0" stroke-width="3"/>
+  <polygon points="162,258 156,246 168,246" fill="#1565c0"/>
+  <g fill="#1565c0"><circle cx="150" cy="98" r="5"/><circle cx="174" cy="98" r="5"/><circle cx="162" cy="270" r="5"/></g>
+
+  <line x1="352" y1="124" x2="352" y2="100" stroke="#2e7d32" stroke-width="3"/>
+  <polygon points="352,92 346,104 358,104" fill="#2e7d32"/>
+  <text x="352" y="86" text-anchor="middle" font-size="10" font-weight="600" fill="#2e7d32">3 Na+ out</text>
+  <line x1="384" y1="226" x2="384" y2="250" stroke="#2e7d32" stroke-width="3"/>
+  <polygon points="384,258 378,246 390,246" fill="#2e7d32"/>
+  <text x="384" y="270" text-anchor="middle" font-size="10" font-weight="600" fill="#2e7d32">2 K+ in</text>
+
+  <text x="162" y="292" text-anchor="middle" font-size="11" font-weight="700" fill="#1565c0">Ion channel (passive)</text>
+  <text x="366" y="292" text-anchor="middle" font-size="11" font-weight="700" fill="#2e7d32">Na/K pump (active)</text>
+
+  <text x="270" y="404" text-anchor="middle" font-size="12" fill="#607d8b">Hydrophilic heads face water; hydrophobic tails face inward.</text>
+  <text x="270" y="424" text-anchor="middle" font-size="12" fill="#607d8b">Passive transport follows the gradient; the pump spends ATP to go against it.</text>
+</svg>

@@ -187,6 +187,14 @@
     <string name="custom_sync_server_collection_url_key">syncBaseUrl</string>
     <string name="custom_sync_server_enabled_key">syncBaseUrl_switch</string>
     <string name="custom_sync_certificate_key">customSyncCertificate</string>
+    <!-- MCAT AI (bring-your-own OpenAI key; stored locally only, never synced/logged/committed) -->
+    <string name="mcat_ai_screen_key">mcatAiScreen</string>
+    <string name="mcat_openai_key_key">mcatOpenaiKey</string>
+    <string name="mcat_openai_model_key">mcatOpenaiModel</string>
+    <string name="mcat_reword_enabled_key">mcatRewordEnabled</string>
+    <string name="mcat_shuffle_choices_key">mcatShuffleChoices</string>
+    <string name="mcat_ai_test_connection_key">mcatAiTestConnection</string>
+    <string name="mcat_ai_clear_key_key">mcatAiClearKey</string>
     <!-- Advanced -->
     <string name="pref_advanced_screen_key">pref_screen_advanced</string>
     <string name="pref_cat_workarounds_key">category_workarounds</string>

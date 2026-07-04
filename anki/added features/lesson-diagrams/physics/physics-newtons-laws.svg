@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Free-body diagram of a block on a surface</title>
+  <desc id="d">A block rests on a horizontal surface. Four forces act at its center: weight m g points straight down, the normal force N points straight up, an applied force F points right, and friction f points left opposing motion. The net force determines the acceleration.</desc>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c62828"/></marker>
+    <marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1565c0"/></marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2e7d32"/></marker>
+    <marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ef6c00"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Free-body diagram of a block</text>
+
+  <line x1="120" y1="300" x2="420" y2="300" stroke="#546e7a" stroke-width="3"/>
+  <g stroke="#b0bec5" stroke-width="2">
+    <line x1="130" y1="300" x2="118" y2="314"/><line x1="160" y1="300" x2="148" y2="314"/>
+    <line x1="190" y1="300" x2="178" y2="314"/><line x1="220" y1="300" x2="208" y2="314"/>
+    <line x1="250" y1="300" x2="238" y2="314"/><line x1="280" y1="300" x2="268" y2="314"/>
+    <line x1="310" y1="300" x2="298" y2="314"/><line x1="340" y1="300" x2="328" y2="314"/>
+    <line x1="370" y1="300" x2="358" y2="314"/><line x1="400" y1="300" x2="388" y2="314"/>
+  </g>
+  <rect x="228" y="252" width="84" height="48" rx="4" fill="#bbdefb" stroke="#1565c0" stroke-width="2"/>
+  <circle cx="270" cy="276" r="4" fill="#263238"/>
+
+  <line x1="270" y1="276" x2="270" y2="366" stroke="#c62828" stroke-width="4" marker-end="url(#ar)"/>
+  <text x="280" y="356" font-size="14" font-weight="700" fill="#c62828">W = m g</text>
+
+  <line x1="270" y1="276" x2="270" y2="150" stroke="#1565c0" stroke-width="4" marker-end="url(#ab)"/>
+  <text x="280" y="168" font-size="14" font-weight="700" fill="#1565c0">N (normal)</text>
+
+  <line x1="270" y1="276" x2="404" y2="276" stroke="#2e7d32" stroke-width="4" marker-end="url(#ag)"/>
+  <text x="322" y="266" font-size="14" font-weight="700" fill="#2e7d32">F (applied)</text>
+
+  <line x1="270" y1="276" x2="136" y2="276" stroke="#ef6c00" stroke-width="4" marker-end="url(#ao)"/>
+  <text x="132" y="266" text-anchor="end" font-size="14" font-weight="700" fill="#ef6c00">f (friction)</text>
+
+  <text x="270" y="402" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Newton's 2nd law: net force sets acceleration, F_net = m a</text>
+  <text x="270" y="422" text-anchor="middle" font-size="12" fill="#607d8b">vertical balance N = W &#183; horizontal net = F &#8722; f</text>
+</svg>

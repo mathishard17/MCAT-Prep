@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Oxygen-binding curves of myoglobin and hemoglobin</title>
+  <desc id="d">Percent oxygen saturation versus partial pressure of oxygen. Myoglobin gives a hyperbolic, high-affinity curve. Hemoglobin gives a sigmoidal, cooperative curve. Lower pH, higher carbon dioxide, and 2,3-BPG shift the hemoglobin curve to the right (the Bohr effect), lowering affinity to unload oxygen in tissues.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="36" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Oxygen binding &#8212; myoglobin vs hemoglobin</text>
+
+  <line x1="80" y1="220" x2="490" y2="220" stroke="#cfd8dc" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="80" y1="70" x2="80" y2="360" stroke="#607d8b" stroke-width="2"/>
+  <line x1="80" y1="360" x2="490" y2="360" stroke="#607d8b" stroke-width="2"/>
+
+  <g stroke="#607d8b" stroke-width="2">
+    <line x1="74" y1="360" x2="80" y2="360"/>
+    <line x1="74" y1="220" x2="80" y2="220"/>
+    <line x1="74" y1="80" x2="80" y2="80"/>
+  </g>
+  <text x="66" y="364" text-anchor="end" font-size="11" fill="#607d8b">0</text>
+  <text x="66" y="224" text-anchor="end" font-size="11" fill="#607d8b">50</text>
+  <text x="66" y="84" text-anchor="end" font-size="11" fill="#607d8b">100</text>
+  <text transform="rotate(-90 34 220)" x="34" y="220" text-anchor="middle" font-size="12" fill="#37474f">O2 saturation (%)</text>
+  <text x="285" y="392" text-anchor="middle" font-size="12" fill="#37474f">pO2 (partial pressure of O2)</text>
+
+  <path d="M80,360 C 96,190 128,120 190,112 C 300,102 400,100 486,100" fill="none" stroke="#2e7d32" stroke-width="3"/>
+  <path d="M80,356 C 150,352 190,338 240,250 C 280,180 340,126 486,116" fill="none" stroke="#1565c0" stroke-width="3"/>
+  <path d="M110,357 C 190,354 235,344 290,262 C 335,196 395,150 486,132" fill="none" stroke="#1565c0" stroke-width="2.5" stroke-dasharray="6 5"/>
+
+  <line x1="246" y1="250" x2="292" y2="258" stroke="#c62828" stroke-width="2"/>
+  <polygon points="286,250 296,260 282,262" fill="#c62828"/>
+  <text x="360" y="238" text-anchor="middle" font-size="11" font-weight="700" fill="#c62828">right shift (Bohr)</text>
+  <text x="360" y="254" text-anchor="middle" font-size="10" fill="#b71c1c">low pH &#183; high CO2 &#183; 2,3-BPG</text>
+
+  <g>
+    <line x1="306" y1="308" x2="332" y2="308" stroke="#2e7d32" stroke-width="3"/>
+    <text x="338" y="312" text-anchor="start" font-size="11" fill="#2e7d32">myoglobin (hyperbolic)</text>
+    <line x1="306" y1="328" x2="332" y2="328" stroke="#1565c0" stroke-width="3"/>
+    <text x="338" y="332" text-anchor="start" font-size="11" fill="#1565c0">hemoglobin (sigmoidal)</text>
+    <line x1="306" y1="348" x2="332" y2="348" stroke="#1565c0" stroke-width="2.5" stroke-dasharray="6 5"/>
+    <text x="338" y="352" text-anchor="start" font-size="11" fill="#1565c0">hemoglobin, right-shifted</text>
+  </g>
+</svg>

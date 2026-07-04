@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Gel electrophoresis separates by size</title>
+  <desc id="d">Samples are loaded in wells at the top of a gel. Under an electric field, negatively charged molecules migrate from the cathode toward the anode. The gel sieves by size: large fragments stay near the wells while small fragments travel farther. SDS-PAGE gives proteins a uniform charge-to-mass ratio so they separate by size alone.</desc>
+  <defs>
+    <marker id="eah" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#37474f"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Gel electrophoresis &#8212; separation by size</text>
+
+  <rect x="120" y="72" width="264" height="6" rx="3" fill="#90a4ae"/>
+  <text x="120" y="66" text-anchor="start" font-size="12" font-weight="700" fill="#37474f">(&#8722;) cathode</text>
+  <rect x="120" y="356" width="264" height="6" rx="3" fill="#90a4ae"/>
+  <text x="120" y="380" text-anchor="start" font-size="12" font-weight="700" fill="#37474f">(+) anode</text>
+
+  <rect x="132" y="92" width="250" height="252" rx="8" fill="#eef2f4" stroke="#b0bec5" stroke-width="1.5"/>
+
+  <g fill="#cfd8dc">
+    <rect x="158" y="98" width="44" height="8" rx="2"/>
+    <rect x="233" y="98" width="44" height="8" rx="2"/>
+    <rect x="308" y="98" width="44" height="8" rx="2"/>
+  </g>
+  <text x="180" y="90" text-anchor="middle" font-size="9" fill="#607d8b">ladder</text>
+  <text x="255" y="90" text-anchor="middle" font-size="9" fill="#607d8b">lane 1</text>
+  <text x="330" y="90" text-anchor="middle" font-size="9" fill="#607d8b">lane 2</text>
+
+  <g fill="#455a64">
+    <rect x="158" y="138" width="44" height="6" rx="2"/>
+    <rect x="158" y="174" width="44" height="6" rx="2"/>
+    <rect x="158" y="210" width="44" height="6" rx="2"/>
+    <rect x="158" y="246" width="44" height="6" rx="2"/>
+    <rect x="158" y="282" width="44" height="6" rx="2"/>
+    <rect x="158" y="318" width="44" height="6" rx="2"/>
+  </g>
+  <g fill="#1565c0">
+    <rect x="233" y="150" width="44" height="7" rx="2"/>
+    <rect x="233" y="300" width="44" height="7" rx="2"/>
+    <rect x="308" y="192" width="44" height="7" rx="2"/>
+    <rect x="308" y="256" width="44" height="7" rx="2"/>
+  </g>
+
+  <line x1="108" y1="110" x2="108" y2="326" stroke="#37474f" stroke-width="2" marker-end="url(#eah)"/>
+  <text transform="rotate(-90 92 218)" x="92" y="218" text-anchor="middle" font-size="11" fill="#37474f">migration toward (+)</text>
+
+  <line x1="396" y1="150" x2="384" y2="150" stroke="#607d8b" stroke-width="1.5"/>
+  <text x="400" y="146" text-anchor="start" font-size="11" fill="#455a64">large: stays near wells</text>
+  <text x="400" y="160" text-anchor="start" font-size="10" fill="#607d8b">(migrates less)</text>
+  <line x1="396" y1="303" x2="384" y2="303" stroke="#607d8b" stroke-width="1.5"/>
+  <text x="400" y="299" text-anchor="start" font-size="11" fill="#455a64">small: travels far</text>
+  <text x="400" y="313" text-anchor="start" font-size="10" fill="#607d8b">(migrates more)</text>
+
+  <text x="270" y="408" text-anchor="middle" font-size="12" fill="#607d8b">SDS-PAGE gives a uniform charge-to-mass ratio, so proteins separate by size</text>
+</svg>

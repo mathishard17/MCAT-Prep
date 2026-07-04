@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Intermolecular forces: hydrogen bonding and a strength ladder</title>
+  <desc id="d">Left: two water molecules; a hydrogen bond (dashed) links a partially positive hydrogen of one molecule to a lone pair on the partially negative oxygen of the other. Right: relative strengths, from weakest to strongest, London dispersion, dipole-dipole, hydrogen bonding, and ion-dipole. Stronger forces raise boiling point.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Intermolecular forces</text>
+
+  <text x="125" y="70" text-anchor="middle" font-size="12" font-weight="600" fill="#263238">Hydrogen bond in water</text>
+  <!-- water molecule 1 -->
+  <line x1="130" y1="120" x2="104" y2="142" stroke="#607d8b" stroke-width="3"/>
+  <line x1="130" y1="120" x2="156" y2="142" stroke="#607d8b" stroke-width="3"/>
+  <circle cx="130" cy="120" r="14" fill="#c62828"/>
+  <text x="130" y="124" text-anchor="middle" font-size="11" fill="#fff">O</text>
+  <circle cx="104" cy="142" r="9" fill="#90a4ae"/>
+  <circle cx="156" cy="142" r="9" fill="#90a4ae"/>
+  <text x="110" y="110" font-size="10" fill="#1565c0">&#948;&#8722;</text>
+  <text x="168" y="150" font-size="10" fill="#c62828">&#948;+</text>
+
+  <!-- water molecule 2 -->
+  <line x1="150" y1="235" x2="124" y2="213" stroke="#607d8b" stroke-width="3"/>
+  <line x1="150" y1="235" x2="176" y2="257" stroke="#607d8b" stroke-width="3"/>
+  <circle cx="150" cy="235" r="14" fill="#c62828"/>
+  <text x="150" y="239" text-anchor="middle" font-size="11" fill="#fff">O</text>
+  <circle cx="124" cy="213" r="9" fill="#90a4ae"/>
+  <circle cx="176" cy="257" r="9" fill="#90a4ae"/>
+  <text x="158" y="228" font-size="10" fill="#1565c0">&#948;&#8722;</text>
+
+  <!-- hydrogen bond -->
+  <line x1="156" y1="150" x2="150" y2="221" stroke="#1565c0" stroke-width="2.5" stroke-dasharray="5 4"/>
+  <text x="196" y="190" font-size="11" fill="#1565c0">hydrogen bond</text>
+
+  <!-- strength ladder -->
+  <text x="380" y="70" text-anchor="middle" font-size="12" font-weight="600" fill="#263238">Relative strength</text>
+  <text x="250" y="118" font-size="11" fill="#37474f">London dispersion</text>
+  <rect x="250" y="122" width="50" height="16" fill="#2e7d32"/>
+  <text x="250" y="164" font-size="11" fill="#37474f">dipole-dipole</text>
+  <rect x="250" y="168" width="95" height="16" fill="#1565c0"/>
+  <text x="250" y="210" font-size="11" fill="#37474f">hydrogen bonding</text>
+  <rect x="250" y="214" width="145" height="16" fill="#ef6c00"/>
+  <text x="250" y="256" font-size="11" fill="#37474f">ion-dipole</text>
+  <rect x="250" y="260" width="190" height="16" fill="#c62828"/>
+  <line x1="250" y1="298" x2="450" y2="298" stroke="#37474f" stroke-width="2"/>
+  <polygon points="450,293 450,303 460,298" fill="#37474f"/>
+  <text x="350" y="316" text-anchor="middle" font-size="11" fill="#607d8b">stronger &#8594;</text>
+
+  <text x="270" y="360" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Stronger IMFs &#8594; higher boiling point, viscosity, surface tension</text>
+  <text x="270" y="384" text-anchor="middle" font-size="11" fill="#607d8b">H-bonds need H bonded to N, O, or F &#183; they are between molecules, not covalent</text>
+  <text x="270" y="406" text-anchor="middle" font-size="11" fill="#607d8b">water (H-bonds) boils far higher than methane (dispersion only) at similar mass</text>
+</svg>

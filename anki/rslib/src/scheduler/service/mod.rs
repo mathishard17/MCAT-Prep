@@ -390,9 +390,40 @@ impl crate::services::SchedulerService for Collection {
         self.concept_scheduler_status(input.deck_id.into())
     }
 
+    fn set_concept_selected_topic(
+        &mut self,
+        input: scheduler::SetConceptSelectedTopicRequest,
+    ) -> Result<()> {
+        let topic = input
+            .topic
+            .and_then(crate::scheduler::concept::KnowledgeComponentId::new);
+        self.set_concept_selected_topic(input.deck_id.into(), topic)
+    }
+
+    fn set_concept_exam_settings(
+        &mut self,
+        input: scheduler::SetConceptExamSettingsRequest,
+    ) -> Result<()> {
+        self.set_concept_exam_settings(
+            input.deck_id.into(),
+            input.exam_timestamp,
+            input.target_total_score,
+        )
+    }
+
+    fn get_concept_lesson(
+        &mut self,
+        input: scheduler::GetConceptLessonRequest,
+    ) -> Result<scheduler::ConceptLesson> {
+        Ok(super::concept_demo::concept_lesson_for(&input.kc).unwrap_or_default())
+    }
+
     fn import_mcat_demo_deck(&mut self) -> Result<anki_proto::decks::DeckId> {
-        self.import_mcat_demo_deck()
-            .map(|deck_id| anki_proto::decks::DeckId { did: deck_id.0 })
+        // Production install path: install ONLY the full generated MCAT library
+        // deck ("MCAT"). The small "MCAT Demo" deck is no longer installed for
+        // users; its Collection method is retained solely for fast unit tests.
+        let deck_id = self.import_mcat_full_deck()?;
+        Ok(anki_proto::decks::DeckId { did: deck_id.0 })
     }
 }
 
@@ -564,8 +595,9 @@ mod tests {
     }
 
     #[test]
-    fn concept_status_service_imports_demo_deck() {
+    fn concept_status_service_imports_full_deck() {
         let mut col = Collection::new();
+        // The production RPC installs the full "MCAT" library, not the 10-KC demo.
         let deck = SchedulerService::import_mcat_demo_deck(&mut col).unwrap();
         let status = SchedulerService::get_concept_scheduler_status(
             &mut col,
@@ -574,13 +606,14 @@ mod tests {
         .unwrap();
 
         assert!(status.enabled);
-        assert_eq!(status.graph.unwrap().nodes.len(), 10);
-        assert_eq!(
+        // Full library spans well beyond the 10 demo KCs / 50 demo cards.
+        assert!(status.graph.unwrap().nodes.len() > 100);
+        assert!(
             col.storage
                 .all_cards_in_single_deck(deck.did.into())
                 .unwrap()
-                .len(),
-            50
+                .len()
+                > 100
         );
     }
 

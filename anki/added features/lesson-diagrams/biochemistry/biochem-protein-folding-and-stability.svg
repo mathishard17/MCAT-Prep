@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Protein folding and the hydrophobic effect</title>
+  <desc id="d">An unfolded chain exposes nonpolar side chains, forcing water into ordered cages (low entropy). Folding buries those nonpolar groups in a core and releases that water (higher entropy). Folding is driven by the increase in water entropy, and the native state is only marginally stable.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="36" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Protein folding &#8212; the hydrophobic effect</text>
+
+  <rect x="24" y="54" width="214" height="300" rx="12" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+  <text x="131" y="82" text-anchor="middle" font-size="15" font-weight="700" fill="#263238">Unfolded</text>
+  <path d="M56,116 C 100,100 92,150 128,146 C 172,140 150,196 104,198 C 66,200 74,250 122,252 C 168,254 150,292 112,292" fill="none" stroke="#607d8b" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="128" cy="146" r="9" fill="#ffb74d" stroke="#ef6c00" stroke-width="2"/>
+  <circle cx="122" cy="252" r="9" fill="#ffb74d" stroke="#ef6c00" stroke-width="2"/>
+  <g fill="#bbdefb" stroke="#64b5f6" stroke-width="1">
+    <circle cx="104" cy="181" r="4"/>
+    <circle cx="119" cy="190" r="4"/>
+    <circle cx="119" cy="207" r="4"/>
+    <circle cx="104" cy="216" r="4"/>
+    <circle cx="89" cy="207" r="4"/>
+    <circle cx="89" cy="190" r="4"/>
+  </g>
+  <circle cx="104" cy="198" r="9" fill="#ffb74d" stroke="#ef6c00" stroke-width="2"/>
+  <text x="131" y="316" text-anchor="middle" font-size="11" fill="#ef6c00">nonpolar groups exposed</text>
+  <text x="131" y="334" text-anchor="middle" font-size="11" fill="#1976d2">ordered water (low entropy)</text>
+
+  <line x1="246" y1="200" x2="298" y2="200" stroke="#37474f" stroke-width="4"/>
+  <polygon points="298,192 314,200 298,208" fill="#37474f"/>
+  <text x="282" y="188" text-anchor="middle" font-size="12" font-weight="700" fill="#37474f">fold</text>
+  <line x1="300" y1="222" x2="252" y2="222" stroke="#b0bec5" stroke-width="2" stroke-dasharray="5 4"/>
+  <polygon points="252,217 242,222 252,227" fill="#b0bec5"/>
+  <text x="282" y="240" text-anchor="middle" font-size="10" fill="#90a4ae">denature</text>
+
+  <rect x="302" y="54" width="214" height="300" rx="12" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+  <text x="409" y="82" text-anchor="middle" font-size="15" font-weight="700" fill="#263238">Folded (native)</text>
+  <circle cx="395" cy="196" r="70" fill="#eceff1" stroke="#90a4ae" stroke-width="2"/>
+  <g fill="#ffb74d" stroke="#ef6c00" stroke-width="2">
+    <circle cx="380" cy="188" r="9"/>
+    <circle cx="406" cy="194" r="9"/>
+    <circle cx="392" cy="212" r="9"/>
+    <circle cx="412" cy="176" r="9"/>
+  </g>
+  <g fill="#90caf9" stroke="#1565c0" stroke-width="2">
+    <circle cx="395" cy="130" r="8"/>
+    <circle cx="460" cy="182" r="8"/>
+    <circle cx="450" cy="240" r="8"/>
+    <circle cx="356" cy="248" r="8"/>
+    <circle cx="336" cy="170" r="8"/>
+  </g>
+  <g fill="#bbdefb" stroke="#64b5f6" stroke-width="1">
+    <circle cx="322" cy="108" r="4"/>
+    <circle cx="486" cy="120" r="4"/>
+    <circle cx="500" cy="250" r="4"/>
+    <circle cx="470" cy="300" r="4"/>
+    <circle cx="330" cy="300" r="4"/>
+    <circle cx="314" cy="150" r="4"/>
+  </g>
+  <text x="409" y="316" text-anchor="middle" font-size="11" fill="#ef6c00">nonpolar core buried</text>
+  <text x="409" y="334" text-anchor="middle" font-size="11" fill="#1976d2">water released (high entropy)</text>
+
+  <text x="270" y="384" text-anchor="middle" font-size="12" fill="#37474f">Burying nonpolar groups frees ordered water, so water entropy rises</text>
+  <text x="270" y="406" text-anchor="middle" font-size="12" fill="#607d8b">&#916;S(system) up &#8594; &#916;G(folding) &lt; 0 &#183; native state only marginally stable</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Virus structure</title>
+  <desc id="d">Two schematic virions. Left: an enveloped virus with glycoprotein spikes, an icosahedral capsid, and a nucleic-acid genome of DNA or RNA inside. Right: a bacteriophage with a polyhedral head holding DNA, a tail sheath, a base plate, and tail fibers that inject DNA into a host. A virion is a genome plus a protein capsid, sometimes enveloped, and is not a living cell.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Virus structure &#8212; genome in a protein coat</text>
+
+  <text x="150" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#0277bd">Enveloped virus</text>
+  <text x="400" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#0277bd">Bacteriophage</text>
+  <line x1="270" y1="74" x2="270" y2="312" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <circle cx="150" cy="182" r="78" fill="#e1f5fe" stroke="#4fc3f7" stroke-width="2"/>
+  <g stroke="#0288d1" stroke-width="2">
+    <line x1="150" y1="260" x2="150" y2="272"/>
+    <line x1="205" y1="237" x2="214" y2="246"/>
+    <line x1="95" y1="237" x2="86" y2="246"/>
+    <line x1="72" y1="182" x2="60" y2="182"/>
+    <line x1="95" y1="127" x2="86" y2="118"/>
+    <line x1="150" y1="104" x2="150" y2="92"/>
+    <line x1="205" y1="127" x2="214" y2="118"/>
+    <line x1="228" y1="182" x2="240" y2="182"/>
+  </g>
+  <g fill="#0288d1">
+    <circle cx="150" cy="272" r="3"/><circle cx="214" cy="246" r="3"/><circle cx="86" cy="246" r="3"/><circle cx="60" cy="182" r="3"/><circle cx="86" cy="118" r="3"/><circle cx="150" cy="92" r="3"/><circle cx="214" cy="118" r="3"/><circle cx="240" cy="182" r="3"/>
+  </g>
+  <polygon points="150,226 188,204 188,160 150,138 112,160 112,204" fill="#b3e5fc" stroke="#0288d1" stroke-width="2"/>
+  <path d="M126 182 Q140 166 152 182 Q164 198 176 182" fill="none" stroke="#01579b" stroke-width="2"/>
+
+  <g font-size="10" fill="#37474f" text-anchor="middle">
+    <text x="150" y="290">Envelope with glycoprotein spikes</text>
+    <text x="150" y="305">Capsid coat around the genome (DNA or RNA)</text>
+  </g>
+
+  <polygon points="400,162 431,144 431,108 400,90 369,108 369,144" fill="#b3e5fc" stroke="#0288d1" stroke-width="2"/>
+  <path d="M382 126 Q394 114 406 126 Q418 138 424 126" fill="none" stroke="#01579b" stroke-width="2"/>
+  <rect x="392" y="162" width="16" height="52" fill="#81d4fa" stroke="#0288d1" stroke-width="2"/>
+  <rect x="376" y="214" width="48" height="8" fill="#4fc3f7" stroke="#0288d1" stroke-width="2"/>
+  <g stroke="#0288d1" stroke-width="2" fill="none">
+    <path d="M382 222 Q368 244 358 268"/>
+    <path d="M400 222 L400 272"/>
+    <path d="M418 222 Q432 244 442 268"/>
+  </g>
+
+  <g font-size="10" fill="#37474f" text-anchor="middle">
+    <text x="400" y="290">Head (capsid) holds the DNA genome</text>
+    <text x="400" y="305">Tail + fibers inject DNA into a host cell</text>
+  </g>
+
+  <text x="270" y="344" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">A virion = nucleic-acid genome + a protein capsid (sometimes enveloped).</text>
+  <text x="270" y="366" text-anchor="middle" font-size="11" fill="#607d8b">Not a cell: it has no metabolism and must hijack a host to replicate.</text>
+  <text x="270" y="416" text-anchor="middle" font-size="10" fill="#90a4ae">Shapes are schematic, not to scale.</text>
+</svg>

@@ -64,6 +64,32 @@ class ConceptSchedulerHelpersTest {
     }
 
     @Test
+    fun `projected total caption matches the desktop format`() {
+        assertEquals(
+            "projected MCAT · likely 498–512 · scale 472–528",
+            projectedTotalMeta(total = 505f, lower = 498f, upper = 512f),
+        )
+    }
+
+    @Test
+    fun `projected total caption rounds bounds to whole points like desktop`() {
+        // Desktop uses Math.round; Kotlin roundToInt rounds ties toward +inf identically.
+        assertEquals(
+            "projected MCAT · likely 498–511 · scale 472–528",
+            projectedTotalMeta(total = 505.4f, lower = 497.6f, upper = 511.4f),
+        )
+    }
+
+    @Test
+    fun `projected total caption falls back to the point estimate for a missing bound`() {
+        // Mirrors desktop's `projectedTotalLower || projectedTotal`: a 0 bound shows the point value.
+        assertEquals(
+            "projected MCAT · likely 500–500 · scale 472–528",
+            projectedTotalMeta(total = 500f, lower = 0f, upper = 0f),
+        )
+    }
+
+    @Test
     fun `lattice layout places foundations at layer 0 and chains deepen`() {
         val nodes =
             listOf(
@@ -90,26 +116,31 @@ class ConceptSchedulerHelpersTest {
                 "Bio::Eukaryotic_Cell" to "Biochem::Bioenergetics",
             )
         val layout = computeLatticeLayout(nodes, edges)
+        val pos = layout.positions
 
-        // Foundations (no prerequisites) are layer 0.
-        assertEquals(0, layout.getValue("Bio::DNA").layer)
-        assertEquals(0, layout.getValue("Bio::Eukaryotic_Cell").layer)
-        assertEquals(0, layout.getValue("Biochem::Amino_Acids").layer)
+        // Foundations (no prerequisites) are column 0.
+        assertEquals(0, pos.getValue("Bio::DNA").col)
+        assertEquals(0, pos.getValue("Bio::Eukaryotic_Cell").col)
+        assertEquals(0, pos.getValue("Biochem::Amino_Acids").col)
         // Chain deepens by 1 per prerequisite edge.
-        assertEquals(1, layout.getValue("Bio::Genetics").layer)
-        assertEquals(1, layout.getValue("Biochem::Peptides_and_Proteins").layer)
-        assertEquals(2, layout.getValue("Biochem::Protein_Structure_and_Function").layer)
-        assertEquals(3, layout.getValue("Biochem::Enzymes").layer)
+        assertEquals(1, pos.getValue("Bio::Genetics").col)
+        assertEquals(1, pos.getValue("Biochem::Peptides_and_Proteins").col)
+        assertEquals(2, pos.getValue("Biochem::Protein_Structure_and_Function").col)
+        assertEquals(3, pos.getValue("Biochem::Enzymes").col)
         // Convergence: Bioenergetics depends on Enzymes(3) and Eukaryotic_Cell(0) -> max+1 = 4.
-        assertEquals(4, layout.getValue("Biochem::Bioenergetics").layer)
-        assertEquals(5, layout.getValue("Biochem::Glycolysis").layer)
-        assertEquals(6, layout.getValue("Biochem::Citric_Acid_Cycle").layer)
+        assertEquals(4, pos.getValue("Biochem::Bioenergetics").col)
+        assertEquals(5, pos.getValue("Biochem::Glycolysis").col)
+        assertEquals(6, pos.getValue("Biochem::Citric_Acid_Cycle").col)
 
-        // Every node is placed exactly once.
-        assertEquals(nodes.size, layout.size)
-        // layerSize is consistent within a layer.
-        val layer0 = layout.values.filter { it.layer == 0 }
-        assertTrue(layer0.all { it.layerSize == layer0.size })
+        // Every node is placed exactly once, and the grid extent covers the deepest chain.
+        assertEquals(nodes.size, pos.size)
+        assertEquals(7, layout.cols)
+
+        // Disciplines are stacked into separate horizontal lanes: every Bio node sits in a row above
+        // every Biochem node (Bio precedes Biochem in the lane order).
+        val bioRows = pos.filterKeys { it.startsWith("Bio::") }.values.map { it.row }
+        val biochemRows = pos.filterKeys { it.startsWith("Biochem::") }.values.map { it.row }
+        assertTrue(bioRows.max() < biochemRows.min(), "Bio lane should sit above the Biochem lane")
     }
 
     @Test
@@ -117,6 +148,6 @@ class ConceptSchedulerHelpersTest {
         val nodes = listOf("A", "B")
         val edges = listOf("A" to "B", "B" to "A")
         val layout = computeLatticeLayout(nodes, edges)
-        assertEquals(2, layout.size)
+        assertEquals(2, layout.positions.size)
     }
 }

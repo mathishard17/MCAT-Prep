@@ -2085,7 +2085,18 @@ open class DeckPicker :
         if (mcatDemoDeckImported) return
         mcatDemoDeckImported = true
         try {
-            val deckId = withCol { backend.importMcatDemoDeck() }
+            val deckId =
+                withCol {
+                    val id = backend.importMcatDemoDeck()
+                    // Turn FSRS on by default the first time the MCAT deck is set up. Guarded by a
+                    // collection-config flag so it runs once and a later manual toggle-off sticks
+                    // (mirrors the desktop deck browser).
+                    if (config.get<Boolean>("mcatFsrsDefaulted") != true) {
+                        config.set("fsrs", true)
+                        config.set("mcatFsrsDefaulted", true)
+                    }
+                    id
+                }
             Timber.i("Imported MCAT Demo deck: %d", deckId)
         } catch (e: Exception) {
             Timber.w(e, "Failed to import MCAT Demo deck")

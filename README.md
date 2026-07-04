@@ -1,6 +1,17 @@
 # MCAT Prep Workspace
 
-Parent workspace for the MCAT prep desktop, Android, and backend projects.
+Study tooling for the **MCAT** (Medical College Admission Test), the AAMC's
+standardized exam for U.S. and Canadian medical-school admissions. The MCAT is
+reported on a total scaled score of **472–528** (midpoint 500), combining four
+sections that are each scored **118–132** (midpoint 125):
+
+- Biological and Biochemical Foundations of Living Systems (Bio/Biochem)
+- Chemical and Physical Foundations of Biological Systems (Chem/Phys)
+- Psychological, Social, and Biological Foundations of Behavior (Psych/Soc)
+- Critical Analysis and Reasoning Skills (CARS)
+
+This is the parent workspace for the MCAT prep desktop, Android, and backend
+projects.
 
 ## Repository Layout
 

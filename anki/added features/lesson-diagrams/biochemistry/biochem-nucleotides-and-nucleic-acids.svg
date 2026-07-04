@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Nucleotide anatomy and base pairing</title>
+  <desc id="d">A nucleotide is a phosphate joined to a five-carbon sugar joined to a nitrogenous base. Purines (adenine and guanine) have two fused rings; pyrimidines (cytosine, thymine, uracil) have one ring. Adenine pairs with thymine via two hydrogen bonds and guanine pairs with cytosine via three, so higher G-C content raises the melting temperature.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Nucleotide anatomy &amp; base pairing</text>
+  <text x="270" y="60" text-anchor="middle" font-size="12" fill="#607d8b">one nucleotide = phosphate + sugar + base</text>
+
+  <circle cx="110" cy="128" r="24" fill="#ef6c00" stroke="#e65100" stroke-width="2"/>
+  <text x="110" y="133" text-anchor="middle" font-size="15" font-weight="700" fill="#ffffff">P</text>
+  <text x="110" y="176" text-anchor="middle" font-size="11" fill="#607d8b">phosphate</text>
+  <line x1="134" y1="128" x2="168" y2="128" stroke="#607d8b" stroke-width="3"/>
+  <polygon points="196,106 220,124 211,152 181,152 172,124" fill="#eceff1" stroke="#607d8b" stroke-width="2"/>
+  <text x="196" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="#455a64">sugar</text>
+  <text x="196" y="176" text-anchor="middle" font-size="11" fill="#607d8b">pentose (ribose)</text>
+  <line x1="222" y1="128" x2="256" y2="128" stroke="#607d8b" stroke-width="3"/>
+  <rect x="256" y="110" width="90" height="36" rx="8" fill="#1565c0" stroke="#0d47a1" stroke-width="2"/>
+  <text x="301" y="133" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">base</text>
+  <text x="301" y="176" text-anchor="middle" font-size="11" fill="#607d8b">nitrogenous base</text>
+
+  <text x="270" y="212" text-anchor="middle" font-size="13" font-weight="700" fill="#455a64">Purines vs pyrimidines</text>
+  <polygon points="140,236 161,248 161,272 140,284 119,272 119,248" fill="#c8e6c9" stroke="#2e7d32" stroke-width="2"/>
+  <polygon points="161,248 186,252 196,260 186,268 161,272" fill="#a5d6a7" stroke="#2e7d32" stroke-width="2"/>
+  <text x="150" y="308" text-anchor="middle" font-size="11" fill="#2e7d32">purine: A, G (2 rings)</text>
+  <polygon points="380,236 401,248 401,272 380,284 359,272 359,248" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+  <text x="380" y="308" text-anchor="middle" font-size="11" fill="#c62828">pyrimidine: C, T, U (1 ring)</text>
+
+  <text x="270" y="346" text-anchor="middle" font-size="13" font-weight="700" fill="#263238">A = T (2 H-bonds) &#183; G &#8801; C (3 H-bonds)</text>
+  <text x="270" y="372" text-anchor="middle" font-size="12" fill="#37474f">Higher G-C content &#8594; more H-bonds &#8594; higher melting Tm</text>
+  <text x="270" y="396" text-anchor="middle" font-size="11" fill="#607d8b">a purine always pairs with a pyrimidine (uniform helix width)</text>
+</svg>

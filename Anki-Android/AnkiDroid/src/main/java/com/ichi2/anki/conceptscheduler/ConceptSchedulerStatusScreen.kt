@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,10 +29,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,8 +51,8 @@ import anki.scheduler.ConceptEvidenceStatus
 import anki.scheduler.ConceptFringe
 import anki.scheduler.ConceptGraphNode
 import anki.scheduler.ConceptSchedulerStatusResponse
-import anki.scheduler.ConceptSectionScore
 import anki.scheduler.McatSection
+import kotlin.math.roundToInt
 
 /** Coverage below which MCAT section score ranges are hidden (matches the backend/desktop gate). */
 private const val MIN_COVERAGE_TO_SHOW_SCORES = 0.60f
@@ -104,6 +107,22 @@ fun nodeStateLabel(
         else -> "Unknown"
     }
 
+/**
+ * Caption shown under the projected MCAT total, mirroring the desktop reviewer's projection block
+ * ("projected MCAT · likely {lo}–{hi} · scale 472–528"). Bounds are rounded to whole points like
+ * desktop's `Math.round`, and a missing bound (0) falls back to the point estimate, matching
+ * desktop's `projectedTotalLower || projectedTotal` behaviour.
+ */
+fun projectedTotalMeta(
+    total: Float,
+    lower: Float,
+    upper: Float,
+): String {
+    val lo = (if (lower > 0f) lower else total).roundToInt()
+    val hi = (if (upper > 0f) upper else total).roundToInt()
+    return "projected MCAT · likely $lo–$hi · scale 472–528"
+}
+
 private fun sectionLabel(section: McatSection): String =
     when (section) {
         McatSection.MCAT_SECTION_BIO_BIOCHEM -> "Bio / Biochem"
@@ -117,17 +136,21 @@ private fun sectionLabel(section: McatSection): String =
  * The single source-of-truth Compose UI for the Concept Scheduler read model. Rendered both in the
  * reviewer bottom sheet and the deck-picker full page. Callers must wrap this in `AnkiDroidTheme`.
  *
- * Read-only: every value comes from [status] (the backend response). This screen never computes or
- * writes scheduler state.
+ * Values come from [status] (the backend response); this screen never computes scheduler state. The
+ * only writes are user-driven and delegated to the host via [onSelectTopic] (choose the next topic to
+ * study) and [onOpenLesson] (open a concept's lesson) — both no-ops by default so read-only hosts can
+ * omit them.
  */
 @Composable
 fun ConceptSchedulerStatusScreen(
     status: ConceptSchedulerStatusResponse,
     modifier: Modifier = Modifier,
+    onSelectTopic: (String) -> Unit = {},
+    onOpenLesson: (String) -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+        contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { HeaderRow(status.enabled, status.active) }
@@ -144,19 +167,32 @@ fun ConceptSchedulerStatusScreen(
             return@LazyColumn
         }
 
+        // Prominent "what to learn next" picker at the very top, so choosing the next topic is obvious
+        // (mirrors the desktop reviewer's `concept-next-topics` block).
+        if (status.hasGraph()) {
+            val startable = status.graph.nodesList.filter { it.fringe == ConceptFringe.CONCEPT_FRINGE_OUTER }
+            val recommended = startable.filter { it.recommended }
+            val nextTopics = (if (recommended.isNotEmpty()) recommended else startable).take(6)
+            if (nextTopics.isNotEmpty()) {
+                item { NextTopicsCard(nextTopics, anyRecommended = recommended.isNotEmpty(), onSelectTopic = onSelectTopic) }
+            }
+        }
+
         if (status.hasSession()) {
             item { SessionCard(status) }
         }
 
         item { EvidenceCountersCard(status) }
 
-        if (status.hasGraph()) {
-            item { LatticeCard(status) }
-            item { TopicsCard(status) }
+        // MCAT score (projected total + per-section breakdown) sits ABOVE the graph, mirroring the
+        // desktop reviewer where the projected MCAT total headlines the score block.
+        if (status.hasProjection || status.sectionScoresCount > 0) {
+            item { SectionsCard(status) }
         }
 
-        if (status.sectionScoresCount > 0) {
-            item { SectionsCard(status.sectionScoresList) }
+        if (status.hasGraph()) {
+            item { LatticeCard(status, onSelectTopic, onOpenLesson) }
+            item { TopicsCard(status) }
         }
     }
 }
@@ -169,6 +205,58 @@ private fun HeaderRow(
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         StatusChip(if (enabled) "Enabled" else "Disabled", enabled)
         StatusChip(if (active) "Active" else "Inactive", active)
+    }
+}
+
+/**
+ * Prominent "what to learn next" picker shown at the top of the screen so choosing the next topic is
+ * obvious. Lists [topics] (the recommended startable topics, or all outer-fringe topics when none are
+ * flagged) as large full-width buttons — mirroring the desktop reviewer's `concept-next-topics` block.
+ * Tapping a topic selects it via [onSelectTopic]; recommended topics keep the ★ marker.
+ */
+@Composable
+private fun NextTopicsCard(
+    topics: List<ConceptGraphNode>,
+    anyRecommended: Boolean,
+    onSelectTopic: (String) -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                "Pick your next topic",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                if (anyRecommended) {
+                    "Suggested next — prerequisites are ready. Tap one to start."
+                } else {
+                    "Ready to start — prerequisites are met. Tap one to begin."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+            Spacer(Modifier.height(12.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (node in topics) {
+                    Button(
+                        onClick = { onSelectTopic(node.id) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            node.id.substringAfterLast("::").replace('_', ' '),
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(if (node.recommended) "★ Start" else "Start ▸")
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -208,25 +296,34 @@ private fun EvidenceCountersCard(status: ConceptSchedulerStatusResponse) {
 }
 
 @Composable
-private fun LatticeCard(status: ConceptSchedulerStatusResponse) {
+private fun LatticeCard(
+    status: ConceptSchedulerStatusResponse,
+    onSelectTopic: (String) -> Unit,
+    onOpenLesson: (String) -> Unit,
+) {
     val colors =
         LatticeColors(
-            inner = MaterialTheme.colorScheme.primary,
-            outer = MaterialTheme.colorScheme.secondary,
-            inProgress = MaterialTheme.colorScheme.tertiary,
-            locked = MaterialTheme.colorScheme.outline,
-            edge = MaterialTheme.colorScheme.outline,
+            edge = MaterialTheme.colorScheme.outlineVariant,
             label = MaterialTheme.colorScheme.onSurface,
-            selectedRing = MaterialTheme.colorScheme.tertiary,
+            selectedRing = MaterialTheme.colorScheme.primary,
+            recommended = Color(0xFFFFB300),
+            frontier = FrontierRingColor,
+            background = MaterialTheme.colorScheme.surface,
         )
     var selected by remember { mutableStateOf<String?>(null) }
     SectionCard(title = "Knowledge lattice") {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            LegendDot("Mastered", colors.inner)
-            LegendDot("In progress", colors.inProgress)
-            LegendDot("Next up", colors.outer)
-            LegendDot("Locked", colors.locked)
+        // Dots are colored by MCAT super-section; state reads from the ring/mark (see hints).
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            LegendDot("Bio / Biochem", SectionBioBiochemColor)
+            LegendDot("Chem / Phys", SectionChemPhysColor)
+            LegendDot("Psych / Soc", SectionPsychSocColor)
+            LegendDot("Ready to start", FrontierRingColor)
         }
+        Text(
+            "★ suggested next · ✓ mastered · ⬤ ring = ready · size = importance · tap a dot for details",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         if (status.graph.hasCycle) {
             Text(
                 "⚠ prerequisite cycle detected",
@@ -243,7 +340,7 @@ private fun LatticeCard(status: ConceptSchedulerStatusResponse) {
         )
         val node = status.graph.nodesList.firstOrNull { it.id == selected }
         if (node != null) {
-            NodeDetail(node)
+            NodeDetail(node, onSelectTopic, onOpenLesson)
         } else {
             Text(
                 "Tap a node for details",
@@ -255,7 +352,11 @@ private fun LatticeCard(status: ConceptSchedulerStatusResponse) {
 }
 
 @Composable
-private fun NodeDetail(node: ConceptGraphNode) {
+private fun NodeDetail(
+    node: ConceptGraphNode,
+    onSelectTopic: (String) -> Unit,
+    onOpenLesson: (String) -> Unit,
+) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -263,7 +364,13 @@ private fun NodeDetail(node: ConceptGraphNode) {
             .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(8.dp))
             .padding(12.dp),
     ) {
-        Text(node.id, style = MaterialTheme.typography.titleSmall)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(node.id, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+            if (node.recommended) {
+                Spacer(Modifier.width(8.dp))
+                SuggestedNextChip()
+            }
+        }
         LabeledValue("State", nodeStateLabel(node.fringe, node.answered))
         LabeledValue("Mastery", displayMastery(node.answered, node.mastery))
         LabeledValue("Study priority", displayPriority(node.answered, node.readinessScore))
@@ -275,6 +382,35 @@ private fun NodeDetail(node: ConceptGraphNode) {
                 "help (high when prerequisites are solid but mastery isn't yet); it drops to 0 once mastered.",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(10.dp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Only outer-fringe topics are "ready to start" (their prerequisites are met), so limit the
+            // primary "start" action to them — matching the desktop's clickable outer fringe.
+            if (node.fringe == ConceptFringe.CONCEPT_FRINGE_OUTER) {
+                Button(onClick = { onSelectTopic(node.id) }) {
+                    Text("Start this topic")
+                }
+            }
+            OutlinedButton(onClick = { onOpenLesson(node.id) }) {
+                Text("View lesson")
+            }
+        }
+    }
+}
+
+/** A small "★ Suggested next" chip flagging a backend-recommended topic (parity with the graph star). */
+@Composable
+private fun SuggestedNextChip() {
+    Box(
+        Modifier
+            .background(MaterialTheme.colorScheme.tertiaryContainer, RoundedCornerShape(50))
+            .padding(horizontal = 10.dp, vertical = 2.dp),
+    ) {
+        Text(
+            "★ Suggested next",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onTertiaryContainer,
         )
     }
 }
@@ -294,7 +430,8 @@ private fun TopicsCard(status: ConceptSchedulerStatusResponse) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    node.id.substringAfterLast("::").replace('_', ' '),
+                    // Star-prefix backend-recommended topics so the suggested-next set stands out in the list.
+                    (if (node.recommended) "★ " else "") + node.id.substringAfterLast("::").replace('_', ' '),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.weight(1f),
                 )
@@ -317,9 +454,25 @@ private fun TopicsCard(status: ConceptSchedulerStatusResponse) {
 }
 
 @Composable
-private fun SectionsCard(sections: List<ConceptSectionScore>) {
-    SectionCard(title = "MCAT sections") {
-        for (section in sections) {
+private fun SectionsCard(status: ConceptSchedulerStatusResponse) {
+    SectionCard(title = "MCAT score") {
+        // Projected MCAT total headline (472–528 scale), matching the desktop reviewer's projection
+        // block. has_projection is false until some cards are answered; until then only the
+        // per-section coverage rows below appear.
+        if (status.hasProjection && status.projectedTotal > 0f) {
+            Text(
+                status.projectedTotal.roundToInt().toString(),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                projectedTotalMeta(status.projectedTotal, status.projectedTotalLower, status.projectedTotalUpper),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(12.dp))
+        }
+        for (section in status.sectionScoresList) {
             Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                 Text(sectionLabel(section.section), style = MaterialTheme.typography.bodyMedium)
                 val coverage = "Coverage ${(section.coverage * 100).toInt()}%"
@@ -349,7 +502,7 @@ private fun scaledRange(
     lower: Float,
     center: Float,
     upper: Float,
-): String = "${center.toInt()} (${lower.toInt()}–${upper.toInt()})"
+): String = "${center.roundToInt()} (${lower.roundToInt()}–${upper.roundToInt()})"
 
 // ---- small reusable pieces ----
 

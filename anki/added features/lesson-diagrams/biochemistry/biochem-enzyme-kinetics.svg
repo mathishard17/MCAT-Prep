@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Michaelis-Menten and Lineweaver-Burk plots</title>
+  <desc id="d">Panel a: rate v versus substrate concentration is a rectangular hyperbola that saturates at Vmax; Km is the substrate concentration at half of Vmax. Panel b: the double-reciprocal Lineweaver-Burk plot linearizes the data, with a y-intercept of 1 over Vmax and an x-intercept of minus 1 over Km.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Enzyme kinetics &#8212; two views</text>
+
+  <text x="285" y="72" text-anchor="middle" font-size="13" font-weight="700" fill="#455a64">(a) v vs [S]: rate saturates at Vmax</text>
+  <line x1="100" y1="80" x2="100" y2="210" stroke="#607d8b" stroke-width="2"/>
+  <line x1="100" y1="210" x2="470" y2="210" stroke="#607d8b" stroke-width="2"/>
+  <line x1="100" y1="96" x2="470" y2="96" stroke="#cfd8dc" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="100" y1="153" x2="330" y2="153" stroke="#cfd8dc" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="170" y1="210" x2="170" y2="153" stroke="#cfd8dc" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <path d="M100,210 C 128,180 150,162 170,153 C 240,128 340,104 470,98" fill="none" stroke="#1565c0" stroke-width="3"/>
+  <text x="466" y="92" text-anchor="end" font-size="11" font-weight="700" fill="#37474f">Vmax</text>
+  <text x="150" y="149" text-anchor="middle" font-size="10" fill="#607d8b">Vmax/2</text>
+  <text x="170" y="224" text-anchor="middle" font-size="11" font-weight="700" fill="#37474f">Km</text>
+  <text transform="rotate(-90 74 150)" x="74" y="150" text-anchor="middle" font-size="12" fill="#37474f">v</text>
+  <text x="285" y="236" text-anchor="middle" font-size="12" fill="#37474f">[S]</text>
+
+  <text x="285" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#455a64">(b) Lineweaver-Burk: 1/v vs 1/[S]</text>
+  <line x1="250" y1="288" x2="250" y2="412" stroke="#607d8b" stroke-width="2"/>
+  <line x1="110" y1="380" x2="470" y2="380" stroke="#607d8b" stroke-width="2"/>
+  <line x1="250" y1="330" x2="450" y2="205" fill="none" stroke="#1565c0" stroke-width="3"/>
+  <line x1="250" y1="330" x2="160" y2="386" stroke="#1565c0" stroke-width="2" stroke-dasharray="6 5"/>
+  <circle cx="250" cy="330" r="4" fill="#c62828"/>
+  <circle cx="170" cy="380" r="4" fill="#c62828"/>
+  <text x="262" y="326" text-anchor="start" font-size="11" font-weight="700" fill="#c62828">1/Vmax</text>
+  <text x="150" y="400" text-anchor="middle" font-size="11" font-weight="700" fill="#c62828">&#8722;1/Km</text>
+  <text x="244" y="298" text-anchor="end" font-size="12" fill="#37474f">1/v</text>
+  <text x="466" y="396" text-anchor="end" font-size="12" fill="#37474f">1/[S]</text>
+  <text x="392" y="250" text-anchor="middle" font-size="10" fill="#607d8b">slope = Km/Vmax</text>
+</svg>

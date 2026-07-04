@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Heart chambers and blood flow</title>
+  <desc id="d">A four-chamber heart. The right atrium and right ventricle in blue carry deoxygenated blood from the body to the lungs. The left atrium and left ventricle in red carry oxygenated blood from the lungs to the body. Blood flows from body to right atrium to right ventricle to lungs to left atrium to left ventricle and back to the body.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Heart &#8212; chambers and blood flow</text>
+
+  <line x1="270" y1="104" x2="270" y2="322" stroke="#b0bec5" stroke-width="2"/>
+
+  <rect x="150" y="104" width="112" height="84" rx="10" fill="#bbdefb" stroke="#1e88e5" stroke-width="2"/>
+  <rect x="150" y="200" width="112" height="122" rx="10" fill="#90caf9" stroke="#1565c0" stroke-width="2"/>
+  <rect x="278" y="104" width="112" height="84" rx="10" fill="#ffcdd2" stroke="#e53935" stroke-width="2"/>
+  <rect x="278" y="200" width="112" height="122" rx="10" fill="#ef9a9a" stroke="#c62828" stroke-width="2"/>
+
+  <g text-anchor="middle" font-weight="700" font-size="12">
+    <text x="206" y="140" fill="#1565c0">Right</text><text x="206" y="158" fill="#1565c0">atrium</text>
+    <text x="206" y="256" fill="#1565c0">Right</text><text x="206" y="274" fill="#1565c0">ventricle</text>
+    <text x="334" y="140" fill="#c62828">Left</text><text x="334" y="158" fill="#c62828">atrium</text>
+    <text x="334" y="256" fill="#c62828">Left</text><text x="334" y="274" fill="#c62828">ventricle</text>
+  </g>
+
+  <g stroke="#455a64" stroke-width="2" fill="#455a64">
+    <line x1="206" y1="188" x2="206" y2="202"/><polygon points="206,208 201,197 211,197"/>
+    <line x1="334" y1="188" x2="334" y2="202"/><polygon points="334,208 329,197 339,197"/>
+  </g>
+
+  <g stroke="#1e88e5" stroke-width="3" fill="#1e88e5">
+    <line x1="112" y1="146" x2="150" y2="146"/><polygon points="156,146 145,141 145,151"/>
+    <line x1="150" y1="262" x2="112" y2="262"/><polygon points="106,262 117,257 117,267"/>
+  </g>
+  <g stroke="#e53935" stroke-width="3" fill="#e53935">
+    <line x1="430" y1="146" x2="390" y2="146"/><polygon points="384,146 395,141 395,151"/>
+    <line x1="390" y1="262" x2="430" y2="262"/><polygon points="436,262 425,257 425,267"/>
+  </g>
+
+  <g font-size="10">
+    <text x="72" y="124" fill="#1565c0">From body</text><text x="72" y="138" fill="#1565c0">(venae cavae)</text>
+    <text x="72" y="234" fill="#1565c0">To lungs</text><text x="72" y="248" fill="#1565c0">(pulm. artery)</text>
+    <text x="468" y="124" text-anchor="end" fill="#c62828">From lungs</text><text x="468" y="138" text-anchor="end" fill="#c62828">(pulm. veins)</text>
+    <text x="468" y="234" text-anchor="end" fill="#c62828">To body</text><text x="468" y="248" text-anchor="end" fill="#c62828">(aorta)</text>
+  </g>
+
+  <text x="270" y="360" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Flow: body &#8594; RA &#8594; RV &#8594; lungs &#8594; LA &#8594; LV &#8594; body.</text>
+  <text x="270" y="382" text-anchor="middle" font-size="12" fill="#607d8b">Right side = deoxygenated (blue); left side = oxygenated (red).</text>
+  <text x="270" y="412" text-anchor="middle" font-size="10" fill="#90a4ae">Pulmonary loop (heart&#8211;lungs) plus systemic loop (heart&#8211;body).</text>
+</svg>

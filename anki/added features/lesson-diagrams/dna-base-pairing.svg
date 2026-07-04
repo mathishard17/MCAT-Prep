@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">DNA base pairing</title>
+  <desc id="d">Two antiparallel sugar-phosphate backbones. A pairs with T via two hydrogen bonds; G pairs with C via three hydrogen bonds. Left strand runs 5-prime to 3-prime top to bottom; right strand runs 3-prime to 5-prime.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="36" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">DNA base pairing &#8212; antiparallel double helix</text>
+
+  <rect x="92" y="70" width="14" height="290" rx="7" fill="#90a4ae"/>
+  <rect x="434" y="70" width="14" height="290" rx="7" fill="#90a4ae"/>
+
+  <text x="99" y="62" text-anchor="middle" font-size="13" font-weight="700" fill="#37474f">5'</text>
+  <text x="99" y="380" text-anchor="middle" font-size="13" font-weight="700" fill="#37474f">3'</text>
+  <text x="441" y="62" text-anchor="middle" font-size="13" font-weight="700" fill="#37474f">3'</text>
+  <text x="441" y="380" text-anchor="middle" font-size="13" font-weight="700" fill="#37474f">5'</text>
+
+  <g stroke="#90a4ae" stroke-width="6">
+    <line x1="106" y1="110" x2="112" y2="110"/><line x1="428" y1="110" x2="434" y2="110"/>
+    <line x1="106" y1="170" x2="112" y2="170"/><line x1="428" y1="170" x2="434" y2="170"/>
+    <line x1="106" y1="230" x2="112" y2="230"/><line x1="428" y1="230" x2="434" y2="230"/>
+    <line x1="106" y1="290" x2="112" y2="290"/><line x1="428" y1="290" x2="434" y2="290"/>
+  </g>
+
+  <g stroke="#78909c" stroke-width="3" stroke-dasharray="4 4">
+    <line x1="190" y1="103" x2="350" y2="103"/><line x1="190" y1="117" x2="350" y2="117"/>
+    <line x1="190" y1="163" x2="350" y2="163"/><line x1="190" y1="177" x2="350" y2="177"/>
+    <line x1="190" y1="220" x2="350" y2="220"/><line x1="190" y1="230" x2="350" y2="230"/><line x1="190" y1="240" x2="350" y2="240"/>
+    <line x1="190" y1="280" x2="350" y2="280"/><line x1="190" y1="290" x2="350" y2="290"/><line x1="190" y1="300" x2="350" y2="300"/>
+  </g>
+
+  <rect x="112" y="92" width="74" height="36" rx="8" fill="#2e7d32"/><text x="149" y="116" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">A</text>
+  <rect x="354" y="92" width="74" height="36" rx="8" fill="#c62828"/><text x="391" y="116" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">T</text>
+
+  <rect x="112" y="152" width="74" height="36" rx="8" fill="#c62828"/><text x="149" y="176" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">T</text>
+  <rect x="354" y="152" width="74" height="36" rx="8" fill="#2e7d32"/><text x="391" y="176" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">A</text>
+
+  <rect x="112" y="212" width="74" height="36" rx="8" fill="#1565c0"/><text x="149" y="236" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">G</text>
+  <rect x="354" y="212" width="74" height="36" rx="8" fill="#ef6c00"/><text x="391" y="236" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">C</text>
+
+  <rect x="112" y="272" width="74" height="36" rx="8" fill="#ef6c00"/><text x="149" y="296" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">C</text>
+  <rect x="354" y="272" width="74" height="36" rx="8" fill="#1565c0"/><text x="391" y="296" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">G</text>
+
+  <text x="270" y="400" text-anchor="middle" font-size="13" font-weight="600" fill="#37474f">A = T (2 hydrogen bonds) &#183; G &#8801; C (3 hydrogen bonds)</text>
+  <text x="270" y="420" text-anchor="middle" font-size="12" fill="#607d8b">Antiparallel strands &#183; grey = sugar&#8211;phosphate backbone</text>
+</svg>

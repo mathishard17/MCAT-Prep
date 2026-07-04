@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 360" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">IR spectrum with diagnostic peaks</title>
+  <desc id="d">A schematic infrared transmittance spectrum with the wavenumber axis running from 4000 on the left to 500 on the right. Diagnostic absorptions dip downward: a broad O-H near 3400, C-H near 2900, C triple bond N near 2200, and a strong sharp C double bond O near 1700. Below about 1500 is the complex fingerprint region. IR shows which functional groups are present.</desc>
+  <rect x="6" y="6" width="548" height="348" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="280" y="32" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">IR spectrum: diagnostic peaks</text>
+
+  <g stroke="#455a64" stroke-width="1.6"><line x1="60" y1="58" x2="60" y2="292"/><line x1="60" y1="292" x2="520" y2="292"/></g>
+
+  <line x1="384" y1="100" x2="384" y2="292" stroke="#cfd8dc" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <text x="452" y="284" text-anchor="middle" font-size="10.5" fill="#90a4ae">fingerprint region</text>
+
+  <path d="M70,100 L125,100 Q145,205 165,100 L200,100 Q208,165 216,100 L288,100 Q296,178 304,100 L350,100 Q359,248 368,100 L384,100 L396,130 L406,108 L416,165 L428,112 L440,150 L452,116 L466,168 L478,114 L492,145 L510,108" fill="none" stroke="#1565c0" stroke-width="2.5"/>
+
+  <g stroke="#90a4ae" stroke-width="1"><line x1="150" y1="82" x2="150" y2="150"/><line x1="208" y1="82" x2="208" y2="120"/><line x1="296" y1="82" x2="296" y2="130"/><line x1="359" y1="82" x2="359" y2="150"/></g>
+  <g font-size="11" text-anchor="middle">
+    <text x="150" y="76" fill="#37474f">O&#8722;H (broad)</text>
+    <text x="208" y="76" fill="#37474f">C&#8722;H</text>
+    <text x="296" y="76" fill="#37474f">C&#8801;N</text>
+    <text x="359" y="76" font-weight="700" fill="#c62828">C=O (strong)</text>
+  </g>
+
+  <g font-size="10" fill="#607d8b" text-anchor="middle"><text x="70" y="308">4000</text><text x="196" y="308">3000</text><text x="320" y="308">2000</text><text x="445" y="308">1000</text><text x="510" y="308">500</text></g>
+  <text x="290" y="326" text-anchor="middle" font-size="11.5" fill="#546e7a">wavenumber (cm&#8722;1) - axis reversed, high to low</text>
+  <text x="30" y="175" text-anchor="middle" font-size="11" fill="#546e7a" transform="rotate(-90 30 175)">% transmittance</text>
+
+  <text x="280" y="346" text-anchor="middle" font-size="10.5" fill="#607d8b">IR shows which functional groups are present; peaks above ~1500 cm&#8722;1 are the diagnostic ones.</text>
+</svg>

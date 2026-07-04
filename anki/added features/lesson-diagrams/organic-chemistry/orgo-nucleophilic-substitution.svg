@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 330" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">SN2 backside attack and inversion</title>
+  <desc id="d">An SN2 reaction in three snapshots. The nucleophile attacks the carbon from the side opposite the leaving group; the three other groups pass through a planar transition state with partial bonds to nucleophile and leaving group; the product has an inverted configuration as the leaving group departs. One concerted step, rate depends on substrate and nucleophile, and configuration inverts (Walden inversion).</desc>
+  <rect x="6" y="6" width="548" height="318" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="280" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">SN2: backside attack and inversion</text>
+
+  <g stroke="#78909c" stroke-width="2.5">
+    <line x1="105" y1="170" x2="105" y2="142"/>
+    <line x1="105" y1="170" x2="83" y2="153"/>
+    <line x1="105" y1="170" x2="127" y2="153"/>
+    <line x1="119" y1="170" x2="150" y2="170"/>
+  </g>
+  <line x1="58" y1="170" x2="88" y2="170" stroke="#1565c0" stroke-width="2"/>
+  <polygon points="90,170 82,166 82,174" fill="#1565c0"/>
+  <text x="48" y="174" text-anchor="end" font-size="12" font-weight="700" fill="#1565c0">Nu:&#8722;</text>
+  <circle cx="105" cy="170" r="14" fill="#37474f"/><text x="105" y="175" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">C</text>
+  <g font-size="11" fill="#455a64" text-anchor="middle"><text x="105" y="134">R</text><text x="75" y="149">R</text><text x="135" y="149">R</text></g>
+  <text x="162" y="174" font-size="12" font-weight="700" fill="#c62828">LG</text>
+  <text x="105" y="250" text-anchor="middle" font-size="11" fill="#546e7a">Nu attacks anti to LG</text>
+
+  <line x1="178" y1="170" x2="208" y2="170" stroke="#37474f" stroke-width="1.8"/>
+  <polygon points="210,170 202,166 202,174" fill="#37474f"/>
+
+  <text x="230" y="184" font-size="40" fill="#455a64">[</text>
+  <text x="350" y="184" font-size="40" fill="#455a64">]</text>
+  <text x="360" y="150" font-size="14" font-weight="700" fill="#455a64">&#8225;</text>
+  <g stroke="#78909c" stroke-width="2.5">
+    <line x1="290" y1="156" x2="290" y2="140"/>
+    <line x1="290" y1="184" x2="290" y2="200"/>
+  </g>
+  <line x1="276" y1="170" x2="250" y2="170" stroke="#1565c0" stroke-width="2" stroke-dasharray="4 3"/>
+  <line x1="304" y1="170" x2="330" y2="170" stroke="#c62828" stroke-width="2" stroke-dasharray="4 3"/>
+  <circle cx="290" cy="170" r="14" fill="#37474f"/><text x="290" y="175" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">C</text>
+  <g font-size="11" fill="#455a64" text-anchor="middle"><text x="290" y="134">R</text><text x="290" y="212">R</text></g>
+  <text x="242" y="174" text-anchor="end" font-size="11" font-weight="700" fill="#1565c0">Nu</text><text x="242" y="160" text-anchor="end" font-size="10" fill="#1565c0">&#948;&#8722;</text>
+  <text x="338" y="174" font-size="11" font-weight="700" fill="#c62828">LG</text><text x="338" y="160" font-size="10" fill="#c62828">&#948;&#8722;</text>
+  <text x="290" y="250" text-anchor="middle" font-size="11" fill="#546e7a">planar transition state</text>
+
+  <line x1="378" y1="170" x2="408" y2="170" stroke="#37474f" stroke-width="1.8"/>
+  <polygon points="410,170 402,166 402,174" fill="#37474f"/>
+
+  <g stroke="#78909c" stroke-width="2.5">
+    <line x1="470" y1="170" x2="470" y2="198"/>
+    <line x1="470" y1="170" x2="448" y2="187"/>
+    <line x1="470" y1="170" x2="492" y2="187"/>
+    <line x1="456" y1="170" x2="430" y2="170"/>
+  </g>
+  <circle cx="470" cy="170" r="14" fill="#37474f"/><text x="470" y="175" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">C</text>
+  <text x="420" y="174" text-anchor="end" font-size="12" font-weight="700" fill="#1565c0">Nu</text>
+  <g font-size="11" fill="#455a64" text-anchor="middle"><text x="470" y="210">R</text><text x="440" y="193">R</text><text x="500" y="193">R</text></g>
+  <text x="504" y="162" font-size="12" font-weight="700" fill="#c62828">LG:&#8722;</text>
+  <text x="470" y="250" text-anchor="middle" font-size="11" fill="#546e7a">inverted configuration</text>
+
+  <text x="280" y="300" text-anchor="middle" font-size="11.5" fill="#607d8b">One concerted step &#183; rate = k[substrate][Nu] &#183; configuration inverts (Walden inversion)</text>
+</svg>

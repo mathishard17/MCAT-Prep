@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Action potential: membrane voltage over time</title>
+  <desc id="d">A neuron membrane potential trace. It rests near minus 70 millivolts, and once a stimulus reaches the threshold near minus 55, sodium influx drives a rapid depolarization to about plus 30. Potassium efflux then repolarizes the membrane, overshooting into a brief hyperpolarization below rest before returning to the resting potential.</desc>
+  <defs>
+    <marker id="ak" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#546e7a"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Action potential: membrane voltage over time</text>
+
+  <line x1="90" y1="340" x2="510" y2="340" stroke="#546e7a" stroke-width="2" marker-end="url(#ak)"/>
+  <line x1="90" y1="340" x2="90" y2="100" stroke="#546e7a" stroke-width="2" marker-end="url(#ak)"/>
+  <text x="300" y="360" text-anchor="middle" font-size="12" fill="#37474f">time</text>
+  <text x="66" y="230" font-size="12" fill="#37474f" transform="rotate(-90 66 230)">membrane potential (mV)</text>
+
+  <line x1="90" y1="302" x2="500" y2="302" stroke="#b0bec5" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="90" y1="276" x2="360" y2="276" stroke="#cfd8dc" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <g font-size="11" fill="#37474f" text-anchor="end">
+    <text x="84" y="131">+30</text><text x="84" y="184">0</text><text x="84" y="280">&#8722;55</text><text x="84" y="306">&#8722;70</text>
+  </g>
+  <text x="300" y="272" text-anchor="middle" font-size="10" fill="#607d8b">threshold</text>
+  <text x="130" y="316" font-size="10" fill="#607d8b">resting</text>
+
+  <path d="M100,302 L172,302 L186,276 C200,150 224,130 236,127 C250,150 272,270 300,302 C316,320 336,322 352,312 C384,304 420,302 500,302" fill="none" stroke="#1565c0" stroke-width="4"/>
+
+  <text x="236" y="118" text-anchor="middle" font-size="11" font-weight="700" fill="#1565c0">peak +30 mV</text>
+  <text x="126" y="152" font-size="11" font-weight="700" fill="#c62828">depolarization</text>
+  <text x="126" y="166" font-size="10" fill="#607d8b">(Na+ influx)</text>
+  <text x="322" y="158" font-size="11" font-weight="700" fill="#ef6c00">repolarization</text>
+  <text x="322" y="172" font-size="10" fill="#607d8b">(K+ efflux)</text>
+  <text x="408" y="322" text-anchor="middle" font-size="10" fill="#607d8b">hyperpolarization</text>
+
+  <text x="270" y="402" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">The membrane acts like an RC circuit, so voltage cannot change instantly</text>
+  <text x="270" y="422" text-anchor="middle" font-size="12" fill="#607d8b">Na+ influx depolarizes; K+ efflux repolarizes; a threshold triggers the spike</text>
+</svg>

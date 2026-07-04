@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Heating curve: temperature versus heat added</title>
+  <desc id="d">Temperature versus heat added for a substance going from solid to gas. Sloped segments show a single phase warming; flat plateaus mark phase changes (melting and boiling) where added heat breaks intermolecular attractions at constant temperature. The vaporization plateau is longer than the fusion plateau.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="32" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Heating curve &#8212; solid to gas</text>
+
+  <line x1="70" y1="70" x2="70" y2="350" stroke="#37474f" stroke-width="2"/>
+  <line x1="70" y1="350" x2="500" y2="350" stroke="#37474f" stroke-width="2"/>
+  <text x="44" y="210" font-size="12" fill="#37474f" transform="rotate(-90 44 210)">Temperature</text>
+  <text x="285" y="384" text-anchor="middle" font-size="12" fill="#37474f">Heat added &#8594;</text>
+
+  <line x1="70" y1="250" x2="500" y2="250" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="70" y1="150" x2="500" y2="150" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="60" y="254" text-anchor="end" font-size="10" fill="#607d8b">mp</text>
+  <text x="60" y="154" text-anchor="end" font-size="10" fill="#607d8b">bp</text>
+
+  <polyline points="80,320 150,250 230,250 300,150 430,150 490,110" fill="none" stroke="#1565c0" stroke-width="2.5"/>
+  <!-- plateaus highlighted -->
+  <line x1="150" y1="250" x2="230" y2="250" stroke="#c62828" stroke-width="4"/>
+  <line x1="300" y1="150" x2="430" y2="150" stroke="#c62828" stroke-width="4"/>
+
+  <text x="112" y="300" font-size="10" fill="#607d8b">solid</text>
+  <text x="190" y="242" text-anchor="middle" font-size="10" fill="#c62828">melting</text>
+  <text x="262" y="205" font-size="10" fill="#607d8b">liquid</text>
+  <text x="365" y="142" text-anchor="middle" font-size="10" fill="#c62828">boiling</text>
+  <text x="470" y="130" font-size="10" fill="#607d8b">gas</text>
+
+  <text x="270" y="410" text-anchor="middle" font-size="11" fill="#607d8b">on a plateau, heat breaks intermolecular forces and temperature stays constant</text>
+</svg>

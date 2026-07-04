@@ -475,6 +475,14 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                     memory (recall of studied cards):
                                     {status.hasMemory ? percent(status.overallMemory) : "—"}
                                 </span>
+                                <span>
+                                    projected MCAT total (472-528):
+                                    {status.hasProjection
+                                        ? `${Math.round(status.projectedTotal)} (${Math.round(
+                                              status.projectedTotalLower,
+                                          )}–${Math.round(status.projectedTotalUpper)})`
+                                        : "—"}
+                                </span>
                             </div>
                             <div class="backend-snapshot-card">
                                 <strong>Live queue session</strong>
@@ -508,26 +516,34 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                 {/if}
                             </div>
                             {#each status.sectionScores as score}
+                                {@const scoresVisible =
+                                    score.enoughEvidence && score.coverage >= 0.6}
+                                {@const scoresHiddenReason =
+                                    score.coverage < 0.6
+                                        ? "needs 60% coverage"
+                                        : "more evidence needed"}
                                 <div class:insufficient={!score.enoughEvidence} class="backend-snapshot-card">
                                     <strong>{sectionName(score.section)}</strong>
-                                    {#if score.enoughEvidence && score.coverage >= 0.6}
-                                        <span>
-                                            Performance range: {scoreRange(score, "performance")}
-                                        </span>
-                                        <span>
-                                            Readiness range: {scoreRange(score, "readiness")}
-                                        </span>
-                                    {:else}
-                                        {#if score.coverage < 0.6}
-                                            <span>needs 60% coverage before scores show</span>
-                                        {:else}
-                                            <span>score hidden until more evidence is available</span>
-                                        {/if}
-                                    {/if}
+                                    <span>
+                                        Performance range: {scoresVisible
+                                            ? scoreRange(score, "performance")
+                                            : `— (${scoresHiddenReason})`}
+                                    </span>
+                                    <span>
+                                        Readiness range: {scoresVisible
+                                            ? scoreRange(score, "readiness")
+                                            : `— (${scoresHiddenReason})`}
+                                    </span>
+                                    <span>Section mastery: {percent(score.sectionMastery)}</span>
                                     <span>Blueprint coverage: {percent(score.coverage)}</span>
-                                    {#if score.sectionHasMemory}
-                                        <span>Memory: {percent(score.sectionMemory)}</span>
-                                    {/if}
+                                    <span>
+                                        Items answered: {score.answeredItems}/{score.requiredItems}
+                                    </span>
+                                    <span>
+                                        Memory: {score.sectionHasMemory
+                                            ? percent(score.sectionMemory)
+                                            : "—"}
+                                    </span>
                                 </div>
                             {/each}
                         </div>
@@ -566,6 +582,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                     </span>
                                 </summary>
                                 {#if expandedAreas[area.id]}
+                                    {#if graphNodeIdsForArea(area.id).length <= 12}
                                     <div class="concept-graph-viewport" aria-label={`${area.label} concept graph`}>
                                         <div class="concept-graph">
                                             <svg viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -585,6 +602,7 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                                     {@const point = pointFor(node.id, index)}
                                                     <div
                                                         class="graph-node {fringeFor(node)}"
+                                                        class:recommended={node.recommended}
                                                         style:left={`${point.x}%`}
                                                         style:top={`${point.y}%`}
                                                         title={node.id}
@@ -612,6 +630,12 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                             {/if}
                                         </div>
                                     </div>
+                                    {:else}
+                                        <p class="concept-graph-note">
+                                            Node graph hidden for {graphNodeIdsForArea(area.id)
+                                                .length} topics — use the breakdown below.
+                                        </p>
+                                    {/if}
                                     <div class="concept-lattice" aria-hidden="true">
                                         <div class="concept-column">
                                             <div class="column-title">
@@ -633,7 +657,11 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
                                                 {tr.deckConfigConceptSchedulerOuterFringe()}
                                             </div>
                                             {#each nodesForAreaAndFringe(area.id, "outer") as node}
-                                                <div class="concept-node outer" title={node.id}>
+                                                <div
+                                                    class="concept-node outer"
+                                                    class:recommended={node.recommended}
+                                                    title={node.id}
+                                                >
                                                     <strong>{node.id}</strong>
                                                     <span>{fullMasteryText(node)}</span>
                                                     <span>{compactEvidenceText(node)}</span>
@@ -864,6 +892,15 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         flex-direction: column;
         gap: 0.4rem;
         min-width: 0;
+        max-height: 22rem;
+        overflow-y: auto;
+    }
+
+    .concept-graph-note {
+        color: var(--fg);
+        font-size: var(--font-size-small);
+        margin: 0.5rem 0;
+        opacity: 0.7;
     }
 
     .concept-node {
@@ -890,17 +927,37 @@ License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
         font-style: italic;
     }
 
+    // Mastered (inner) = green, ready (outer) = violet, locked = faded amber —
+    // matching the reviewer sidebar's status colours.
     .inner {
-        border-left: 0.25rem solid #456582;
+        border-left: 0.32rem solid #2f9e5e;
     }
 
     .outer {
-        border-left: 0.25rem solid #538263;
+        border-left: 0.32rem solid #7c5cff;
     }
 
     .locked {
         border-left: 0.16rem solid #d69a2d;
         color: var(--concept-secondary-text);
+        opacity: 0.55;
+    }
+
+    // Suggested-next topics pulse with a violet glow (same cue as the sidebar).
+    .recommended {
+        animation: concept-suggest-pulse 1.6s ease-in-out infinite;
+        box-shadow: 0 0 0 2px #7c5cff, 0 0 10px 2px rgba(124 92 255 / 0.55);
+    }
+
+    @keyframes concept-suggest-pulse {
+        0%,
+        100% {
+            box-shadow: 0 0 0 2px #7c5cff, 0 0 7px 1px rgba(124 92 255 / 0.4);
+        }
+
+        50% {
+            box-shadow: 0 0 0 2px #7c5cff, 0 0 13px 4px rgba(124 92 255 / 0.85);
+        }
     }
 
     :global(.night-mode) {

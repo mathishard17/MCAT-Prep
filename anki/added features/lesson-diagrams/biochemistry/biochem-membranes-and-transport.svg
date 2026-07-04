@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Phospholipid bilayer and membrane transport</title>
+  <desc id="d">A fluid-mosaic phospholipid bilayer with polar heads facing the water on each side and nonpolar tails forming the interior. A channel protein lets solutes cross passively down their gradient without ATP, while a pump moves solutes against their gradient using ATP.</desc>
+  <defs>
+    <marker id="mah" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#37474f"/></marker>
+    <marker id="mahg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2e7d32"/></marker>
+    <marker id="mahr" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#c62828"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Membrane bilayer &amp; transport</text>
+
+  <text x="270" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="#455a64">Extracellular side</text>
+  <text x="270" y="352" text-anchor="middle" font-size="12" font-weight="700" fill="#455a64">Cytoplasmic side</text>
+
+  <g stroke="#607d8b" stroke-width="2">
+    <line x1="60" y1="159" x2="60" y2="206"/><line x1="72" y1="159" x2="72" y2="206"/>
+    <line x1="102" y1="159" x2="102" y2="206"/><line x1="114" y1="159" x2="114" y2="206"/>
+    <line x1="144" y1="159" x2="144" y2="206"/><line x1="156" y1="159" x2="156" y2="206"/>
+    <line x1="270" y1="159" x2="270" y2="206"/><line x1="282" y1="159" x2="282" y2="206"/>
+    <line x1="312" y1="159" x2="312" y2="206"/><line x1="324" y1="159" x2="324" y2="206"/>
+    <line x1="438" y1="159" x2="438" y2="206"/><line x1="450" y1="159" x2="450" y2="206"/>
+  </g>
+  <g fill="#90caf9" stroke="#1565c0" stroke-width="1.5">
+    <circle cx="66" cy="152" r="8"/><circle cx="108" cy="152" r="8"/><circle cx="150" cy="152" r="8"/>
+    <circle cx="276" cy="152" r="8"/><circle cx="318" cy="152" r="8"/><circle cx="444" cy="152" r="8"/>
+  </g>
+  <g stroke="#607d8b" stroke-width="2">
+    <line x1="60" y1="234" x2="60" y2="281"/><line x1="72" y1="234" x2="72" y2="281"/>
+    <line x1="102" y1="234" x2="102" y2="281"/><line x1="114" y1="234" x2="114" y2="281"/>
+    <line x1="144" y1="234" x2="144" y2="281"/><line x1="156" y1="234" x2="156" y2="281"/>
+    <line x1="270" y1="234" x2="270" y2="281"/><line x1="282" y1="234" x2="282" y2="281"/>
+    <line x1="312" y1="234" x2="312" y2="281"/><line x1="324" y1="234" x2="324" y2="281"/>
+    <line x1="438" y1="234" x2="438" y2="281"/><line x1="450" y1="234" x2="450" y2="281"/>
+  </g>
+  <g fill="#90caf9" stroke="#1565c0" stroke-width="1.5">
+    <circle cx="66" cy="288" r="8"/><circle cx="108" cy="288" r="8"/><circle cx="150" cy="288" r="8"/>
+    <circle cx="276" cy="288" r="8"/><circle cx="318" cy="288" r="8"/><circle cx="444" cy="288" r="8"/>
+  </g>
+
+  <rect x="182" y="146" width="40" height="148" rx="12" fill="#b39ddb" stroke="#6a1b9a" stroke-width="2"/>
+  <rect x="198" y="150" width="8" height="140" rx="4" fill="#ffffff"/>
+  <text x="202" y="376" text-anchor="middle" font-size="11" fill="#6a1b9a">channel (passive)</text>
+
+  <rect x="364" y="146" width="44" height="148" rx="12" fill="#80cbc4" stroke="#00796b" stroke-width="2"/>
+  <text x="386" y="376" text-anchor="middle" font-size="11" fill="#00695c">pump (active)</text>
+  <text x="386" y="224" text-anchor="middle" font-size="10" font-weight="700" fill="#00695c">ATP</text>
+
+  <circle cx="202" cy="112" r="7" fill="#2e7d32"/>
+  <line x1="202" y1="120" x2="202" y2="322" stroke="#2e7d32" stroke-width="2.5" marker-end="url(#mahg)"/>
+  <text x="150" y="112" text-anchor="end" font-size="10" fill="#2e7d32">down gradient, no ATP</text>
+
+  <circle cx="386" cy="326" r="7" fill="#c62828"/>
+  <line x1="386" y1="320" x2="386" y2="120" stroke="#c62828" stroke-width="2.5" marker-end="url(#mahr)"/>
+  <text x="430" y="118" text-anchor="start" font-size="10" fill="#c62828">against gradient, uses ATP</text>
+
+  <text x="270" y="412" text-anchor="middle" font-size="12" fill="#607d8b">Passive transport follows the gradient; active transport works against it using energy</text>
+</svg>

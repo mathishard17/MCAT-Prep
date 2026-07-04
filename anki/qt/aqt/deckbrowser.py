@@ -90,8 +90,14 @@ class DeckBrowser:
         self._mcat_demo_import_attempted = True
 
         def import_mcat_demo_deck(col: Collection) -> bool:
-            deck_already_exists = col.decks.id_for_name("MCAT Demo") is not None
+            # Production install: only the full "MCAT" library deck (no "MCAT Demo").
+            deck_already_exists = col.decks.id_for_name("MCAT") is not None
             col._backend.import_mcat_demo_deck()
+            # Turn FSRS on by default the first time the MCAT deck is set up. Guarded
+            # so it runs once and a later manual toggle-off in deck options sticks.
+            if not col.get_config("mcatFsrsDefaulted", False):
+                col.set_config("fsrs", True)
+                col.set_config("mcatFsrsDefaulted", True)
             return not deck_already_exists
 
         def on_mcat_demo_imported(deck_created: bool) -> None:

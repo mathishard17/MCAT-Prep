@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Electron transport chain and chemiosmosis</title>
+  <desc id="d">In the inner mitochondrial membrane, electrons from NADH and FADH2 pass through complexes I to IV to oxygen, which is reduced to water. Complexes I, III, and IV pump protons into the intermembrane space, building a gradient. ATP synthase lets protons flow back into the matrix to make ATP.</desc>
+  <defs>
+    <marker id="oah" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#455a64"/></marker>
+    <marker id="oahb" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1565c0"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Oxidative phosphorylation &#8212; ETC &amp; chemiosmosis</text>
+
+  <text x="270" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="#1565c0">Intermembrane space &#183; high H+</text>
+  <rect x="34" y="118" width="472" height="172" fill="#faf7fb" stroke="none"/>
+  <line x1="34" y1="118" x2="506" y2="118" stroke="#cfd8dc" stroke-width="1.5"/>
+  <line x1="34" y1="290" x2="506" y2="290" stroke="#cfd8dc" stroke-width="1.5"/>
+  <text x="270" y="400" text-anchor="middle" font-size="12" font-weight="700" fill="#455a64">Matrix &#183; low H+</text>
+
+  <rect x="60" y="126" width="52" height="158" rx="8" fill="#90caf9" stroke="#1565c0" stroke-width="2"/>
+  <text x="86" y="212" text-anchor="middle" font-size="15" font-weight="700" fill="#0d47a1">I</text>
+  <rect x="150" y="210" width="44" height="74" rx="8" fill="#a5d6a7" stroke="#2e7d32" stroke-width="2"/>
+  <text x="172" y="252" text-anchor="middle" font-size="14" font-weight="700" fill="#1b5e20">II</text>
+  <rect x="214" y="126" width="52" height="158" rx="8" fill="#90caf9" stroke="#1565c0" stroke-width="2"/>
+  <text x="240" y="212" text-anchor="middle" font-size="15" font-weight="700" fill="#0d47a1">III</text>
+  <rect x="326" y="126" width="52" height="158" rx="8" fill="#90caf9" stroke="#1565c0" stroke-width="2"/>
+  <text x="352" y="212" text-anchor="middle" font-size="15" font-weight="700" fill="#0d47a1">IV</text>
+
+  <circle cx="188" cy="250" r="12" fill="#fff3e0" stroke="#ef6c00" stroke-width="2"/>
+  <text x="188" y="254" text-anchor="middle" font-size="11" font-weight="700" fill="#e65100">Q</text>
+  <circle cx="298" cy="150" r="12" fill="#fce4ec" stroke="#c62828" stroke-width="2"/>
+  <text x="298" y="154" text-anchor="middle" font-size="10" font-weight="700" fill="#b71c1c">c</text>
+
+  <g stroke="#455a64" stroke-width="2" stroke-dasharray="5 4" fill="none">
+    <line x1="112" y1="250" x2="174" y2="250" marker-end="url(#oah)"/>
+    <line x1="194" y1="235" x2="200" y2="228" marker-end="url(#oah)"/>
+    <line x1="200" y1="250" x2="212" y2="240" marker-end="url(#oah)"/>
+    <line x1="266" y1="160" x2="284" y2="152" marker-end="url(#oah)"/>
+    <line x1="310" y1="150" x2="326" y2="152" marker-end="url(#oah)"/>
+    <line x1="378" y1="210" x2="406" y2="210" marker-end="url(#oah)"/>
+  </g>
+  <text x="120" y="336" text-anchor="middle" font-size="10" fill="#455a64">NADH &#8594; NAD+</text>
+  <text x="172" y="336" text-anchor="middle" font-size="10" fill="#2e7d32">FADH2</text>
+  <text x="452" y="214" text-anchor="middle" font-size="10" fill="#455a64">1/2 O2 &#8594; H2O</text>
+  <text x="150" y="112" text-anchor="middle" font-size="10" fill="#455a64">e&#8722; flow: I &#8594; IV</text>
+
+  <g stroke="#1565c0" stroke-width="2.5">
+    <line x1="86" y1="118" x2="86" y2="96" marker-end="url(#oahb)"/>
+    <line x1="240" y1="118" x2="240" y2="96" marker-end="url(#oahb)"/>
+    <line x1="352" y1="118" x2="352" y2="96" marker-end="url(#oahb)"/>
+  </g>
+  <text x="86" y="90" text-anchor="middle" font-size="10" font-weight="700" fill="#1565c0">H+</text>
+  <text x="240" y="90" text-anchor="middle" font-size="10" font-weight="700" fill="#1565c0">H+</text>
+  <text x="352" y="90" text-anchor="middle" font-size="10" font-weight="700" fill="#1565c0">H+</text>
+
+  <rect x="420" y="126" width="46" height="158" rx="8" fill="#ffcc80" stroke="#ef6c00" stroke-width="2"/>
+  <circle cx="443" cy="300" r="18" fill="#ffb74d" stroke="#ef6c00" stroke-width="2"/>
+  <line x1="443" y1="96" x2="443" y2="126" stroke="#ef6c00" stroke-width="2.5" marker-end="url(#oah)"/>
+  <text x="443" y="90" text-anchor="middle" font-size="10" font-weight="700" fill="#ef6c00">H+</text>
+  <text x="443" y="336" text-anchor="middle" font-size="10" fill="#e65100">ADP + Pi &#8594; ATP</text>
+  <text x="443" y="356" text-anchor="middle" font-size="10" font-weight="700" fill="#e65100">ATP synthase</text>
+
+  <text x="270" y="420" text-anchor="middle" font-size="11" fill="#607d8b">Electron flow pumps H+; ATP synthase uses the H+ gradient (uncouplers dissipate it)</text>
+</svg>

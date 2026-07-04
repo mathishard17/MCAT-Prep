@@ -54,6 +54,13 @@
         app:summaryEntries="@array/reviewing_summary_entries">
     </com.ichi2.preferences.HeaderPreference>
 
+    <!-- MCAT AI (bring-your-own OpenAI key) -->
+    <com.ichi2.preferences.HeaderPreference
+        android:fragment="com.ichi2.anki.preferences.McatAiSettingsFragment"
+        android:key="@string/mcat_ai_screen_key"
+        android:title="@string/mcat_ai_title"
+        android:icon="@drawable/ic_star" />
+
     <!-- Sync Preferences -->
     <com.ichi2.preferences.HeaderPreference
         android:fragment="com.ichi2.anki.preferences.SyncSettingsFragment"

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Buoyancy and hydrostatic pressure</title>
+  <desc id="d">An object floats in a fluid. The upward buoyant force equals the weight of the fluid it displaces, and at equilibrium it balances the object's downward weight. Horizontal arrows on the right show that pressure in a static fluid increases with depth.</desc>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c62828"/></marker>
+    <marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1565c0"/></marker>
+    <marker id="ap" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6a1b9a"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Buoyancy and hydrostatic pressure</text>
+
+  <rect x="92" y="156" width="356" height="230" fill="#bbdefb"/>
+  <path d="M90,116 L90,388 L450,388 L450,116" fill="none" stroke="#90a4ae" stroke-width="3"/>
+  <line x1="92" y1="156" x2="205" y2="156" stroke="#42a5f5" stroke-width="2"/>
+  <line x1="320" y1="156" x2="448" y2="156" stroke="#42a5f5" stroke-width="2"/>
+  <text x="140" y="150" text-anchor="middle" font-size="10" fill="#607d8b">fluid surface</text>
+
+  <rect x="205" y="126" width="115" height="100" rx="3" fill="#ffcc80" stroke="#ef6c00" stroke-width="2"/>
+  <text x="262" y="120" text-anchor="middle" font-size="11" fill="#607d8b">object</text>
+
+  <line x1="250" y1="178" x2="250" y2="288" stroke="#c62828" stroke-width="4" marker-end="url(#ar)"/>
+  <text x="250" y="306" text-anchor="middle" font-size="13" font-weight="700" fill="#c62828">W = m g</text>
+  <line x1="292" y1="178" x2="292" y2="90" stroke="#1565c0" stroke-width="4" marker-end="url(#ab)"/>
+  <text x="292" y="84" text-anchor="middle" font-size="13" font-weight="700" fill="#1565c0">F buoyant</text>
+
+  <g stroke="#6a1b9a" stroke-width="3">
+    <line x1="440" y1="210" x2="418" y2="210" marker-end="url(#ap)"/>
+    <line x1="440" y1="260" x2="400" y2="260" marker-end="url(#ap)"/>
+    <line x1="440" y1="310" x2="378" y2="310" marker-end="url(#ap)"/>
+    <line x1="440" y1="360" x2="356" y2="360" marker-end="url(#ap)"/>
+  </g>
+  <text x="446" y="384" text-anchor="end" font-size="10" fill="#6a1b9a">deeper: higher P</text>
+
+  <text x="270" y="402" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Floats when the buoyant force balances the weight (Archimedes)</text>
+  <text x="270" y="422" text-anchor="middle" font-size="12" fill="#607d8b">F buoyant = weight of displaced fluid &#183; hydrostatic P = P0 + &#961; g h</text>
+</svg>

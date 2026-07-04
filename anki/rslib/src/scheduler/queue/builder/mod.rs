@@ -199,7 +199,7 @@ impl QueueBuilder {
     pub(super) fn build(mut self, learn_ahead_secs: i64) -> CardQueues {
         self.sort_new();
         let concept_session = self.context.concept_sort.as_ref().and_then(|concept_sort| {
-            ConceptSessionState::new(
+            let mut session = ConceptSessionState::new(
                 self.new
                     .iter()
                     .filter_map(|card| {
@@ -210,7 +210,10 @@ impl QueueBuilder {
                             .map(|metadata| (card.id, metadata))
                     })
                     .collect(),
-            )
+            )?;
+            // Seed the user's chosen topic so it survives frequent queue rebuilds.
+            session.selected_topic = concept_sort.persisted.state.selected_topic.clone();
+            Some(session)
         });
 
         // intraday learning and total learn count

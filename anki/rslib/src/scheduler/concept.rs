@@ -21,7 +21,30 @@ const IRT_DISCRIMINATION_TAG_PREFIX: &str = "IRT::Discrimination::";
 const IRT_GUESSING_TAG_PREFIX: &str = "IRT::Guessing::";
 const REASONING_TAG_PREFIX: &str = "Reasoning::";
 const OVERVIEW_TAG_PREFIX: &str = "Overview::";
-const CONCEPT_SCHEDULER_STATE_SCHEMA_VERSION: u32 = 1;
+const CONCEPT_SCHEDULER_STATE_SCHEMA_VERSION: u32 = 2;
+/// AAMC-anchored linear map from IRT ability (theta, ~N(0,1) across test-takers)
+/// to the 118-132 section scale: `score = SCALE_B + SCALE_A * theta`.
+/// `SCALE_B = 125` is the population-median section score (~50th percentile) and
+/// `SCALE_A = 2.5` is the scale points per ability SD (the 118-132 band spans
+/// roughly +/-3 SD around the median). See `research-scoring.md` for the
+/// derivation from AAMC's percentile/scale references.
+const SCALE_A: f64 = 2.5;
+const SCALE_B: f64 = 125.0;
+/// Section score bounds (also the clamp for the projected total's per-section part).
+const SCORE_MIN: f64 = 118.0;
+const SCORE_MAX: f64 = 132.0;
+/// A mastered/unmastered group must collect MORE than this many observations before
+/// its Bayesian conditional likelihood switches from the static default to the
+/// empirical (data-driven) rate. Defaults stay static below this.
+const LIKELIHOOD_MIN_OBSERVATIONS: u32 = 20;
+/// Four-choice random-guessing floor for `P(correct | unmastered)`.
+const GUESS_FLOOR: f64 = 0.25;
+/// How much `P(correct | unmastered)` rises per unit of current mastery probability.
+/// The default is `GUESS_FLOOR + PARTIAL_MASTERY_LIFT * mastery`: a partly-learned KC
+/// is expected to score above pure guessing, and the two states become less
+/// distinguishable as mastery climbs. Tune this to trade evidence-per-answer (bigger
+/// lift ⇒ correct answers are weaker evidence ⇒ mastery grows more slowly).
+const PARTIAL_MASTERY_LIFT: f64 = 0.5;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -250,15 +273,6 @@ impl McatSection {
             _ => None,
         }
     }
-
-    pub(crate) fn as_str(self) -> &'static str {
-        match self {
-            Self::BioBiochem => "Bio_Biochem",
-            Self::ChemPhys => "Chem_Phys",
-            Self::PsychSoc => "Psych_Soc",
-            Self::Cars => "CARS",
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -272,6 +286,27 @@ pub(crate) enum McatDiscipline {
     Sociology,
     Cars,
 }
+
+/// Psych/Soc KCs whose MCAT sub-domain is sociology (per `kc-map-unified.md` §6, the
+/// Sub-domain column). Everything else under `PsychSoc::` is psychology (the two
+/// `Psy/Soc` dual-coded KCs — Prejudice_and_Bias, Group_Behavior — stay in their
+/// Social-Psychology home). Without this split every `PsychSoc::` KC mapped to
+/// Psychology, so the 30% sociology slice of the Psych/Soc blueprint could never fill
+/// and section coverage/readiness were structurally capped at ~70%.
+const SOCIOLOGY_PSYCHSOC_KCS: &[&str] = &[
+    "PsychSoc::Social_Theory",
+    "PsychSoc::Culture",
+    "PsychSoc::Socialization",
+    "PsychSoc::Social_Institutions",
+    "PsychSoc::Demographics",
+    "PsychSoc::Stratification",
+    "PsychSoc::Social_Class",
+    "PsychSoc::Social_Mobility",
+    "PsychSoc::Poverty",
+    "PsychSoc::Social_Inequality",
+    "PsychSoc::Health_Disparities",
+    "PsychSoc::Healthcare_Disparities",
+];
 
 impl McatDiscipline {
     fn for_component(component: &KnowledgeComponentId) -> Option<Self> {
@@ -287,9 +322,11 @@ impl McatDiscipline {
         } else if id.starts_with("Physics::") {
             Some(Self::Physics)
         } else if id.starts_with("PsychSoc::") {
-            // The draft Psych/Soc lattice does not yet split psychology and
-            // sociology KCs, so keep the MVP conservative.
-            Some(Self::Psychology)
+            if SOCIOLOGY_PSYCHSOC_KCS.contains(&id) {
+                Some(Self::Sociology)
+            } else {
+                Some(Self::Psychology)
+            }
         } else if id.starts_with("CARS::") {
             Some(Self::Cars)
         } else {
@@ -390,7 +427,7 @@ pub(crate) struct ConceptSchedulerConfig {
 impl Default for ConceptSchedulerConfig {
     fn default() -> Self {
         Self {
-            initial_mastery: 0.25,
+            initial_mastery: 0.20,
             inner_fringe_mastery: 0.85,
             inner_fringe_min_answers: 3,
             outer_fringe_prereq_mastery: 0.70,
@@ -446,13 +483,30 @@ impl Default for PersistedConceptSchedulerState {
     }
 }
 
+impl PersistedConceptSchedulerState {
+    /// `config` holds only global tuning constants (there is no per-deck config UI),
+    /// so on a schema bump we refresh them to the current defaults while preserving
+    /// the learner's `state` (mastery/evidence/IRT). This lets constant changes — e.g.
+    /// `initial_mastery` 0.25 -> 0.20 — take effect on decks that already persisted an
+    /// older config, instead of silently keeping the stale value.
+    fn migrate_to_current_schema(&mut self) {
+        if self.schema_version < CONCEPT_SCHEDULER_STATE_SCHEMA_VERSION {
+            self.config = ConceptSchedulerConfig::default();
+            self.schema_version = CONCEPT_SCHEDULER_STATE_SCHEMA_VERSION;
+        }
+    }
+}
+
 impl Collection {
     pub(crate) fn get_concept_scheduler_state(
         &self,
         deck_id: DeckId,
     ) -> PersistedConceptSchedulerState {
         let key = DeckConfigKey::ConceptSchedulerState.for_deck(deck_id);
-        self.get_config_optional(key.as_str()).unwrap_or_default()
+        let mut persisted: PersistedConceptSchedulerState =
+            self.get_config_optional(key.as_str()).unwrap_or_default();
+        persisted.migrate_to_current_schema();
+        persisted
     }
 
     pub(crate) fn set_concept_scheduler_state(
@@ -511,6 +565,7 @@ impl Collection {
                 .state
                 .record_evidence_on_day(component.clone(), evidence, day, &config);
         }
+        persisted.state.note_card_answered();
         let irt_item = IrtItemMetadata::from_card_metadata(&metadata);
         for section in metadata
             .sections
@@ -560,30 +615,22 @@ impl ConceptMasteryState {
         }
     }
 
-    pub(crate) fn record_evidence(&mut self, evidence: Evidence, config: &ConceptSchedulerConfig) {
-        let (likelihood_if_mastered, likelihood_if_unmastered) = match evidence {
-            Evidence::Positive => {
-                self.positive += 1;
-                (
-                    config.positive_likelihood_if_mastered,
-                    config.positive_likelihood_if_unmastered,
-                )
-            }
-            Evidence::Negative => {
-                self.negative += 1;
-                (
-                    config.negative_likelihood_if_mastered,
-                    config.negative_likelihood_if_unmastered,
-                )
-            }
-        };
-
+    /// Apply one piece of evidence with the given conditional likelihoods
+    /// (`P(evidence | mastered)`, `P(evidence | unmastered)`) and Bayes-update mastery.
+    /// The likelihoods are chosen by the caller so they can be static defaults or the
+    /// empirical data-driven rates.
+    pub(crate) fn apply_evidence(
+        &mut self,
+        evidence: Evidence,
+        likelihood_if_mastered: f64,
+        likelihood_if_unmastered: f64,
+    ) {
+        match evidence {
+            Evidence::Positive => self.positive += 1,
+            Evidence::Negative => self.negative += 1,
+        }
         self.answered += 1;
-        self.mastery = bayes_update(
-            self.mastery,
-            likelihood_if_mastered,
-            likelihood_if_unmastered,
-        );
+        self.mastery = bayes_update(self.mastery, likelihood_if_mastered, likelihood_if_unmastered);
     }
 
     pub(crate) fn is_inner_fringe(&self, config: &ConceptSchedulerConfig) -> bool {
@@ -608,6 +655,66 @@ pub(crate) struct ConceptSchedulerState {
     pub(crate) prerequisite_violations: u32,
     #[serde(default)]
     pub(crate) irt_sections: BTreeMap<McatSection, IrtSectionState>,
+    /// The user-chosen next topic (an outer-fringe KC). Survives queue rebuilds;
+    /// the live `ConceptSessionState.selected_topic` is seeded from this.
+    #[serde(default)]
+    pub(crate) selected_topic: Option<KnowledgeComponentId>,
+    /// Exam date as epoch seconds. Drives the retention projection: recall is
+    /// evaluated at this date, so readiness reflects what will survive to test day.
+    #[serde(default)]
+    pub(crate) exam_timestamp: Option<i64>,
+    /// Desired MCAT total score (472-528) for the probability-of-hitting-target.
+    #[serde(default)]
+    pub(crate) target_total_score: Option<u32>,
+    /// Correct/wrong tallies split by whether the KC was mastered at answer time.
+    /// Once a group exceeds `LIKELIHOOD_MIN_OBSERVATIONS`, its Bayesian conditional
+    /// likelihood becomes the empirical rate instead of the static default.
+    #[serde(default)]
+    pub(crate) likelihood_observations: LikelihoodObservations,
+}
+
+/// Per-outcome answer tallies, split by whether the model believed the KC was
+/// mastered at answer time. Drives data-driven conditional likelihoods: with enough
+/// evidence, `P(correct | mastered)` and `P(correct | unmastered)` come from the
+/// learner's own history rather than fixed constants.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub(crate) struct LikelihoodObservations {
+    pub(crate) mastered_positive: u32,
+    pub(crate) mastered_negative: u32,
+    pub(crate) unmastered_positive: u32,
+    pub(crate) unmastered_negative: u32,
+}
+
+impl LikelihoodObservations {
+    fn record(&mut self, was_mastered: bool, evidence: Evidence) {
+        match (was_mastered, evidence) {
+            (true, Evidence::Positive) => self.mastered_positive += 1,
+            (true, Evidence::Negative) => self.mastered_negative += 1,
+            (false, Evidence::Positive) => self.unmastered_positive += 1,
+            (false, Evidence::Negative) => self.unmastered_negative += 1,
+        }
+    }
+
+    /// `P(evidence | group)`. Empirical (Laplace-smoothed) once the group has MORE
+    /// than `LIKELIHOOD_MIN_OBSERVATIONS` observations, otherwise `default`.
+    fn likelihood(&self, mastered: bool, evidence: Evidence, default: f64) -> f64 {
+        let (positive, negative) = if mastered {
+            (self.mastered_positive, self.mastered_negative)
+        } else {
+            (self.unmastered_positive, self.unmastered_negative)
+        };
+        let total = positive + negative;
+        if total <= LIKELIHOOD_MIN_OBSERVATIONS {
+            return default;
+        }
+        let count = match evidence {
+            Evidence::Positive => positive,
+            Evidence::Negative => negative,
+        };
+        // Laplace (add-one) smoothing keeps the estimate strictly inside (0, 1), so a
+        // run of all-correct or all-wrong can't produce a degenerate 0/1 likelihood.
+        (count as f64 + 1.0) / (total as f64 + 2.0)
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -714,21 +821,34 @@ impl IrtSectionState {
     pub(crate) fn scaled_score(&self) -> f64 {
         theta_to_scaled_score(self.theta)
     }
-
-    fn coverage_for_section(&self, section: McatSection) -> f64 {
-        section_disciplines(section)
-            .iter()
-            .map(|(discipline, weight)| {
-                let count = self.discipline_counts.get(discipline).copied().unwrap_or(0);
-                let required = required_items_for_weight(*weight);
-                weight * (count as f64 / required as f64).min(1.0)
-            })
-            .sum()
-    }
 }
 
 fn theta_to_scaled_score(theta: f64) -> f64 {
-    (125.0 + (theta * 2.5)).clamp(118.0, 132.0)
+    (SCALE_B + (theta * SCALE_A)).clamp(SCORE_MIN, SCORE_MAX)
+}
+
+/// Standard normal CDF (Abramowitz & Stegun 7.1.26 erf approximation). Used to
+/// turn a projected-score band into P(score >= target).
+fn normal_cdf(z: f64) -> f64 {
+    // erf(x) approximation, max abs error ~1.5e-7.
+    let sign = if z < 0.0 { -1.0 } else { 1.0 };
+    let x = (z / std::f64::consts::SQRT_2).abs();
+    let t = 1.0 / (1.0 + 0.3275911 * x);
+    let y = 1.0
+        - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t
+            + 0.254829592)
+            * t
+            * (-x * x).exp();
+    0.5 * (1.0 + sign * y)
+}
+
+/// Probability that a normal(center, se) projected score reaches at least
+/// `target`. With no spread it degenerates to a hard threshold.
+pub(crate) fn probability_at_least(center: f64, se: f64, target: f64) -> f64 {
+    if se <= 0.0 {
+        return if center >= target { 1.0 } else { 0.0 };
+    }
+    (1.0 - normal_cdf((target - center) / se)).clamp(0.0, 1.0)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -778,8 +898,65 @@ impl ConceptSchedulerState {
         evidence: Evidence,
         config: &ConceptSchedulerConfig,
     ) {
-        self.ensure_component(component, config)
-            .record_evidence(evidence, config);
+        // Classify the KC's latent state BEFORE the update, for likelihood data
+        // collection: "mastered" = the model already believes it's at/above the
+        // mastered bar. This is what splits observations into the two groups.
+        let was_mastered = self
+            .kcs
+            .get(&component)
+            .map(|state| state.mastery)
+            .unwrap_or(config.initial_mastery)
+            >= config.inner_fringe_mastery;
+        let current_mastery = self
+            .kcs
+            .get(&component)
+            .map(|state| state.mastery)
+            .unwrap_or(config.initial_mastery);
+        let (likelihood_if_mastered, likelihood_if_unmastered) =
+            self.effective_likelihoods(evidence, current_mastery, config);
+        self.ensure_component(component, config).apply_evidence(
+            evidence,
+            likelihood_if_mastered,
+            likelihood_if_unmastered,
+        );
+        self.likelihood_observations.record(was_mastered, evidence);
+    }
+
+    /// Conditional likelihoods for a Bayes update. A group uses its empirical
+    /// (Laplace-smoothed) rate once it has collected more than
+    /// `LIKELIHOOD_MIN_OBSERVATIONS` data points; until then it uses the default. The
+    /// two groups (mastered/unmastered) cross over independently. The unmastered
+    /// "correct" default is not flat: it is `GUESS_FLOOR + PARTIAL_MASTERY_LIFT *
+    /// mastery`, so a partly-learned KC is expected to score above pure guessing.
+    fn effective_likelihoods(
+        &self,
+        evidence: Evidence,
+        mastery: f64,
+        config: &ConceptSchedulerConfig,
+    ) -> (f64, f64) {
+        let (default_mastered, default_unmastered) = match evidence {
+            Evidence::Positive => (
+                config.positive_likelihood_if_mastered,
+                (GUESS_FLOOR + PARTIAL_MASTERY_LIFT * mastery)
+                    .clamp(0.0, config.positive_likelihood_if_mastered),
+            ),
+            Evidence::Negative => (
+                config.negative_likelihood_if_mastered,
+                config.negative_likelihood_if_unmastered,
+            ),
+        };
+        (
+            self.likelihood_observations
+                .likelihood(true, evidence, default_mastered),
+            self.likelihood_observations
+                .likelihood(false, evidence, default_unmastered),
+        )
+    }
+
+    /// Count one answered card toward the evidence total that gates readiness. Call
+    /// once per card answer (NOT once per target KC), so a multi-KC card can't inflate
+    /// the count and unlock readiness sorting early.
+    pub(crate) fn note_card_answered(&mut self) {
         self.total_seen_cards += 1;
     }
 
@@ -924,33 +1101,46 @@ impl ConceptSchedulerState {
         section: McatSection,
         graph: &KnowledgeGraph,
         config: &ConceptSchedulerConfig,
+        // Blueprint-weighted recall of the section's studied KCs, projected to the
+        // exam date (see `concept_kc_memory_for_deck_at`). `None` when nothing in
+        // the section has memory yet, in which case retention is not penalized.
+        section_memory: Option<f64>,
     ) -> SectionScoreStatus {
         let irt = self.irt_sections.get(&section).cloned().unwrap_or_default();
         let section_mastery = self.section_mastery(section, graph, config);
         let coverage = self.section_coverage(section, graph).clamp(0.0, 1.0);
+        // Performance: the AAMC-scaled score implied by the section's IRT ability
+        // (theta -> SCALE_B + SCALE_A*theta). This is the demonstrated *ceiling* the
+        // learner would hit on covered material that is fully retained.
         let performance_center = irt.scaled_score();
         let performance_standard_error = irt.performance_standard_error();
 
-        // Readiness projects a whole-section score. The blueprint is scored as a
-        // blend: the covered fraction scores at demonstrated performance, while
-        // the untested (uncovered) fraction has no evidence and is assumed to
-        // score at the guessing baseline. Coverage is therefore a hard ceiling:
-        // the most readiness can reach is `guess + coverage * (132 - guess)`, so
-        // a section can only approach 132 once it is fully covered.
-        let guess_floor = config.guessing_baseline_score;
-        let readiness_center =
-            (guess_floor + coverage * (performance_center - guess_floor)).clamp(118.0, 132.0);
+        // Readiness combines the three signals a projected section score needs:
+        //   performance (the ceiling above), memory (still recalled at the exam),
+        //   and coverage (how much of the blueprint has been engaged).
+        // Only the covered-AND-retained fraction earns the demonstrated ceiling; the
+        // untested-or-forgotten remainder sits at the 4-choice guessing floor
+        // (~120), NOT the population median (125) — you can't assume median
+        // competence on material you haven't studied or have forgotten.
+        let retention = section_memory.unwrap_or(1.0).clamp(0.0, 1.0);
+        let floor = config.guessing_baseline_score;
+        let retained_fraction = (coverage * retention).clamp(0.0, 1.0);
+        let readiness_center = (retained_fraction * performance_center
+            + (1.0 - retained_fraction) * floor)
+            .clamp(SCORE_MIN, SCORE_MAX);
 
         // Uncertainty: the performance term only informs the covered fraction, so
-        // it is scaled by coverage; thin coverage and weak section mastery widen
-        // the band. Variances are summed, then square-rooted.
+        // it is scaled by coverage; thin coverage, weak mastery, and shaky retention
+        // each widen the band. Variances are summed, then square-rooted.
         let performance_standard_error_component = coverage * performance_standard_error;
         let coverage_standard_error = (1.0 - coverage) * config.max_coverage_standard_error;
         let mastery_standard_error = (1.0 - section_mastery) * config.max_mastery_standard_error;
+        let memory_standard_error = (1.0 - retention) * config.max_mastery_standard_error;
         let readiness_standard_error = ((performance_standard_error_component
             * performance_standard_error_component)
             + (coverage_standard_error * coverage_standard_error)
-            + (mastery_standard_error * mastery_standard_error))
+            + (mastery_standard_error * mastery_standard_error)
+            + (memory_standard_error * memory_standard_error))
             .sqrt();
         let enough_evidence = irt.answered >= config.irt_min_section_items
             && coverage >= config.irt_min_section_coverage;
@@ -962,17 +1152,17 @@ impl ConceptSchedulerState {
             performance_center,
             performance_standard_error,
             performance_lower: (performance_center - (1.96 * performance_standard_error))
-                .clamp(118.0, 132.0),
+                .clamp(SCORE_MIN, SCORE_MAX),
             performance_upper: (performance_center + (1.96 * performance_standard_error))
-                .clamp(118.0, 132.0),
+                .clamp(SCORE_MIN, SCORE_MAX),
             section_mastery,
             coverage,
             readiness_center,
             readiness_standard_error,
             readiness_lower: (readiness_center - (1.96 * readiness_standard_error))
-                .clamp(118.0, 132.0),
+                .clamp(SCORE_MIN, SCORE_MAX),
             readiness_upper: (readiness_center + (1.96 * readiness_standard_error))
-                .clamp(118.0, 132.0),
+                .clamp(SCORE_MIN, SCORE_MAX),
             answered_items: irt.answered,
             required_items: config.irt_min_section_items,
         }
@@ -1009,24 +1199,68 @@ impl ConceptSchedulerState {
         section_disciplines(section)
             .iter()
             .map(|(discipline, weight)| {
+                let kc_total = self.kc_count_for_discipline(*discipline, graph);
+                if kc_total == 0 {
+                    // No KCs of this discipline exist in the deck's graph, so its slice
+                    // of the blueprint cannot be covered.
+                    return 0.0;
+                }
+                // A slice is "fully covered" once you've touched a target number of
+                // DISTINCT KCs — capped at how many actually exist, so a discipline
+                // with few KCs isn't held to an unreachable bar.
                 let answered = self.answered_for_discipline(*discipline, graph);
-                let required = required_items_for_weight(*weight);
+                let required = required_items_for_weight(*weight).min(kc_total);
                 weight * (answered as f64 / required as f64).min(1.0)
             })
             .sum()
     }
 
+    /// Number of KCs of a discipline present in the deck's graph.
+    fn kc_count_for_discipline(&self, discipline: McatDiscipline, graph: &KnowledgeGraph) -> u32 {
+        graph
+            .components()
+            .filter(|component| McatDiscipline::for_component(component) == Some(discipline))
+            .count() as u32
+    }
+
+    /// Number of DISTINCT KCs in a discipline that have any evidence (breadth), not
+    /// total answer volume. Coverage should reward touching many concepts, not
+    /// grinding one — 13 "Again"s on a single KC used to max its discipline's slice.
     fn answered_for_discipline(&self, discipline: McatDiscipline, graph: &KnowledgeGraph) -> u32 {
         graph
             .components()
             .filter(|component| McatDiscipline::for_component(component) == Some(discipline))
-            .map(|component| {
+            .filter(|component| {
                 self.kcs
                     .get(component)
-                    .map(|state| state.answered)
-                    .unwrap_or_default()
+                    .map(|state| state.answered > 0)
+                    .unwrap_or(false)
             })
-            .sum()
+            .count() as u32
+    }
+
+    /// Pooled accuracy (correct / answered) over the section's studied KCs, or
+    /// `None` when nothing in the section has been answered yet. Retained as a
+    /// cross-check in tests; readiness now derives performance from IRT theta.
+    #[cfg(test)]
+    fn section_accuracy(&self, section: McatSection, graph: &KnowledgeGraph) -> Option<f64> {
+        let mut positive = 0u32;
+        let mut answered = 0u32;
+        for (discipline, weight) in section_disciplines(section) {
+            if *weight <= 0.0 {
+                continue;
+            }
+            for component in graph.components() {
+                if McatDiscipline::for_component(component) != Some(*discipline) {
+                    continue;
+                }
+                if let Some(state) = self.kcs.get(component) {
+                    positive += state.positive;
+                    answered += state.positive + state.negative;
+                }
+            }
+        }
+        (answered > 0).then(|| positive as f64 / answered as f64)
     }
 
     fn average_mastery_for_discipline(
@@ -1235,13 +1469,21 @@ mod tests {
         let config = ConceptSchedulerConfig::default();
         let mut state = ConceptMasteryState::new(config.initial_mastery);
 
-        state.record_evidence(Evidence::Positive, &config);
-        assert_approx_eq(state.mastery, 0.6);
+        state.apply_evidence(
+            Evidence::Positive,
+            config.positive_likelihood_if_mastered,
+            config.positive_likelihood_if_unmastered,
+        );
+        assert_approx_eq(state.mastery, 0.529_411_764_705_882_4);
         assert_eq!(state.answered, 1);
         assert_eq!(state.positive, 1);
 
-        state.record_evidence(Evidence::Negative, &config);
-        assert_approx_eq(state.mastery, 0.157_894_736_842_105_25);
+        state.apply_evidence(
+            Evidence::Negative,
+            config.negative_likelihood_if_mastered,
+            config.negative_likelihood_if_unmastered,
+        );
+        assert_approx_eq(state.mastery, 0.123_287_671_232_876_7);
         assert_eq!(state.answered, 2);
         assert_eq!(state.negative, 1);
     }
@@ -1252,9 +1494,12 @@ mod tests {
         let mut state = ConceptSchedulerState::default();
 
         state.record_evidence(kc("Bio::DNA"), Evidence::Positive, &config);
+        state.note_card_answered();
 
         let dna = state.kcs.get(&kc("Bio::DNA")).unwrap();
-        assert_approx_eq(dna.mastery, 0.6);
+        // Fresh KC (mastery 0.20) => P(correct|unmastered) default = 0.25 + 0.5*0.20 =
+        // 0.35, so posterior = 0.18 / (0.18 + 0.35*0.80) = 0.18/0.46.
+        assert_approx_eq(dna.mastery, 0.391_304_347_826_087);
         assert_eq!(dna.answered, 1);
         assert_eq!(state.total_seen_cards, 1);
     }
@@ -1318,7 +1563,7 @@ mod tests {
             state.readiness_score(&kc("Biochem::Citric_Acid_Cycle"), &graph, &config);
 
         assert_approx_eq(glycolysis.score, 0.68);
-        assert_approx_eq(citric_acid_cycle.score, 0.15);
+        assert_approx_eq(citric_acid_cycle.score, 0.16);
         assert!(glycolysis.score > citric_acid_cycle.score);
     }
 
@@ -1417,7 +1662,7 @@ mod tests {
             );
         }
 
-        let score = state.section_score_status(McatSection::BioBiochem, &graph, &config);
+        let score = state.section_score_status(McatSection::BioBiochem, &graph, &config, None);
 
         assert!(score.enough_evidence);
         assert_eq!(score.answered_items, 13);
@@ -1446,7 +1691,7 @@ mod tests {
             );
         }
 
-        let score = state.section_score_status(McatSection::PsychSoc, &graph, &config);
+        let score = state.section_score_status(McatSection::PsychSoc, &graph, &config, None);
 
         assert_approx_eq(score.coverage, 0.05);
         assert!(!score.enough_evidence);
@@ -1481,22 +1726,25 @@ mod tests {
             );
         }
 
-        let score = state.section_score_status(McatSection::BioBiochem, &graph, &config);
-        let guess_floor = config.guessing_baseline_score;
+        // No memory signal in this unit test => retention defaults to 1.0, so
+        // readiness is the coverage-weighted blend of performance and the floor.
+        let score = state.section_score_status(McatSection::BioBiochem, &graph, &config, None);
+        let floor = config.guessing_baseline_score;
+        let performance = score.performance_center;
 
-        // Coverage is well under 100%, so readiness must sit below performance.
+        // Strong correct evidence lifts performance (theta -> scaled score) above the
+        // guessing floor, but partial coverage keeps readiness strictly between them.
         assert!(score.coverage < 0.7);
-        assert!(score.performance_center > guess_floor);
-        assert!(score.readiness_center < score.performance_center);
-        // Readiness is exactly the coverage-weighted blend toward the guessing floor.
+        assert!(performance > floor);
+        assert!(score.readiness_center > floor);
+        assert!(score.readiness_center < performance);
+        // Readiness is exactly the coverage-weighted blend from the guessing floor
+        // (retention = 1 here): floor + coverage * (performance - floor).
         assert_approx_eq(
             score.readiness_center,
-            guess_floor + score.coverage * (score.performance_center - guess_floor),
+            floor + score.coverage * (performance - floor),
         );
-        // It can never exceed the coverage ceiling, even if performance is maxed.
-        let ceiling = guess_floor + score.coverage * (132.0 - guess_floor);
-        assert!(score.readiness_center <= ceiling + 1e-9);
-        assert!(ceiling < 132.0);
+        assert!(score.readiness_center >= 118.0);
     }
 
     #[test]
@@ -1522,10 +1770,11 @@ mod tests {
             state.record_irt_response(McatSection::Cars, [McatDiscipline::Cars], item, Evidence::Positive);
         }
 
-        let score = state.section_score_status(McatSection::Cars, &graph, &config);
+        let score = state.section_score_status(McatSection::Cars, &graph, &config, None);
 
         assert_approx_eq(score.coverage, 1.0);
-        // At full coverage the blend collapses to performance itself.
+        // At full coverage (and full retention) the blend collapses to the
+        // performance center itself (theta -> AAMC-scaled score).
         assert_approx_eq(score.readiness_center, score.performance_center);
     }
 
@@ -1536,16 +1785,39 @@ mod tests {
         persisted
             .state
             .record_evidence(kc("Bio::DNA"), Evidence::Positive, &persisted.config);
+        persisted.state.note_card_answered();
 
         col.set_concept_scheduler_state(DeckId(1), &persisted, false)?;
         let loaded = col.get_concept_scheduler_state(DeckId(1));
 
-        assert_eq!(loaded.schema_version, 1);
+        assert_eq!(loaded.schema_version, CONCEPT_SCHEDULER_STATE_SCHEMA_VERSION);
         assert_eq!(loaded.state.total_seen_cards, 1);
         assert_approx_eq(
             loaded.state.mastery_for(&kc("Bio::DNA"), &loaded.config),
-            0.6,
+            0.391_304_347_826_087,
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn old_persisted_config_migrates_to_current_defaults() -> Result<()> {
+        let mut col = Collection::new();
+        // Simulate a deck saved under an older schema with the previous prior (0.25).
+        let mut old = PersistedConceptSchedulerState::default();
+        old.schema_version = 1;
+        old.config.initial_mastery = 0.25;
+        old.state
+            .record_evidence(kc("Bio::DNA"), Evidence::Positive, &old.config);
+        old.state.note_card_answered();
+        col.set_concept_scheduler_state(DeckId(1), &old, false)?;
+
+        let loaded = col.get_concept_scheduler_state(DeckId(1));
+
+        // Tuning constants refresh to current defaults; learner state is preserved.
+        assert_eq!(loaded.schema_version, CONCEPT_SCHEDULER_STATE_SCHEMA_VERSION);
+        assert_approx_eq(loaded.config.initial_mastery, 0.20);
+        assert_eq!(loaded.state.total_seen_cards, 1);
 
         Ok(())
     }
@@ -1560,5 +1832,191 @@ mod tests {
 
         assert_eq!(score.reason, ReadinessScoreReason::UnknownTarget);
         assert_approx_eq(score.score, config.fallback_readiness_score);
+    }
+
+    #[test]
+    fn readiness_defaults_to_the_prior_without_evidence() {
+        let config = ConceptSchedulerConfig::default();
+        let mut graph = KnowledgeGraph::default();
+        graph.add_component(kc("Bio::DNA"));
+        let state = ConceptSchedulerState::default();
+
+        let score = state.section_score_status(McatSection::BioBiochem, &graph, &config, None);
+
+        // No coverage => nothing demonstrated/retained => readiness sits at the
+        // guessing floor (~120), NOT the population median (125): you can't assume
+        // median competence on unstudied material. It never reads 0.
+        assert_eq!(state.section_accuracy(McatSection::BioBiochem, &graph), None);
+        assert_approx_eq(score.readiness_center, config.guessing_baseline_score);
+        assert!(score.readiness_center >= 118.0);
+    }
+
+    #[test]
+    fn aamc_scale_maps_theta_to_median_and_clamps() {
+        // theta 0 => population median 125; +/-1 SD => +/- SCALE_A; extremes clamp.
+        assert_approx_eq(theta_to_scaled_score(0.0), SCALE_B);
+        assert_approx_eq(theta_to_scaled_score(1.0), SCALE_B + SCALE_A);
+        assert_approx_eq(theta_to_scaled_score(-1.0), SCALE_B - SCALE_A);
+        assert_approx_eq(theta_to_scaled_score(10.0), SCORE_MAX);
+        assert_approx_eq(theta_to_scaled_score(-10.0), SCORE_MIN);
+    }
+
+    #[test]
+    fn probability_at_least_matches_normal_tails() {
+        // At the center, ~50% chance of reaching the target.
+        assert!((probability_at_least(510.0, 3.0, 510.0) - 0.5).abs() < 1e-6);
+        // Target well below center => near-certain; well above => near-impossible.
+        assert!(probability_at_least(515.0, 2.0, 505.0) > 0.99);
+        assert!(probability_at_least(500.0, 2.0, 520.0) < 0.01);
+        // ~1 SD above center => ~16%.
+        assert!((probability_at_least(510.0, 5.0, 515.0) - 0.1587).abs() < 0.01);
+        // Zero spread degenerates to a hard threshold.
+        assert_eq!(probability_at_least(510.0, 0.0, 505.0), 1.0);
+        assert_eq!(probability_at_least(500.0, 0.0, 505.0), 0.0);
+    }
+
+    #[test]
+    fn memory_discounts_readiness_toward_the_floor() {
+        let config = ConceptSchedulerConfig {
+            irt_min_section_items: 1,
+            irt_min_section_coverage: 0.5,
+            ..ConceptSchedulerConfig::default()
+        };
+        let mut graph = KnowledgeGraph::default();
+        graph.add_component(kc("CARS::Reasoning"));
+        let mut state = ConceptSchedulerState::default();
+        let item = IrtItemMetadata {
+            difficulty: 0.0,
+            discrimination: 1.0,
+            guessing: 0.25,
+        };
+        for _ in 0..40 {
+            state.record_evidence(kc("CARS::Reasoning"), Evidence::Positive, &config);
+            state.record_irt_response(
+                McatSection::Cars,
+                [McatDiscipline::Cars],
+                item,
+                Evidence::Positive,
+            );
+        }
+
+        // Same performance and coverage, different projected retention.
+        let full = state.section_score_status(McatSection::Cars, &graph, &config, Some(1.0));
+        let half = state.section_score_status(McatSection::Cars, &graph, &config, Some(0.5));
+        let floor = config.guessing_baseline_score;
+
+        assert!(full.performance_center > floor);
+        // Forgetting pulls readiness back toward the guessing floor.
+        assert!(half.readiness_center < full.readiness_center);
+        // Halving retention halves the gain above the floor (coverage cancels out).
+        assert_approx_eq(
+            half.readiness_center - floor,
+            0.5 * (full.readiness_center - floor),
+        );
+    }
+
+    #[test]
+    fn psychsoc_kcs_split_into_psychology_and_sociology() {
+        // Sub-domain split from kc-map-unified.md §6, so the 30% sociology slice can fill.
+        assert_eq!(
+            McatDiscipline::for_component(&kc("PsychSoc::Culture")),
+            Some(McatDiscipline::Sociology)
+        );
+        assert_eq!(
+            McatDiscipline::for_component(&kc("PsychSoc::Social_Class")),
+            Some(McatDiscipline::Sociology)
+        );
+        // Psychology KCs (and the dual-coded Social-Psychology ones) stay psychology.
+        assert_eq!(
+            McatDiscipline::for_component(&kc("PsychSoc::Memory")),
+            Some(McatDiscipline::Psychology)
+        );
+        assert_eq!(
+            McatDiscipline::for_component(&kc("PsychSoc::Group_Behavior")),
+            Some(McatDiscipline::Psychology)
+        );
+    }
+
+    #[test]
+    fn coverage_rewards_breadth_not_grinding_one_kc() {
+        let config = ConceptSchedulerConfig::default();
+        let mut graph = KnowledgeGraph::default();
+        for id in ["Bio::A", "Bio::B", "Bio::C", "Bio::D", "Bio::E"] {
+            graph.add_component(kc(id));
+        }
+
+        // Grind a SINGLE KC many times.
+        let mut grind = ConceptSchedulerState::default();
+        for _ in 0..20 {
+            grind.record_evidence(kc("Bio::A"), Evidence::Positive, &config);
+        }
+        // Spread FEWER answers across several distinct KCs.
+        let mut spread = ConceptSchedulerState::default();
+        for id in ["Bio::A", "Bio::B", "Bio::C", "Bio::D"] {
+            spread.record_evidence(kc(id), Evidence::Positive, &config);
+        }
+
+        let grind_coverage = grind.section_coverage(McatSection::BioBiochem, &graph);
+        let spread_coverage = spread.section_coverage(McatSection::BioBiochem, &graph);
+        assert!(
+            spread_coverage > grind_coverage,
+            "breadth ({spread_coverage}) should beat volume ({grind_coverage})"
+        );
+    }
+
+    #[test]
+    fn total_seen_counts_cards_not_kcs() {
+        let config = ConceptSchedulerConfig::default();
+        let mut state = ConceptSchedulerState::default();
+        // One multi-KC card answer: two component evidences, but one card seen.
+        state.record_evidence(kc("Bio::DNA"), Evidence::Positive, &config);
+        state.record_evidence(kc("Biochem::Glycolysis"), Evidence::Positive, &config);
+        state.note_card_answered();
+        assert_eq!(state.total_seen_cards, 1);
+    }
+
+    #[test]
+    fn conditional_likelihood_goes_empirical_after_enough_observations() {
+        let mut obs = LikelihoodObservations::default();
+        // At the threshold the group is still on the static default.
+        for _ in 0..LIKELIHOOD_MIN_OBSERVATIONS {
+            obs.record(false, Evidence::Positive);
+        }
+        assert_approx_eq(obs.likelihood(false, Evidence::Positive, 0.20), 0.20);
+
+        // One MORE observation (now over the threshold) flips the unmastered group to
+        // its empirical (Laplace-smoothed) rate; here every unmastered answer was right.
+        obs.record(false, Evidence::Positive);
+        let total = (LIKELIHOOD_MIN_OBSERVATIONS + 1) as f64;
+        let expected = (total + 1.0) / (total + 2.0);
+        assert_approx_eq(obs.likelihood(false, Evidence::Positive, 0.20), expected);
+        // The complementary outcome derives from the same counts and sums to 1.
+        assert_approx_eq(obs.likelihood(false, Evidence::Negative, 0.80), 1.0 - expected);
+        // The mastered group has no data, so it stays on its static default.
+        assert_approx_eq(obs.likelihood(true, Evidence::Positive, 0.90), 0.90);
+    }
+
+    #[test]
+    fn record_evidence_collects_conditional_observations() {
+        let config = ConceptSchedulerConfig::default();
+        let mut state = ConceptSchedulerState::default();
+        // A fresh KC starts unmastered (initial 0.20 < the mastered bar), so a correct
+        // answer is recorded as an unmastered-positive observation.
+        state.record_evidence(kc("Bio::DNA"), Evidence::Positive, &config);
+        assert_eq!(state.likelihood_observations.unmastered_positive, 1);
+        assert_eq!(state.likelihood_observations.mastered_positive, 0);
+    }
+
+    #[test]
+    fn unmastered_correct_likelihood_rises_with_mastery() {
+        let config = ConceptSchedulerConfig::default();
+        let state = ConceptSchedulerState::default();
+        // No observations yet, so the unmastered "correct" default is the mastery-
+        // scaled guess model 0.25 + 0.5*mastery (not a flat constant).
+        let (_lm_lo, lu_lo) = state.effective_likelihoods(Evidence::Positive, 0.20, &config);
+        let (_lm_hi, lu_hi) = state.effective_likelihoods(Evidence::Positive, 0.80, &config);
+        assert_approx_eq(lu_lo, GUESS_FLOOR + PARTIAL_MASTERY_LIFT * 0.20);
+        assert_approx_eq(lu_hi, GUESS_FLOOR + PARTIAL_MASTERY_LIFT * 0.80);
+        assert!(lu_hi > lu_lo);
     }
 }

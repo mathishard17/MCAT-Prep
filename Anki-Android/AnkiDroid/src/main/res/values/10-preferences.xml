@@ -196,6 +196,32 @@
         ]]></string>
     <string name="custom_sync_server_base_url_title" maxLength="41">Sync URL</string>
     <string name="custom_sync_certificate_title" maxLength="41">Custom root certificate (PEM)</string>
+    <!-- MCAT AI settings (bring-your-own OpenAI key) -->
+    <string name="mcat_ai_title" maxLength="41">MCAT AI (OpenAI)</string>
+    <string name="mcat_ai_help"><![CDATA[
+        Paste your own OpenAI API key to enable AI question rewording while you study.
+        The key is stored only on this device and is never synced, shared, or committed.
+        Everything works offline without a key: the clickable multiple-choice quiz and answer
+        shuffle do not need a key.
+        ]]></string>
+    <string name="mcat_openai_key_title" maxLength="41">OpenAI API key</string>
+    <string name="mcat_openai_key_summary_set">Key is set (stored on this device only)</string>
+    <string name="mcat_openai_key_summary_none">Not set</string>
+    <string name="mcat_openai_model_title" maxLength="41">Model</string>
+    <string name="mcat_reword_title" maxLength="41">Reword MCAT questions with AI</string>
+    <string name="mcat_reword_summary">Rephrase question stems with fresh wording as you study (requires an API key).</string>
+    <string name="mcat_shuffle_title" maxLength="41">Shuffle answer choices</string>
+    <string name="mcat_shuffle_summary">Randomize the order of answer choices for MCAT multiple-choice cards.</string>
+    <string name="mcat_ai_test_connection_title" maxLength="41">Test connection</string>
+    <string name="mcat_ai_test_connection_summary">Check that your OpenAI API key works.</string>
+    <string name="mcat_ai_clear_key_title" maxLength="41">Clear API key</string>
+    <string name="mcat_ai_test_in_progress">Testing OpenAI connection…</string>
+    <string name="mcat_ai_test_success">OpenAI connection OK.</string>
+    <string name="mcat_ai_test_no_key">Enter an API key first.</string>
+    <string name="mcat_ai_test_failed">Connection failed: %s</string>
+    <string name="mcat_ai_key_cleared">API key cleared.</string>
+    <string name="mcat_ai_chat_no_key">Add your OpenAI key in MCAT AI settings to use Ask AI.</string>
+    <string name="mcat_ai_chat_error">Sorry, that request failed: %s</string>
     <!-- Key Bindings -->
     <string name="keyboard">Keyboard</string>
     <string name="bluetooth">Bluetooth</string>

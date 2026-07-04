@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Pressure-volume diagram of a thermodynamic cycle</title>
+  <desc id="d">A pressure versus volume diagram shows a four-step cycle: two constant-pressure steps (horizontal) and two constant-volume steps (vertical). The gas is taken clockwise around the loop, so it does net work on the surroundings equal to the area enclosed by the cycle.</desc>
+  <defs>
+    <marker id="ak" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#546e7a"/></marker>
+    <marker id="ap" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6a1b9a"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">PV diagram: a thermodynamic cycle</text>
+
+  <line x1="90" y1="322" x2="90" y2="78" stroke="#546e7a" stroke-width="2" marker-end="url(#ak)"/>
+  <line x1="90" y1="322" x2="500" y2="322" stroke="#546e7a" stroke-width="2" marker-end="url(#ak)"/>
+  <text x="66" y="200" font-size="13" fill="#37474f" transform="rotate(-90 66 200)">P (pressure)</text>
+  <text x="300" y="344" text-anchor="middle" font-size="13" fill="#37474f">V (volume)</text>
+
+  <polygon points="160,120 390,120 390,270 160,270" fill="#e3f2fd"/>
+  <line x1="160" y1="120" x2="390" y2="120" stroke="#6a1b9a" stroke-width="3" marker-end="url(#ap)"/>
+  <line x1="390" y1="120" x2="390" y2="270" stroke="#6a1b9a" stroke-width="3" marker-end="url(#ap)"/>
+  <line x1="390" y1="270" x2="160" y2="270" stroke="#6a1b9a" stroke-width="3" marker-end="url(#ap)"/>
+  <line x1="160" y1="270" x2="160" y2="120" stroke="#6a1b9a" stroke-width="3" marker-end="url(#ap)"/>
+
+  <circle cx="160" cy="120" r="4" fill="#263238"/><text x="150" y="114" text-anchor="end" font-size="12" font-weight="700" fill="#263238">A</text>
+  <circle cx="390" cy="120" r="4" fill="#263238"/><text x="400" y="114" font-size="12" font-weight="700" fill="#263238">B</text>
+  <circle cx="390" cy="270" r="4" fill="#263238"/><text x="400" y="284" font-size="12" font-weight="700" fill="#263238">C</text>
+  <circle cx="160" cy="270" r="4" fill="#263238"/><text x="150" y="284" text-anchor="end" font-size="12" font-weight="700" fill="#263238">D</text>
+
+  <text x="275" y="112" text-anchor="middle" font-size="10" fill="#607d8b">constant P</text>
+  <text x="275" y="286" text-anchor="middle" font-size="10" fill="#607d8b">constant P</text>
+  <text x="275" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="#1565c0">W net = enclosed area</text>
+
+  <text x="270" y="402" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">A clockwise PV loop does net work equal to the area it encloses</text>
+  <text x="270" y="422" text-anchor="middle" font-size="12" fill="#607d8b">first law: &#916;U = Q &#8722; W &#183; heat in becomes internal energy plus work</text>
+</svg>

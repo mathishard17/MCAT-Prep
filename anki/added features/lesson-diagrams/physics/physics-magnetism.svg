@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Magnetic force on a moving charge</title>
+  <desc id="d">A positive charge moves to the right through a magnetic field that points into the page, shown by a grid of crosses. The magnetic force on the charge is perpendicular to both the velocity and the field, pointing upward. The force is given by q times v times B times the sine of the angle between v and B.</desc>
+  <defs>
+    <marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2e7d32"/></marker>
+    <marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1565c0"/></marker>
+  </defs>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Magnetic force on a moving charge</text>
+
+  <g stroke="#b0bec5" stroke-width="1.6">
+    <path d="M138,116 l10,10 M148,116 l-10,10"/>
+    <path d="M208,116 l10,10 M218,116 l-10,10"/>
+    <path d="M278,116 l10,10 M288,116 l-10,10"/>
+    <path d="M348,116 l10,10 M358,116 l-10,10"/>
+    <path d="M418,116 l10,10 M428,116 l-10,10"/>
+    <path d="M138,186 l10,10 M148,186 l-10,10"/>
+    <path d="M208,186 l10,10 M218,186 l-10,10"/>
+    <path d="M348,186 l10,10 M358,186 l-10,10"/>
+    <path d="M418,186 l10,10 M428,186 l-10,10"/>
+    <path d="M138,300 l10,10 M148,300 l-10,10"/>
+    <path d="M208,300 l10,10 M218,300 l-10,10"/>
+    <path d="M278,300 l10,10 M288,300 l-10,10"/>
+    <path d="M348,300 l10,10 M358,300 l-10,10"/>
+    <path d="M418,300 l10,10 M428,300 l-10,10"/>
+    <path d="M138,350 l10,10 M148,350 l-10,10"/>
+    <path d="M208,350 l10,10 M218,350 l-10,10"/>
+    <path d="M278,350 l10,10 M288,350 l-10,10"/>
+    <path d="M348,350 l10,10 M358,350 l-10,10"/>
+    <path d="M418,350 l10,10 M428,350 l-10,10"/>
+  </g>
+  <text x="452" y="126" font-size="12" fill="#607d8b">B into page</text>
+
+  <circle cx="250" cy="250" r="9" fill="#c62828"/>
+  <text x="250" y="255" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">+</text>
+  <line x1="262" y1="250" x2="360" y2="250" stroke="#2e7d32" stroke-width="4" marker-end="url(#ag)"/>
+  <text x="330" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#2e7d32">v</text>
+  <line x1="250" y1="238" x2="250" y2="150" stroke="#1565c0" stroke-width="4" marker-end="url(#ab)"/>
+  <text x="270" y="166" text-anchor="middle" font-size="14" font-weight="700" fill="#1565c0">F = q v B</text>
+
+  <text x="270" y="402" text-anchor="middle" font-size="12" font-weight="600" fill="#37474f">Force is perpendicular to both v and B: F = q v B sin&#952;</text>
+  <text x="270" y="422" text-anchor="middle" font-size="12" fill="#607d8b">no force if v is parallel to B &#183; a magnetic force does no work</text>
+</svg>

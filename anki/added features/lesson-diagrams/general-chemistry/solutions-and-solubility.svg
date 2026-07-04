@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 440" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Solubility curves: solubility versus temperature</title>
+  <desc id="d">Solubility in grams per 100 grams of water versus temperature. Most solids such as potassium nitrate become much more soluble as temperature rises, sodium chloride is nearly flat, and gases become less soluble as temperature rises.</desc>
+  <rect x="6" y="6" width="528" height="428" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="270" y="32" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Solubility curves</text>
+
+  <line x1="80" y1="70" x2="80" y2="350" stroke="#37474f" stroke-width="2"/>
+  <line x1="80" y1="350" x2="500" y2="350" stroke="#37474f" stroke-width="2"/>
+  <text x="46" y="230" font-size="12" fill="#37474f" transform="rotate(-90 46 230)">Solubility (g / 100 g water)</text>
+  <text x="290" y="384" text-anchor="middle" font-size="12" fill="#37474f">Temperature (&#176;C)</text>
+  <g font-size="10" fill="#607d8b">
+    <text x="80" y="366" text-anchor="middle">0</text>
+    <text x="290" y="366" text-anchor="middle">50</text>
+    <text x="480" y="366" text-anchor="middle">100</text>
+  </g>
+
+  <polyline points="80,317 160,283 240,226 320,151 400,100" fill="none" stroke="#c62828" stroke-width="2.5"/>
+  <text x="404" y="98" font-size="11" fill="#c62828">KNO3 (solid)</text>
+
+  <polyline points="80,278 160,277 240,275 320,273 400,271" fill="none" stroke="#1565c0" stroke-width="2.5"/>
+  <text x="404" y="272" font-size="11" fill="#1565c0">NaCl (solid)</text>
+
+  <polyline points="80,180 160,215 240,250 320,285 400,315" fill="none" stroke="#2e7d32" stroke-width="2.5"/>
+  <text x="404" y="320" font-size="11" fill="#2e7d32">gas (e.g. CO2)</text>
+
+  <text x="270" y="410" text-anchor="middle" font-size="11" fill="#607d8b">most solids: solubility rises with T &#183; gases: solubility falls with T (Henry's law)</text>
+</svg>

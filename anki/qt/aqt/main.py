@@ -1314,6 +1314,33 @@ title="{}" {}>{}</button>""".format(
     def onPrefs(self) -> None:
         aqt.dialogs.open("Preferences", self)
 
+    def on_mcat_ai_settings(self) -> None:
+        from aqt.mcat_ai import show_mcat_ai_dialog
+
+        show_mcat_ai_dialog(self)
+
+    def on_cars_practice(self) -> None:
+        from aqt.cars_practice import show_cars_practice_dialog
+
+        show_cars_practice_dialog(self)
+
+    def _sync_mcat_reword_action(self) -> None:
+        # Reflect the active profile's setting without re-triggering `toggled`.
+        try:
+            enabled = self.pm.mcat_reword_enabled()
+        except Exception:
+            return
+        self.mcat_reword_action.blockSignals(True)
+        self.mcat_reword_action.setChecked(enabled)
+        self.mcat_reword_action.blockSignals(False)
+
+    def _on_toggle_mcat_reword(self, on: bool) -> None:
+        try:
+            self.pm.set_mcat_reword_enabled(on)
+        except Exception:
+            return
+        tooltip("AI rewording turned on." if on else "AI rewording turned off.")
+
     def on_check_for_updates(self) -> None:
         from packaging.version import Version
 
@@ -1447,6 +1474,25 @@ title="{}" {}>{}</button>""".format(
         qconnect(m.actionNoteTypes.triggered, self.onNoteTypes)
         qconnect(m.action_check_for_updates.triggered, self.on_check_for_updates)
         qconnect(m.actionPreferences.triggered, self.onPrefs)
+
+        # MCAT AI (bring-your-own OpenAI key)
+        mcat_ai_action = QAction("MCAT AI (OpenAI key)…", self)
+        qconnect(mcat_ai_action.triggered, self.on_mcat_ai_settings)
+        m.menuTools.addAction(mcat_ai_action)
+
+        # CARS practice with AI coaching (uses the same OpenAI key).
+        cars_practice_action = QAction("CARS Practice (AI coaching)…", self)
+        qconnect(cars_practice_action.triggered, self.on_cars_practice)
+        m.menuTools.addAction(cars_practice_action)
+
+        # Quick on/off toggle for AI question rewording (takes effect next card).
+        self.mcat_reword_action = QAction("Reword cards with AI (OpenAI)", self)
+        self.mcat_reword_action.setCheckable(True)
+        qconnect(self.mcat_reword_action.toggled, self._on_toggle_mcat_reword)
+        m.menuTools.addAction(self.mcat_reword_action)
+        # A profile may not be loaded when menus are first built, so refresh the
+        # checkmark from the active profile each time the Tools menu opens.
+        qconnect(m.menuTools.aboutToShow, self._sync_mcat_reword_action)
 
         # View
         qconnect(

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 420" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Reaction energy diagram (two-step mechanism)</title>
+  <desc id="d">A free-energy versus reaction-coordinate plot for a two-step reaction. Reactants rise over the first transition state (the highest peak, rate-determining) down to a reactive intermediate such as a carbocation, then over a lower second transition state to products that lie below the reactants (exergonic). Peaks are transition states; valleys are intermediates; the tallest barrier sets the rate.</desc>
+  <rect x="6" y="6" width="548" height="408" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="280" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#263238">Reaction energy diagram (two-step)</text>
+
+  <g stroke="#455a64" stroke-width="2">
+    <line x1="64" y1="66" x2="64" y2="350"/>
+    <line x1="64" y1="350" x2="522" y2="350"/>
+  </g>
+  <polygon points="64,60 60,70 68,70" fill="#455a64"/>
+  <polygon points="528,350 518,346 518,354" fill="#455a64"/>
+
+  <g stroke="#cfd8dc" stroke-width="1.2" stroke-dasharray="4 4">
+    <line x1="64" y1="268" x2="490" y2="268"/>
+    <line x1="64" y1="104" x2="188" y2="104"/>
+    <line x1="64" y1="206" x2="276" y2="206"/>
+    <line x1="64" y1="300" x2="500" y2="300"/>
+  </g>
+
+  <path d="M 92,268 C 130,268 150,104 188,104 C 226,104 236,206 276,206 C 312,206 322,150 360,150 C 404,150 462,300 500,300" fill="none" stroke="#1565c0" stroke-width="3"/>
+
+  <g stroke="#c62828" stroke-width="1.6"><line x1="112" y1="266" x2="112" y2="106"/></g>
+  <polygon points="112,104 108,114 116,114" fill="#c62828"/>
+  <polygon points="112,268 108,258 116,258" fill="#c62828"/>
+  <text x="120" y="180" font-size="12" font-weight="700" fill="#c62828">Ea</text>
+  <text x="120" y="196" font-size="10" fill="#c62828">(rate-limiting)</text>
+
+  <g stroke="#2e7d32" stroke-width="1.6"><line x1="478" y1="270" x2="478" y2="298"/></g>
+  <polygon points="478,300 474,290 482,290" fill="#2e7d32"/>
+  <text x="486" y="288" font-size="12" font-weight="700" fill="#2e7d32">&#8710;G</text>
+  <text x="486" y="303" font-size="10" fill="#2e7d32">&lt; 0</text>
+
+  <text x="96" y="286" font-size="11" fill="#37474f">reactants</text>
+  <text x="188" y="96" text-anchor="middle" font-size="11" font-weight="700" fill="#37474f">TS1</text>
+  <text x="276" y="226" text-anchor="middle" font-size="11" fill="#37474f">intermediate</text>
+  <text x="276" y="240" text-anchor="middle" font-size="10" fill="#607d8b">(carbocation)</text>
+  <text x="360" y="140" text-anchor="middle" font-size="11" font-weight="700" fill="#37474f">TS2</text>
+  <text x="500" y="318" text-anchor="middle" font-size="11" fill="#37474f">products</text>
+
+  <text x="300" y="378" text-anchor="middle" font-size="12" fill="#546e7a">reaction coordinate &#8594;</text>
+  <text x="34" y="210" text-anchor="middle" font-size="12" fill="#546e7a" transform="rotate(-90 34 210)">free energy, G</text>
+
+  <text x="360" y="398" text-anchor="middle" font-size="10.5" fill="#607d8b">Peaks = transition states &#183; valleys = intermediates &#183; tallest barrier = rate-determining</text>
+</svg>

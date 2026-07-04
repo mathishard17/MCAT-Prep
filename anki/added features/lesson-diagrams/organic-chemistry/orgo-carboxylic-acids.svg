@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 420" role="img" aria-labelledby="t d" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <title id="t">Carboxylic acid acidity and inductive effects</title>
+  <desc id="d">Comparing acetic acid (pKa about 4.8), chloroacetic acid (pKa about 2.9), and dichloroacetic acid (pKa about 1.3). Electron-withdrawing chlorine atoms pull electron density away from the carboxylate by induction, stabilizing the conjugate base and lowering pKa. More and closer electron-withdrawing groups make a stronger acid.</desc>
+  <rect x="6" y="6" width="548" height="408" rx="14" fill="#ffffff" stroke="#cfd8dc" stroke-width="2"/>
+  <text x="280" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">Carboxylic acids: acidity and substituent effects</text>
+
+  <rect x="30" y="58" width="150" height="252" rx="10" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+  <rect x="205" y="58" width="150" height="252" rx="10" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+  <rect x="380" y="58" width="150" height="252" rx="10" fill="#f7f9fa" stroke="#cfd8dc" stroke-width="1.5"/>
+
+  <text x="105" y="88" text-anchor="middle" font-size="12.5" font-weight="700" fill="#37474f">acetic acid</text>
+  <text x="280" y="88" text-anchor="middle" font-size="12.5" font-weight="700" fill="#37474f">chloroacetic</text>
+  <text x="455" y="88" text-anchor="middle" font-size="12.5" font-weight="700" fill="#37474f">dichloroacetic</text>
+
+  <text x="105" y="140" text-anchor="middle" font-size="15" fill="#263238">CH3&#8722;COOH</text>
+  <text x="280" y="140" text-anchor="middle" font-size="15" fill="#263238">ClCH2&#8722;COOH</text>
+  <text x="455" y="140" text-anchor="middle" font-size="15" fill="#263238">Cl2CH&#8722;COOH</text>
+
+  <text x="105" y="172" text-anchor="middle" font-size="11" fill="#90a4ae">no electron-withdrawing group</text>
+
+  <line x1="248" y1="166" x2="304" y2="166" stroke="#c62828" stroke-width="1.8"/>
+  <polygon points="308,166 300,162 300,170" fill="#c62828"/>
+  <text x="276" y="186" text-anchor="middle" font-size="10.5" fill="#c62828">&#8722;I: Cl pulls electron density</text>
+
+  <line x1="420" y1="166" x2="476" y2="166" stroke="#c62828" stroke-width="1.8"/>
+  <polygon points="480,166 472,162 472,170" fill="#c62828"/>
+  <text x="452" y="186" text-anchor="middle" font-size="10.5" fill="#c62828">2 &#215; &#8722;I (stronger pull)</text>
+
+  <text x="105" y="238" text-anchor="middle" font-size="18" font-weight="700" fill="#90a4ae">pKa &#8776; 4.8</text>
+  <text x="280" y="238" text-anchor="middle" font-size="18" font-weight="700" fill="#ef6c00">pKa &#8776; 2.9</text>
+  <text x="455" y="238" text-anchor="middle" font-size="18" font-weight="700" fill="#c62828">pKa &#8776; 1.3</text>
+
+  <text x="105" y="268" text-anchor="middle" font-size="11" fill="#607d8b">weakest acid</text>
+  <text x="455" y="268" text-anchor="middle" font-size="11" fill="#607d8b">strongest acid</text>
+
+  <line x1="70" y1="332" x2="486" y2="332" stroke="#37474f" stroke-width="2"/>
+  <polygon points="492,332 482,328 482,336" fill="#37474f"/>
+  <text x="278" y="326" text-anchor="middle" font-size="11" font-weight="600" fill="#37474f">increasing acidity (lower pKa)</text>
+
+  <text x="280" y="364" text-anchor="middle" font-size="11.5" fill="#546e7a">Electron-withdrawing groups stabilize the carboxylate by induction (effect fades with distance).</text>
+  <text x="280" y="388" text-anchor="middle" font-size="11.5" fill="#607d8b">The R group is not a spectator - it can shift pKa by orders of magnitude.</text>
+</svg>
