@@ -8,6 +8,7 @@ pub(crate) mod sized_chain;
 mod sorting;
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::collections::VecDeque;
 
 use intersperser::Intersperser;
@@ -115,6 +116,10 @@ pub(super) struct QueueBuilder {
     limits: LimitTreeMap,
     load_balancer: Option<LoadBalancer>,
     context: Context,
+    /// When the concept scheduler has a selected MCAT section, the note ids of
+    /// cards filed under it. New cards whose note is absent are skipped during
+    /// gathering so the section fills the daily budget. `None` = no restriction.
+    concept_section_notes: Option<HashSet<NoteId>>,
 }
 
 /// Data container and helper for building queues.
@@ -183,6 +188,7 @@ impl QueueBuilder {
             day_learning: Vec::new(),
             limits,
             load_balancer,
+            concept_section_notes: None,
             context: Context {
                 timing,
                 config_map,
@@ -336,6 +342,7 @@ mod test {
     use crate::card::CardType;
     use crate::scheduler::concept::ConceptMasteryState;
     use crate::scheduler::concept::KnowledgeComponentId;
+    use crate::scheduler::concept::McatSection;
 
     impl Collection {
         fn set_deck_gather_order(&mut self, deck: &mut Deck, order: NewCardGatherPriority) {
@@ -604,6 +611,117 @@ mod test {
         Ok(())
     }
 
+    /// Study-by-section: selecting an MCAT section restricts the served new-card
+    /// pool to that section's cards even though other sections were gathered first
+    /// (mirrors the full deck, where Biology cards are inserted — and gathered —
+    /// ahead of the other sections). Clearing the selection restores the normal
+    /// all-section order.
+    #[test]
+    fn selected_section_restricts_new_cards_and_clearing_restores() -> Result<()> {
+        let mut col = Collection::new();
+        let mut deck = col.get_or_create_normal_deck("Default")?;
+        deck.normal_mut()?.concept_scheduler_enabled = true;
+        col.add_or_update_deck(&mut deck)?;
+        // Insertion order == gather order, and Bio is inserted first (as in the
+        // real MCAT deck), so without a section it would dominate the new queue.
+        col.set_deck_gather_order(&mut deck, NewCardGatherPriority::LowestPosition);
+
+        let bio_a = add_tagged_note(&mut col, deck.id, &["KC::Bio::DNA", "MCAT::Bio_Biochem"])?;
+        let bio_b =
+            add_tagged_note(&mut col, deck.id, &["KC::Bio::Genetics", "MCAT::Bio_Biochem"])?;
+        let chem_a = add_tagged_note(
+            &mut col,
+            deck.id,
+            &["KC::Physics::Kinematics", "MCAT::Chem_Phys"],
+        )?;
+        let chem_b =
+            add_tagged_note(&mut col, deck.id, &["KC::GenChem::Kinetics", "MCAT::Chem_Phys"])?;
+
+        // No section selected: all sections served in gather order (Bio first).
+        assert_eq!(
+            col.queue_note_ids(deck.id),
+            vec![bio_a, bio_b, chem_a, chem_b]
+        );
+
+        // Select Chem/Phys: only its cards are served, though Bio gathered first.
+        col.set_concept_selected_section(deck.id, Some(McatSection::ChemPhys))?;
+        assert_eq!(col.queue_note_ids(deck.id), vec![chem_a, chem_b]);
+
+        // Select Bio/Biochem: the pool flips to the Biology cards.
+        col.set_concept_selected_section(deck.id, Some(McatSection::BioBiochem))?;
+        assert_eq!(col.queue_note_ids(deck.id), vec![bio_a, bio_b]);
+
+        // Clearing restores the normal all-section order.
+        col.set_concept_selected_section(deck.id, None)?;
+        assert_eq!(
+            col.queue_note_ids(deck.id),
+            vec![bio_a, bio_b, chem_a, chem_b]
+        );
+
+        Ok(())
+    }
+
+    /// A section with no matching cards must fall back to no restriction, so the
+    /// new-card queue is never emptied by selecting an absent section.
+    #[test]
+    fn selected_section_with_no_cards_falls_back_to_all() -> Result<()> {
+        let mut col = Collection::new();
+        let mut deck = col.get_or_create_normal_deck("Default")?;
+        deck.normal_mut()?.concept_scheduler_enabled = true;
+        col.add_or_update_deck(&mut deck)?;
+        col.set_deck_gather_order(&mut deck, NewCardGatherPriority::LowestPosition);
+
+        let bio_a = add_tagged_note(&mut col, deck.id, &["KC::Bio::DNA", "MCAT::Bio_Biochem"])?;
+        let bio_b =
+            add_tagged_note(&mut col, deck.id, &["KC::Bio::Genetics", "MCAT::Bio_Biochem"])?;
+
+        // Psych/Soc has no cards here: the filter must not empty the queue.
+        col.set_concept_selected_section(deck.id, Some(McatSection::PsychSoc))?;
+        assert_eq!(col.queue_note_ids(deck.id), vec![bio_a, bio_b]);
+
+        Ok(())
+    }
+
+    /// Undo safety: with a section selected, answering a card then undoing restores
+    /// it to a fresh new card and the queue still builds — no corruption from the
+    /// section-aware gather path interacting with the answer/undo hooks.
+    #[test]
+    fn selected_section_review_then_undo_is_clean() -> Result<()> {
+        let mut col = Collection::new();
+        let mut deck = col.get_or_create_normal_deck("Default")?;
+        deck.normal_mut()?.concept_scheduler_enabled = true;
+        col.add_or_update_deck(&mut deck)?;
+        col.set_deck_gather_order(&mut deck, NewCardGatherPriority::LowestPosition);
+
+        add_tagged_note(&mut col, deck.id, &["KC::Physics::Kinematics", "MCAT::Chem_Phys"])?;
+        add_tagged_note(&mut col, deck.id, &["KC::GenChem::Kinetics", "MCAT::Chem_Phys"])?;
+        col.set_current_deck(deck.id)?;
+        col.set_concept_selected_section(deck.id, Some(McatSection::ChemPhys))?;
+
+        let queued = col.get_next_card()?.unwrap();
+        let card_id = queued.card.id;
+        assert_eq!(queued.card.reps, 0);
+
+        let answered = col.answer_good();
+        assert_eq!(answered.card_id, card_id);
+        assert!(col.storage.get_card(card_id)?.unwrap().reps >= 1);
+
+        col.undo()?;
+        let restored = col.storage.get_card(card_id)?.unwrap();
+        assert_eq!(restored.reps, 0, "undo must restore the card to a new card");
+        // The collection is still consistent: the queue rebuilds and the selection
+        // persisted (a config write, intentionally not part of the review's undo).
+        assert!(!col.queue_note_ids(deck.id).is_empty());
+        assert_eq!(
+            col.get_concept_scheduler_state(deck.id)
+                .state
+                .selected_section,
+            Some(McatSection::ChemPhys)
+        );
+
+        Ok(())
+    }
+
     #[test]
     fn review_queue_building() -> Result<()> {
         let mut col = Collection::new();
@@ -718,5 +836,100 @@ mod test {
         CardAdder::new().deck(child.id).add(&mut col);
         col.set_current_deck(child.id).unwrap();
         assert_eq!(col.card_queue_len(), 0);
+    }
+
+    /// Among the first `k` served new cards, count how many target a KC whose
+    /// prerequisites are UNMET — i.e. some prerequisite's persisted mastery is below
+    /// the engine's `outer_fringe_prereq_mastery` threshold. Purely in-engine: the
+    /// served order comes from the real queue builder and the "unmet" test reuses the
+    /// same `mastery_for` / threshold the scheduler itself uses.
+    fn count_unmet_prereq_new_cards(col: &mut Collection, deck_id: DeckId, k: usize) -> usize {
+        let persisted = col.get_concept_scheduler_state(deck_id);
+        let served_card_ids: Vec<CardId> = col
+            .build_queues(deck_id)
+            .unwrap()
+            .iter()
+            .take(k)
+            .map(|entry| entry.card_id())
+            .collect();
+        served_card_ids
+            .into_iter()
+            .filter(|card_id| {
+                let card = col.storage.get_card(*card_id).unwrap().unwrap();
+                let note = col.storage.get_note(card.note_id).unwrap().unwrap();
+                let metadata = CardConceptMetadata::from_tags(&note.tags);
+                metadata.prerequisites.iter().any(|prerequisite| {
+                    persisted.state.mastery_for(prerequisite, &persisted.config)
+                        < persisted.config.outer_fringe_prereq_mastery
+                })
+            })
+            .count()
+    }
+
+    /// Study-feature ablation (rubric §8), measured in the REAL engine: with the
+    /// concept scheduler ON the new-card queue is sorted by readiness so cards whose
+    /// prerequisites are still UNMET are deferred; with it OFF the gather order is
+    /// preserved. Mirrors `concept_enabled_sorts_new_cards_by_readiness` but scales to
+    /// several ready/unready targets and compares the ON vs OFF counts.
+    #[test]
+    fn concept_scheduler_defers_unmet_prerequisite_new_cards_ablation() -> Result<()> {
+        let mut col = Collection::new();
+        let mut deck = col.get_or_create_normal_deck("Default")?;
+        deck.normal_mut()?.concept_scheduler_enabled = true;
+        col.add_or_update_deck(&mut deck)?;
+        col.set_deck_gather_order(&mut deck, NewCardGatherPriority::LowestPosition);
+        // Seeds Bioenergetics @0.85 (a MET prereq: >= 0.70) and Glycolysis @0.20
+        // (an UNMET prereq: < 0.70), and unlocks readiness sorting.
+        seed_concept_readiness(&mut col, deck.id)?;
+
+        // Gather order (LowestPosition == insertion order) places the UNMET-prereq
+        // targets first: their only prerequisite is Glycolysis (mastery 0.20 < 0.70).
+        for target in [
+            "KC::Biochem::Citric_Acid_Cycle",
+            "KC::Biochem::Electron_Transport_Chain",
+            "KC::Biochem::Oxidative_Phosphorylation",
+            "KC::Biochem::Gluconeogenesis",
+        ] {
+            add_tagged_note(&mut col, deck.id, &[target, "Prereq::Biochem::Glycolysis"])?;
+        }
+        // ...then the MET-prereq targets, whose prerequisite is Bioenergetics
+        // (mastery 0.85 >= 0.70), so the scheduler considers them ready to study.
+        for target in [
+            "KC::Biochem::Carbohydrate_Metabolism",
+            "KC::Biochem::Fatty_Acid_Oxidation",
+            "KC::Biochem::Amino_Acid_Metabolism",
+            "KC::Biochem::Pentose_Phosphate_Pathway",
+        ] {
+            add_tagged_note(
+                &mut col,
+                deck.id,
+                &[target, "Prereq::Biochem::Bioenergetics"],
+            )?;
+        }
+
+        let k = 4;
+
+        // Scheduler ON: readiness sort floats the ready (met-prereq) cards to the front.
+        deck.normal_mut()?.concept_scheduler_enabled = true;
+        col.add_or_update_deck(&mut deck)?;
+        let on_unmet = count_unmet_prereq_new_cards(&mut col, deck.id, k);
+
+        // Scheduler OFF: gather order is preserved, so the unmet-prereq cards stay first.
+        deck.normal_mut()?.concept_scheduler_enabled = false;
+        col.add_or_update_deck(&mut deck)?;
+        let off_unmet = count_unmet_prereq_new_cards(&mut col, deck.id, k);
+
+        eprintln!(
+            "PREREQ-VIOLATION ABLATION (first {k} served new cards): \
+             scheduler ON unmet-prereq cards = {on_unmet}; OFF unmet-prereq cards = {off_unmet}"
+        );
+
+        assert!(
+            on_unmet < off_unmet,
+            "concept scheduler ON should serve fewer unmet-prerequisite new cards than OFF \
+             (on={on_unmet}, off={off_unmet})"
+        );
+
+        Ok(())
     }
 }

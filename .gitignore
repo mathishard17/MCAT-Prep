@@ -12,6 +12,12 @@ build/
 target/
 **/target/
 
+# Python + generated eval caches
+__pycache__/
+**/__pycache__/
+*.pyc
+evals/.bench_cache/
+
 # Local signing credentials
 Anki-Android/tools/fallback-release-keystore.jks
 
@@ -19,3 +25,10 @@ dist/
 
 # Environment variables
 .env
+
+# Private planning / grading docs — kept out of the public repo (like .env)
+/rubric.md
+/SUNDAY-PLAN.md
+/docs/brainlift.md
+/UI-CHANGES.md
+/UI-SPEC.md

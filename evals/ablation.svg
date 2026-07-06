@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="460" viewBox="0 0 640 460" font-family="Helvetica,Arial,sans-serif">
+<rect x="0" y="0" width="640" height="460" fill="#ffffff"/>
+<text x="320" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#111827">Study-feature ablation: prerequisite violations</text>
+<text x="320" y="50" text-anchor="middle" font-size="12" fill="#6b7280">SYNTHETIC learners, equal study time -- lower is better (mean, whiskers = min/max)</text>
+<line x1="70" y1="370.0" x2="610" y2="370.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="62" y="373.0" text-anchor="end" font-size="10" fill="#6b7280">0</text>
+<line x1="70" y1="312.0" x2="610" y2="312.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="62" y="315.0" text-anchor="end" font-size="10" fill="#6b7280">13</text>
+<line x1="70" y1="254.0" x2="610" y2="254.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="62" y="257.0" text-anchor="end" font-size="10" fill="#6b7280">26</text>
+<line x1="70" y1="196.0" x2="610" y2="196.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="62" y="199.0" text-anchor="end" font-size="10" fill="#6b7280">39</text>
+<line x1="70" y1="138.0" x2="610" y2="138.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="62" y="141.0" text-anchor="end" font-size="10" fill="#6b7280">52</text>
+<line x1="70" y1="80.0" x2="610" y2="80.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="62" y="83.0" text-anchor="end" font-size="10" fill="#6b7280">64</text>
+<rect x="70" y="80" width="540" height="290" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
+<rect x="115.0" y="331.7" width="90.0" height="38.3" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
+<line x1="160.0" y1="334.0" x2="160.0" y2="329.5" stroke="#111827" stroke-width="1.5"/>
+<text x="160.0" y="323.7" text-anchor="middle" font-size="12" font-weight="bold" fill="#111827">8.5</text>
+<text x="160.0" y="388" text-anchor="middle" font-size="11" fill="#374151">Concept scheduler ON</text>
+<rect x="295.0" y="117.8" width="90.0" height="252.2" fill="#9ca3af" stroke="#1e3a8a" stroke-width="1"/>
+<line x1="340.0" y1="117.8" x2="340.0" y2="117.8" stroke="#111827" stroke-width="1.5"/>
+<text x="340.0" y="109.8" text-anchor="middle" font-size="12" font-weight="bold" fill="#111827">56.0</text>
+<text x="340.0" y="388" text-anchor="middle" font-size="11" fill="#374151">Feature OFF (ablation)</text>
+<rect x="475.0" y="117.8" width="90.0" height="252.2" fill="#d1d5db" stroke="#1e3a8a" stroke-width="1"/>
+<line x1="520.0" y1="117.8" x2="520.0" y2="117.8" stroke="#111827" stroke-width="1.5"/>
+<text x="520.0" y="109.8" text-anchor="middle" font-size="12" font-weight="bold" fill="#111827">56.0</text>
+<text x="520.0" y="388" text-anchor="middle" font-size="11" fill="#374151">Plain Anki</text>
+<text x="20" y="225" text-anchor="middle" font-size="13" fill="#374151" transform="rotate(-90 20 225)">Prerequisite violations</text>
+<text x="320" y="446" text-anchor="middle" font-size="12" fill="#111827">ON is 85% lower than OFF/PLAIN (cutoff: mean ON &lt;= 0.5 x mean OFF)</text>
+</svg>

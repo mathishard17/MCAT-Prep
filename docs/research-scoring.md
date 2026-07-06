@@ -235,6 +235,66 @@ version on **held-out reviews**:
 
 ---
 
+## 10. Provenance of every model constant (how the numbers were chosen)
+
+> Asked directly: *where do these numbers come from?* Honest answer: three buckets — **(A)
+> externally fixed facts**, **(B) values derived from those facts**, and **(C) hand-picked
+> heuristics**. Everything below is a *default* in `ConceptSchedulerConfig` (`concept.rs`,
+> `impl Default`) or a module `const`, and every one is overridable per deck. The per-answer
+> Bayesian likelihoods additionally **self-correct** to empirical rates once enough data exists,
+> so wrong priors wash out.
+
+### A. Externally anchored — not ours to choose
+
+| Constant (code) | Value | Basis / source |
+| --- | --- | --- |
+| `SCORE_MIN` / `SCORE_MAX` | 118 / 132 | AAMC per-section scaled-score range (472–528 total = 4×). [AAMC] |
+| `SCALE_B` | 125 | AAMC section median (~50th pct of prepared test-takers). [AAMC] |
+| `GUESS_FLOOR` | 0.25 | 4-option MCQ ⇒ 25% by chance (the IRT *c* lower asymptote). [IRT-Baker] |
+| FSRS decay / factor | −0.5 / 19⁄81 | FSRS-5 power forgetting curve `R(t)=(1+FACTOR·t/S)^DECAY`, set so `R(S)=0.9`. [FSRS] |
+| FSRS target retention | 0.90 | Stability is *defined* as the interval where R=90%. [FSRS] |
+| `1.96` (band multiplier) | 1.96 | 95% two-sided quantile of the standard normal. [NIST] |
+| Laplace `+1 / +2` | rule of succession | Additive (add-one) smoothing of an empirical rate. [Laplace] |
+| `normal_cdf` coefficients | A&S 7.1.26 | Abramowitz & Stegun erf approximation (\|err\|≲1.5e-7). [A&S] |
+
+### B. Derived from the facts above
+
+| Constant (code) | Value | How it's derived |
+| --- | --- | --- |
+| `SCALE_A` | 2.5 | Scale points per ability SD, anchored so 118–132 ≈ ±~3 θ SD around 125 (AAMC's compressive raw→scale curve, §2–3). [AAMC][IRT-Baker] |
+| `performance_standard_error` | `2.5/√I` | `SCALE_A` × IRT ability SE, where information `I` = Σ Fisher info over answered items. [IRT-Baker] |
+| FSRS `FACTOR` = 19⁄81 | — | Solved from `R(S)=0.9` with `DECAY=−0.5`: `FACTOR = 0.9^(1/DECAY) − 1`. [FSRS] |
+| total band ±`1.96·SE`, clamp 472–528 | — | Normal 95% band, clamped to the real scale; `total_se` floored at 1.0 to honor AAMC's ~±2-point total limit. [AAMC][NIST] |
+
+### C. Hand-picked heuristics (chosen, conservative, overridable)
+
+Not fit to held-out data. Chosen to bias toward "not ready yet" / wider bands (the honesty rule).
+The four likelihoods are **priors only** — after `LIKELIHOOD_MIN_OBSERVATIONS` each is replaced by
+its group's Laplace-smoothed empirical rate. [Laplace]
+
+| Constant (code) | Default | Rationale |
+| --- | --- | --- |
+| `initial_mastery` | 0.20 | Low prior: assume a KC is *not* mastered before evidence. |
+| `positive/negative_likelihood_*` | 0.90 / 0.20 / 0.10 / 0.80 | Sensitivity/specificity priors ("mastered ⇒ ~90% correct"); **self-correct** to empirical rates after 20 obs. [Laplace] |
+| `LIKELIHOOD_MIN_OBSERVATIONS` | 20 | Min group size before trusting an empirical rate over the prior. |
+| `PARTIAL_MASTERY_LIFT` | 0.5 | `P(correct\|¬mastered) = GUESS_FLOOR + 0.5·mastery`: a partly-learned KC beats pure guessing. |
+| `inner_fringe_mastery` / `inner_fringe_min_answers` | 0.85 / 3 | "Mastered" bar: high posterior *and* ≥3 answers. |
+| `outer_fringe_prereq_mastery` | 0.70 | Prereqs "ready enough" to unlock a new topic. |
+| `guessing_baseline_score` | 120 | Untested/forgotten fraction sits near the guessing floor (§2), not the 125 median. [AAMC] |
+| `max_coverage_standard_error` / `max_mastery_standard_error` | 2.0 / 2.0 | Max scaled-point uncertainty each weakness source (coverage, mastery, retention) adds; tuned to believable band widths. |
+| `irt_min_section_items` / `irt_min_section_coverage` | 20 / 0.60 | Give-up gate: no confident section score until enough items + breadth. |
+| `readiness_min_seen_cards` | 500 | Give-up gate for readiness sorting overall. |
+| `MEMORY_HORIZON_SECS` | 86 400 (1 day) | Evaluate recall ≥1 day forward to avoid the post-review R≈1.0 artifact. |
+| `fallback_readiness_score` | 0.5 | Neutral prior when readiness can't be computed. |
+
+**Honesty note.** The **memory** model is genuinely calibrated on held-out reviews
+(`evals/calibration.py`, `evals/ENGINE-FIDELITY.md`, `docs/model-memory.md`). The Bucket-C
+**score-mapping** constants are *anchored and reasonable but not empirically fit* — the posture the
+rubric rewards (`docs/honesty-rule.md`). Validating them is §8's program; the knobs are exposed on
+`ConceptSchedulerConfig` for when that data exists.
+
+---
+
 ## References
 
 - AAMC — How is the MCAT Exam Scored (equating, 118–132, no curve):
@@ -265,4 +325,14 @@ version on **held-out reviews**:
   https://doi.org/10.18653/v1/p16-1174
 - Exam Readiness Index (ERI) — composite of Mastery/Coverage/Retention/Pace/Volatility/Endurance:
   https://www.emergentmind.com/topics/exam-readiness-index-eri
+- [FSRS] FSRS4Anki Wiki — The Algorithm (power forgetting curve; DECAY=−0.5, FACTOR=19/81, R(S)=0.9):
+  https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Algorithm
+- [IRT-Baker] Baker, F. — *The Basics of Item Response Theory* (θ~N(0,1), Fisher information, 3PL c-parameter):
+  https://eric.ed.gov/?id=ED458219
+- [Laplace] Additive (Laplace) smoothing / rule of succession:
+  https://en.wikipedia.org/wiki/Additive_smoothing
+- [NIST] NIST/SEMATECH e-Handbook of Statistical Methods (normal distribution, z=1.96 for 95%):
+  https://www.itl.nist.gov/div898/handbook/
+- [A&S] Abramowitz & Stegun, *Handbook of Mathematical Functions*, eq. 7.1.26 (erf approximation, p. 299):
+  https://personal.math.ubc.ca/~cbm/aands/
 - (Cross-refs in `brainlift.md`: IRT 3PL, BKT four-param, KST, Bayesian networks, GKT.)

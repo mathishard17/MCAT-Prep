@@ -2,7 +2,31 @@
 
 ## Current Status
 
-Phase 13 is now completed through the MCAT demo import helper, live status RPC, and deck-options graph. The core concept model lives in `rslib/src/scheduler/concept.rs`, and the demo card source of truth is `added features/mcat_demo_cards.md`.
+Phase 14 (Sunday evidence pack) is complete: held-out model evals, engine↔eval parity, a 3-build study-feature ablation, a one-command 50k-deck benchmark, the Rust-change note + touched-files list, the give-up/honesty rules, three model-description pages, and a consolidated evals index. The core concept model lives in `rslib/src/scheduler/concept.rs`; evidence lives in `evals/`; model/Rust docs live in `docs/`.
+
+## Sunday evidence pack — evals, ablation, benchmark, honest-score docs (2026-07-05)
+
+Evals & benchmarks (all re-runnable; consolidated in `evals/EVALS-AND-BENCHMARKS.md`):
+
+- **Held-out model evals** (`evals/MODEL-EVALS.md`): memory calibration **Brier 0.1677 / ECE 0.0617** (log-loss 0.518) on 1600 synthetic reviews; performance IRT 3PL **acc 0.712 / AUC 0.769 / Brier 0.196** on 1560 attempts, beating majority (0.572) and mastery-only (0.615). Run `python3 evals/calibration.py`, `python3 evals/performance_eval.py`.
+- **Engine↔eval parity** (`evals/ENGINE-FIDELITY.md`): **230/230** reference values reproduced to 1e-9, so the Python evals recompute the shipped Rust formulas rather than a look-alike. Run `python3 evals/test_parity.py`.
+- **Study-feature ablation, 3 builds** (`evals/ABLATION.md`, `just ablation`): pre-stated main number = prerequisite violations, **ON 8.5 vs OFF 56 vs plain Anki 56 (~85% fewer)** over 12 seeds; honest **null** on a no-prereq deck (0 for all arms); secondary scaffolding-conditioned gains disclosed.
+- **AI held-out evals** (`evals/RESULTS.md`, `python evals/ai_eval.py`): tagging **88%** vs **35%** lexical baseline (+52%), rewording **95%**, injection tagger **98%** (1 breach) / tutor **100%** (two 40-attack surfaces), **0** leaks + **0** contamination — **4/5** pre-committed cutoffs met (tagger injection 98% vs 100%).
+- **One-command speed benchmark** (`evals/BENCHMARK.md`, `just bench`) on a **50k-card** deck: `next_card` p95 0.06 ms, `grade` p95 0.48 ms, `dashboard_load` p95 687 ms, RSS 166 MB — **`dashboard_refresh` p95 680 ms MISSES the 500 ms target** (disclosed, not hidden).
+- **Rust-change tests**: 60 Rust concept tests pass, plus a new Python-from-backend test (`pylib/tests/test_concept_scheduler_engine.py`, 4 passed) that imports the demo deck via `import_mcat_demo_deck`, answers through `sched.answerCard`, and proves **undo + `fix_integrity()`** leave the collection intact.
+
+Docs (new, in `docs/` unless noted):
+
+- **Rust-change note** (`docs/rust-change-note.md`) — why the Concept Scheduler belongs in Rust, not Python — plus **upstream files touched + future-merge difficulty** (`docs/rust-upstream-files.md`).
+- **Three model-description pages** — `docs/model-memory.md`, `docs/model-performance.md`, `docs/model-readiness.md`, each stating the give-up rule; **give-up rule** (`docs/give-up-rule.md`), **honesty-field completeness** (`docs/honesty-rule.md`), **metrics scoreboard** (`docs/model-metrics.md`).
+- **AI features catalog** (`docs/ai-features.md`) + a **traceable named source per AI output** section added to `evals/AI-RATIONALE.md` (rewording ← source card; Ask-AI tutor ← current question; tagging ← frozen KC map; CARS ← the passage's cited public-domain source).
+- **Consolidated evals index** (`evals/EVALS-AND-BENCHMARKS.md`).
+
+Give-up rule (shipped thresholds, written down): global readiness sort ≥ **500** graded answers; per-section scores need ≥ **20** items **and ≥ 60%** coverage; memory abstains when `has_memory = false`.
+
+Honesty fields: **Android complete** (estimate · range · coverage% · how-sure · last-updated · top reasons · what's-missing · abstain — 12/12 `McatHonestyTest`); **desktop partial** (estimate + range + coverage + memory + target-probability; how-sure / last-updated / reasons / missing not yet first-class).
+
+Not yet: crash-test / offline-test result tables, the sync-conflict test, the paraphrase test (§7d), the AI card-check gold set (§7f), and the dashboard "% of AAMC outline covered" remain open.
 
 ## Reviewer polish, graph declutter, Android handoff (2026-07-03, evening)
 

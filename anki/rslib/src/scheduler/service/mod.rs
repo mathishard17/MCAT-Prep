@@ -233,7 +233,13 @@ impl crate::services::SchedulerService for Collection {
         &mut self,
         input: scheduler::CardAnswer,
     ) -> Result<anki_proto::collection::OpChanges> {
-        self.answer_card(&mut input.into()).map(Into::into)
+        // MCAT: hand the concept-scheduler answer hook the true MC correctness (if
+        // the reviewer supplied it) via transient state, so a wrong answer can never
+        // grow the score. Always cleared afterwards; `None` for normal reviews.
+        self.state.mcat_pending_answer_correct = input.mcat_answer_correct;
+        let result = self.answer_card(&mut input.into()).map(Into::into);
+        self.state.mcat_pending_answer_correct = None;
+        result
     }
 
     fn upgrade_scheduler(&mut self) -> Result<()> {
@@ -400,6 +406,17 @@ impl crate::services::SchedulerService for Collection {
         self.set_concept_selected_topic(input.deck_id.into(), topic)
     }
 
+    fn set_concept_selected_section(
+        &mut self,
+        input: scheduler::SetConceptSelectedSectionRequest,
+    ) -> Result<()> {
+        let section = input
+            .section
+            .and_then(|section| scheduler::McatSection::try_from(section).ok())
+            .map(super::concept_demo::mcat_section_from_proto);
+        self.set_concept_selected_section(input.deck_id.into(), section)
+    }
+
     fn set_concept_exam_settings(
         &mut self,
         input: scheduler::SetConceptExamSettingsRequest,
@@ -541,6 +558,7 @@ mod tests {
                 rating: rating as i32,
                 answered_at_millis: TimestampMillis::now().0,
                 milliseconds_taken: 0,
+                mcat_answer_correct: None,
             },
         )
         .unwrap();

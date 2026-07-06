@@ -138,6 +138,12 @@ pub struct CollectionState {
     /// identical backups.
     pub(crate) last_backup_modified: Option<TimestampMillis>,
     pub(crate) progress: Arc<Mutex<ProgressState>>,
+    /// Transient (never persisted or synced) MCAT signal: whether the interactive
+    /// multiple-choice answer currently being applied was actually correct. The
+    /// scheduler service sets it from `CardAnswer.mcat_answer_correct` just before
+    /// `answer_card`, the concept-scheduler answer hook reads it, then it is cleared.
+    /// `None` for normal reviews (the hook falls back to the rating).
+    pub(crate) mcat_pending_answer_correct: Option<bool>,
 }
 
 pub struct Collection {

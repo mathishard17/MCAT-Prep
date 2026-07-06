@@ -113,6 +113,23 @@ object McatTopics {
 fun normalizeConceptTag(tag: String): String = tag.replace('∷'.toString(), "::")
 
 /**
+ * Builds a human-readable label from a note's Concept-Scheduler tags: the KC's leaf name plus its MCAT
+ * section when present, e.g. tags `["KC::Bio::DNA", "MCAT::Bio_Biochem"]` -> `"DNA · Bio/Biochem"`.
+ * Returns null when there is no `KC::` tag. Kept as a shared tag utility next to [normalizeConceptTag].
+ */
+fun kcBadgeLabel(tags: List<String>): String? {
+    val normalized = tags.map { normalizeConceptTag(it) }
+    val kc = normalized.firstOrNull { it.startsWith("KC::") } ?: return null
+    val leaf = kc.removePrefix("KC::").substringAfterLast("::").replace('_', ' ')
+    val section =
+        normalized
+            .firstOrNull { it.startsWith("MCAT::") }
+            ?.removePrefix("MCAT::")
+            ?.replace('_', '/')
+    return if (section.isNullOrBlank()) leaf else "$leaf · $section"
+}
+
+/**
  * Builds the Concept Scheduler tag list for a card from Add-Card panel selections.
  *
  * @param kc required target KC id, e.g. `Bio::DNA`

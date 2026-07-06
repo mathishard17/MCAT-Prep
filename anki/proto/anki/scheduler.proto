@@ -69,6 +69,8 @@ service SchedulerService {
   rpc ImportMcatDemoDeck(generic.Empty) returns (decks.DeckId);
   rpc SetConceptSelectedTopic(SetConceptSelectedTopicRequest)
       returns (generic.Empty);
+  rpc SetConceptSelectedSection(SetConceptSelectedSectionRequest)
+      returns (generic.Empty);
   rpc SetConceptExamSettings(SetConceptExamSettingsRequest)
       returns (generic.Empty);
   rpc GetConceptLesson(GetConceptLessonRequest) returns (ConceptLesson);
@@ -168,6 +170,12 @@ message SetConceptSelectedTopicRequest {
   optional string topic = 2;
 }
 
+message SetConceptSelectedSectionRequest {
+  int64 deck_id = 1;
+  // Unset clears the selection and returns to scheduling across all sections.
+  optional McatSection section = 2;
+}
+
 message SetConceptExamSettingsRequest {
   int64 deck_id = 1;
   // Epoch seconds of the exam date; unset clears it (recall projected to "now").
@@ -228,6 +236,10 @@ message ConceptSchedulerStatusResponse {
   uint32 target_total_score = 16;
   float probability_hit_target = 17;
   bool has_target = 18;
+  // The MCAT section the learner has chosen to study, if any. Unset means
+  // scheduling spans all sections (the default). Lets clients reflect the active
+  // "study by section" choice and offer a clear/back-to-all affordance.
+  optional McatSection selected_section = 19;
 }
 
 message ConceptEvidenceStatus {
@@ -465,6 +477,12 @@ message CardAnswer {
   Rating rating = 4;
   int64 answered_at_millis = 5;
   uint32 milliseconds_taken = 6;
+  // MCAT: whether the learner actually answered this interactive multiple-choice
+  // question correctly, when known. Absent for normal reviews. The concept
+  // scheduler uses it so a WRONG answer can never grow mastery/IRT even if the
+  // self-rating is Good/Easy (wrong + Good/Easy is neutral; wrong + Again/Hard
+  // penalizes).
+  optional bool mcat_answer_correct = 7;
 }
 
 message CustomStudyRequest {

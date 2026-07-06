@@ -1,0 +1,34 @@
+Bio::DNA	1B	Transmission of genetic information from the gene to the protein
+Bio::DNA_Replication	1B	Transmission of genetic information from the gene to the protein
+Bio::Transcription	1B	Transmission of genetic information from the gene to the protein
+Bio::Translation	1B	Transmission of genetic information from the gene to the protein
+Bio::Gene_Expression_Regulation	1B	Transmission of genetic information from the gene to the protein
+Bio::Biotechnology	1B	Transmission of genetic information from the gene to the protein
+Bio::Genetics	1C	Transmission of heritable information from generation to generation and the processes that increase genetic diversity
+Bio::Meiosis	1C	Transmission of heritable information from generation to generation and the processes that increase genetic diversity
+Bio::Mendelian_Genetics	1C	Transmission of heritable information from generation to generation and the processes that increase genetic diversity
+Bio::Eukaryotic_Cell	2A	Assemblies of molecules, cells, and groups of cells within single cellular and multicellular organisms
+Bio::Prokaryotes_vs_Eukaryotes	2B	The structure, growth, physiology, and genetics of prokaryotes and viruses
+Bio::Cell_Membrane_and_Transport	2A	Assemblies of molecules, cells, and groups of cells within single cellular and multicellular organisms
+Bio::Cell_Signaling	2C	Processes of cell division, differentiation, and specialization
+Bio::Cytoskeleton	2A	Assemblies of molecules, cells, and groups of cells within single cellular and multicellular organisms
+Bio::Cell_Cycle_and_Mitosis	2C	Processes of cell division, differentiation, and specialization
+Bio::Viruses	2B	The structure, growth, physiology, and genetics of prokaryotes and viruses
+Bio::Bacteria	2B	The structure, growth, physiology, and genetics of prokaryotes and viruses
+Bio::Fungi	2A	Assemblies of molecules, cells, and groups of cells within single cellular and multicellular organisms
+Bio::Nervous_System	3A	Structure and functions of the nervous and endocrine systems and ways these systems coordinate the organ systems
+Bio::Endocrine_System	3A	Structure and functions of the nervous and endocrine systems and ways these systems coordinate the organ systems
+Bio::Muscular_System	3B	Structure and integrative functions of the main organ systems
+Bio::Skeletal_System	3B	Structure and integrative functions of the main organ systems
+Bio::Circulatory_System	3B	Structure and integrative functions of the main organ systems
+Bio::Respiratory_System	3B	Structure and integrative functions of the main organ systems
+Bio::Digestive_System	3B	Structure and integrative functions of the main organ systems
+Bio::Immune_System	3B	Structure and integrative functions of the main organ systems
+Bio::Lymphatic_System	3B	Structure and integrative functions of the main organ systems
+Bio::Skin_System	3B	Structure and integrative functions of the main organ systems
+Bio::Excretory_System	3B	Structure and integrative functions of the main organ systems
+Bio::Reproductive_System	3B	Structure and integrative functions of the main organ systems
+Bio::Embryology	2C	Processes of cell division, differentiation, and specialization
+Bio::Evolution	1C	Transmission of heritable information from generation to generation and the processes that increase genetic diversity
+Bio::Population_Genetics	1C	Transmission of heritable information from generation to generation and the processes that increase genetic diversity
+Bio::Biodiversity_and_Phylogeny	1C	Transmission of heritable information from generation to generation and the processes that increase genetic diversity

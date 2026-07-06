@@ -358,10 +358,12 @@ impl Collection {
             self.add_leech_tag(card.note_id)?;
         }
         if !is_preview {
+            let mcat_answer_correct = self.state.mcat_pending_answer_correct;
             self.maybe_update_concept_mastery_from_answer(
                 &concept_home_deck,
                 card.note_id,
                 answer.rating,
+                mcat_answer_correct,
                 timing.days_elapsed,
             )?;
         }
@@ -688,9 +690,12 @@ pub(crate) mod test {
     use super::*;
     use crate::card::CardType;
     use crate::deckconfig::ReviewMix;
+    use crate::scheduler::concept::concept_evidence;
     use crate::scheduler::concept::evidence_from_rating;
+    use crate::scheduler::concept::ConceptSchedulerConfig;
     use crate::scheduler::concept::Evidence;
     use crate::scheduler::concept::KnowledgeComponentId;
+    use crate::scheduler::concept::McatSection;
     use crate::search::SortMode;
 
     fn current_state(col: &mut Collection, card_id: CardId) -> CardState {
@@ -889,6 +894,133 @@ pub(crate) mod test {
         let persisted = col.get_concept_scheduler_state(deck_id);
         assert!(persisted.state.kcs.is_empty());
         assert_eq!(persisted.state.total_seen_cards, 0);
+
+        Ok(())
+    }
+
+    #[test]
+    fn concept_evidence_never_grows_the_score_on_a_wrong_answer() {
+        // Correct answer, or unknown correctness (normal reviews): the rating decides.
+        assert_eq!(
+            concept_evidence(Some(true), Rating::Good),
+            Some(Evidence::Positive)
+        );
+        assert_eq!(
+            concept_evidence(Some(true), Rating::Again),
+            Some(Evidence::Negative)
+        );
+        assert_eq!(concept_evidence(None, Rating::Good), Some(Evidence::Positive));
+        // Wrong answer: Good/Easy are neutral (cannot grow the score); Again/Hard penalize.
+        assert_eq!(concept_evidence(Some(false), Rating::Good), None);
+        assert_eq!(concept_evidence(Some(false), Rating::Easy), None);
+        assert_eq!(
+            concept_evidence(Some(false), Rating::Again),
+            Some(Evidence::Negative)
+        );
+        assert_eq!(
+            concept_evidence(Some(false), Rating::Hard),
+            Some(Evidence::Negative)
+        );
+    }
+
+    #[test]
+    fn wrong_mc_answer_rated_good_cannot_grow_mastery_or_theta() -> Result<()> {
+        let mut col = Collection::new();
+        let deck_id = DeckId(1);
+        enable_concept_scheduler(&mut col, deck_id)?;
+        let note_id = add_basic_note_with_tags(
+            &mut col,
+            deck_id,
+            &["KC::Bio::DNA", "MCAT::Bio_Biochem", "Difficulty::3"],
+        )?;
+        let deck = col.get_deck(deck_id)?.unwrap();
+        let deck = (*deck).clone();
+        let day = col.timing_today()?.days_elapsed;
+        let initial = ConceptSchedulerConfig::default().initial_mastery;
+
+        // Guessed wrong but tapped "Good" -- the exploit this fix closes.
+        col.maybe_update_concept_mastery_from_answer(
+            &deck,
+            note_id,
+            Rating::Good,
+            Some(false),
+            day,
+        )?;
+
+        let persisted = col.get_concept_scheduler_state(deck_id);
+        let dna = persisted.state.kcs.get(&kc("Bio::DNA")).unwrap();
+        assert_eq!(dna.positive, 0, "a wrong answer records no positive evidence");
+        assert!(
+            dna.mastery <= initial + 1e-9,
+            "mastery must not grow on a wrong answer"
+        );
+        // The attempt is still counted, so the revlog reconstruction can't override it.
+        assert_eq!(dna.answered, 1);
+        assert_eq!(persisted.state.total_seen_cards, 1);
+        let irt = persisted
+            .state
+            .irt_sections
+            .get(&McatSection::BioBiochem)
+            .unwrap();
+        assert!(irt.theta <= 1e-9, "theta must not rise on a wrong answer");
+        assert_eq!(irt.correct, 0);
+        assert_eq!(irt.answered, 1);
+
+        Ok(())
+    }
+
+    #[test]
+    fn wrong_mc_answer_rated_again_penalizes_mastery() -> Result<()> {
+        let mut col = Collection::new();
+        let deck_id = DeckId(1);
+        enable_concept_scheduler(&mut col, deck_id)?;
+        let note_id =
+            add_basic_note_with_tags(&mut col, deck_id, &["KC::Bio::DNA", "MCAT::Bio_Biochem"])?;
+        let deck = col.get_deck(deck_id)?.unwrap();
+        let deck = (*deck).clone();
+        let day = col.timing_today()?.days_elapsed;
+        let initial = ConceptSchedulerConfig::default().initial_mastery;
+
+        col.maybe_update_concept_mastery_from_answer(
+            &deck,
+            note_id,
+            Rating::Again,
+            Some(false),
+            day,
+        )?;
+
+        let persisted = col.get_concept_scheduler_state(deck_id);
+        let dna = persisted.state.kcs.get(&kc("Bio::DNA")).unwrap();
+        assert_eq!(dna.negative, 1);
+        assert!(dna.mastery < initial, "a wrong Again answer lowers mastery");
+
+        Ok(())
+    }
+
+    #[test]
+    fn correct_mc_answer_rated_good_still_grows_mastery() -> Result<()> {
+        let mut col = Collection::new();
+        let deck_id = DeckId(1);
+        enable_concept_scheduler(&mut col, deck_id)?;
+        let note_id =
+            add_basic_note_with_tags(&mut col, deck_id, &["KC::Bio::DNA", "MCAT::Bio_Biochem"])?;
+        let deck = col.get_deck(deck_id)?.unwrap();
+        let deck = (*deck).clone();
+        let day = col.timing_today()?.days_elapsed;
+        let initial = ConceptSchedulerConfig::default().initial_mastery;
+
+        col.maybe_update_concept_mastery_from_answer(
+            &deck,
+            note_id,
+            Rating::Good,
+            Some(true),
+            day,
+        )?;
+
+        let persisted = col.get_concept_scheduler_state(deck_id);
+        let dna = persisted.state.kcs.get(&kc("Bio::DNA")).unwrap();
+        assert_eq!(dna.positive, 1);
+        assert!(dna.mastery > initial, "a correct Good answer grows mastery");
 
         Ok(())
     }

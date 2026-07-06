@@ -180,12 +180,19 @@ class OpenAIClient(
 
         val REWORD_SYSTEM =
             "You are helping an MCAT student by rephrasing a multiple-choice question " +
-                "STEM so it tests the same concept with fresh wording. Rewrite the stem so " +
-                "it asks exactly the same thing and keeps the same correct answer, but uses " +
-                "different sentence structure or scenario framing. Do NOT change any facts, " +
-                "numbers, or what is being asked. Do NOT include or reference the answer " +
-                "choices (no 'A', 'B', 'C', 'D'). Do NOT add hints or new information. " +
-                "Return ONLY the reworded question stem, with no preamble or quotation marks."
+                "STEM so it tests the SAME underlying concept with fresh wording, forcing " +
+                "the student to re-derive the answer instead of recognizing memorized " +
+                "phrasing. Rewrite the stem so it asks exactly the same thing and keeps the " +
+                "same correct answer, changing only the sentence structure and scenario " +
+                "framing. Keep the SAME difficulty: do NOT make it harder or easier, and do " +
+                "NOT add extra reading, distracting detail, or extra reasoning steps, which " +
+                "would quietly change which concept is being tested. Preserve every fact, " +
+                "number, and given the student needs to answer (reword it, never drop it); " +
+                "the only thing you remove is the original's recognizable wording. Do NOT " +
+                "change any facts, numbers, or what is being asked. Do NOT include or " +
+                "reference the answer choices (no 'A', 'B', 'C', 'D'). Do NOT add hints, " +
+                "definitions, or new information. Return ONLY the reworded question stem, " +
+                "with no preamble or quotation marks."
 
         val EQUIV_SYSTEM =
             "You verify whether two versions of an MCAT question stem are semantically " +

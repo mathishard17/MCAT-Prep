@@ -319,6 +319,14 @@ open class DeckPicker :
     private var syncOnResume = false
 
     /**
+     * One-shot flag: on a genuine fresh launch from the launcher, route to the MCAT Readiness screen
+     * once (see [launchReadinessHome]). Set in [onCreate] and consumed on the first
+     * [StartupResponse.Success], so it never re-triggers on rotation, return-to-deck-list, or other
+     * in-app navigation.
+     */
+    private var pendingReadinessHomeLaunch = false
+
+    /**
      * Guards the one-time [importMcatDemoDeckIfNeeded] call so the idempotent backend
      * import runs at most once per activity instance rather than on every deck-list refresh.
      */
@@ -498,6 +506,10 @@ open class DeckPicker :
             return
         }
         Timber.d("Not displaying app intro")
+        // On a genuine fresh launch from the launcher, land on the MCAT Readiness page
+        // (the app "home"). Consumed once on the first successful startup (below), so it
+        // never re-triggers on rotation/config-change or in-app navigation.
+        pendingReadinessHomeLaunch = savedInstanceState == null && intent?.action == Intent.ACTION_MAIN
         if (intent.hasExtra(INTENT_SYNC_FROM_LOGIN)) {
             Timber.d("launched from introduction activity login: syncing")
             syncOnResume = true
@@ -844,6 +856,12 @@ open class DeckPicker :
                             leftPaneWeightKey = PREF_DECK_PICKER_PANE_WEIGHT,
                             rightPaneWeightKey = PREF_STUDY_OPTIONS_PANE_WEIGHT,
                         )
+                    }
+
+                    // Land on the MCAT Readiness page as the "home" on a fresh launch.
+                    if (pendingReadinessHomeLaunch) {
+                        pendingReadinessHomeLaunch = false
+                        launchReadinessHome()
                     }
                 }
                 is StartupResponse.FatalError -> handleStartupFailure(response.failure)
@@ -2101,6 +2119,25 @@ open class DeckPicker :
         } catch (e: Exception) {
             Timber.w(e, "Failed to import MCAT Demo deck")
             mcatDemoDeckImported = false
+        }
+    }
+
+    /**
+     * Route to the MCAT Readiness screen as the app "home" on a fresh launch: opens the
+     * [ConceptSchedulerStatusFragment] for the MCAT deck on top of the deck list, so backing
+     * out (or "Continue studying") returns to the deck list to study. The MCAT deck import
+     * is idempotent, so the readiness home always has a deck to show.
+     */
+    private fun launchReadinessHome() {
+        launchCatchingTask {
+            val deckId = withCol { backend.importMcatDemoDeck() }
+            startActivity(
+                SingleFragmentActivity.getIntent(
+                    this@DeckPicker,
+                    ConceptSchedulerStatusFragment::class,
+                    ConceptSchedulerStatusFragment.createArgs(deckId),
+                ),
+            )
         }
     }
 

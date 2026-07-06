@@ -56,7 +56,6 @@ import com.ichi2.anki.cardviewer.Gesture
 import com.ichi2.anki.cardviewer.ViewerCommand
 import com.ichi2.anki.conceptscheduler.ConceptLessonBottomSheet
 import com.ichi2.anki.conceptscheduler.ConceptSchedulerStatusBottomSheet
-import com.ichi2.anki.conceptscheduler.KcBadgeController
 import com.ichi2.anki.common.annotations.NeedsTest
 import com.ichi2.anki.common.crashreporting.CrashReportService
 import com.ichi2.anki.common.destinations.CardInfoDestination
@@ -209,9 +208,6 @@ open class Reviewer :
     /** Handle Mark/Flag state of cards  */
     @VisibleForTesting
     internal var cardMarker: CardMarker? = null
-
-    /** Shows the current card's Knowledge Component badge (Concept Scheduler demo). */
-    private var kcBadge: KcBadgeController? = null
 
     /**
      * Parsed MCAT multiple-choice data for the current card, or null for a normal card. When non-null,
@@ -1361,7 +1357,6 @@ open class Reviewer :
         // show timer, if activated in the deck's preferences
         answerTimer.setupForCard(getColUnsafe, currentCard!!)
         val note = currentCard!!.note(getColUnsafe)
-        kcBadge?.displayForTags(note.tags)
         mcatCurrent = buildMcatPayload(note.tags, note.fields)
         resetMcatCardState()
         delayedHide(100)
@@ -1672,7 +1667,6 @@ open class Reviewer :
         val mark = topBarLayout!!.findViewById<ImageView>(R.id.mark_icon)
         val flag = topBarLayout!!.findViewById<ImageView>(R.id.flag_icon)
         cardMarker = CardMarker(mark, flag)
-        kcBadge = KcBadgeController(findViewById(R.id.kc_badge)) { kc -> openConceptLesson(kc) }
     }
 
     override fun switchTopBarVisibility(visible: Int) {

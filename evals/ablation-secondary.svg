@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="500" viewBox="0 0 720 500" font-family="Helvetica,Arial,sans-serif">
+<rect x="0" y="0" width="720" height="500" fill="#ffffff"/>
+<text x="360" y="28" text-anchor="middle" font-size="18" font-weight="bold" fill="#111827">Study-feature ablation -- secondary metrics</text>
+<text x="360" y="48" text-anchor="middle" font-size="12" fill="#6b7280">SYNTHETIC, 12 seeds; ON / OFF / PLAIN, mean with min-max whiskers (scaffolding-conditioned)</text>
+<line x1="60" y1="422.0" x2="690" y2="422.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="425.0" text-anchor="end" font-size="10" fill="#6b7280">0.0</text>
+<line x1="60" y1="353.6" x2="690" y2="353.6" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="356.6" text-anchor="end" font-size="10" fill="#6b7280">0.2</text>
+<line x1="60" y1="285.2" x2="690" y2="285.2" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="288.2" text-anchor="end" font-size="10" fill="#6b7280">0.4</text>
+<line x1="60" y1="216.8" x2="690" y2="216.8" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="219.8" text-anchor="end" font-size="10" fill="#6b7280">0.6</text>
+<line x1="60" y1="148.4" x2="690" y2="148.4" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="151.4" text-anchor="end" font-size="10" fill="#6b7280">0.8</text>
+<line x1="60" y1="80.0" x2="690" y2="80.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="83.0" text-anchor="end" font-size="10" fill="#6b7280">1.0</text>
+<rect x="91.5" y="281.2" width="46.0" height="140.8" fill="#16a34a"/>
+<line x1="114.5" y1="282.2" x2="114.5" y2="270.3" stroke="#111827" stroke-width="1"/>
+<line x1="111.5" y1="270.3" x2="117.5" y2="270.3" stroke="#111827" stroke-width="1"/>
+<text x="114.5" y="277.2" text-anchor="middle" font-size="9" fill="#374151">0.41</text>
+<rect x="140.5" y="345.1" width="46.0" height="76.9" fill="#9ca3af"/>
+<line x1="163.5" y1="345.1" x2="163.5" y2="345.1" stroke="#111827" stroke-width="1"/>
+<line x1="160.5" y1="345.1" x2="166.5" y2="345.1" stroke="#111827" stroke-width="1"/>
+<text x="163.5" y="341.1" text-anchor="middle" font-size="9" fill="#374151">0.22</text>
+<rect x="189.5" y="345.1" width="46.0" height="76.9" fill="#6b7280"/>
+<line x1="212.5" y1="345.1" x2="212.5" y2="345.1" stroke="#111827" stroke-width="1"/>
+<line x1="209.5" y1="345.1" x2="215.5" y2="345.1" stroke="#111827" stroke-width="1"/>
+<text x="212.5" y="341.1" text-anchor="middle" font-size="9" fill="#374151">0.22</text>
+<text x="165.0" y="440" text-anchor="middle" font-size="11" fill="#374151">Held-out accuracy</text>
+<rect x="301.5" y="161.4" width="46.0" height="260.6" fill="#16a34a"/>
+<line x1="324.5" y1="177.2" x2="324.5" y2="152.0" stroke="#111827" stroke-width="1"/>
+<line x1="321.5" y1="152.0" x2="327.5" y2="152.0" stroke="#111827" stroke-width="1"/>
+<text x="324.5" y="157.4" text-anchor="middle" font-size="9" fill="#374151">0.76</text>
+<rect x="350.5" y="295.1" width="46.0" height="126.9" fill="#9ca3af"/>
+<line x1="373.5" y1="323.0" x2="373.5" y2="269.0" stroke="#111827" stroke-width="1"/>
+<line x1="370.5" y1="269.0" x2="376.5" y2="269.0" stroke="#111827" stroke-width="1"/>
+<text x="373.5" y="291.1" text-anchor="middle" font-size="9" fill="#374151">0.37</text>
+<rect x="399.5" y="295.1" width="46.0" height="126.9" fill="#6b7280"/>
+<line x1="422.5" y1="323.0" x2="422.5" y2="269.0" stroke="#111827" stroke-width="1"/>
+<line x1="419.5" y1="269.0" x2="425.5" y2="269.0" stroke="#111827" stroke-width="1"/>
+<text x="422.5" y="291.1" text-anchor="middle" font-size="9" fill="#374151">0.37</text>
+<text x="375.0" y="440" text-anchor="middle" font-size="11" fill="#374151">Memory (recall)</text>
+<rect x="511.5" y="319.1" width="46.0" height="102.9" fill="#16a34a"/>
+<line x1="534.5" y1="320.5" x2="534.5" y2="304.4" stroke="#111827" stroke-width="1"/>
+<line x1="531.5" y1="304.4" x2="537.5" y2="304.4" stroke="#111827" stroke-width="1"/>
+<text x="534.5" y="315.1" text-anchor="middle" font-size="9" fill="#374151">0.30</text>
+<rect x="560.5" y="320.5" width="46.0" height="101.5" fill="#9ca3af"/>
+<line x1="583.5" y1="320.5" x2="583.5" y2="320.5" stroke="#111827" stroke-width="1"/>
+<line x1="580.5" y1="320.5" x2="586.5" y2="320.5" stroke="#111827" stroke-width="1"/>
+<text x="583.5" y="316.5" text-anchor="middle" font-size="9" fill="#374151">0.30</text>
+<rect x="609.5" y="320.5" width="46.0" height="101.5" fill="#6b7280"/>
+<line x1="632.5" y1="320.5" x2="632.5" y2="320.5" stroke="#111827" stroke-width="1"/>
+<line x1="629.5" y1="320.5" x2="635.5" y2="320.5" stroke="#111827" stroke-width="1"/>
+<text x="632.5" y="316.5" text-anchor="middle" font-size="9" fill="#374151">0.30</text>
+<text x="585.0" y="440" text-anchor="middle" font-size="11" fill="#374151">Coverage (KCs)</text>
+<rect x="66" y="81" width="12" height="12" fill="#16a34a"/>
+<text x="83" y="91" font-size="11" fill="#374151">ON</text>
+<rect x="136" y="81" width="12" height="12" fill="#9ca3af"/>
+<text x="153" y="91" font-size="11" fill="#374151">OFF</text>
+<rect x="206" y="81" width="12" height="12" fill="#6b7280"/>
+<text x="223" y="91" font-size="11" fill="#374151">PLAIN</text>
+<text x="60" y="462" font-size="11" fill="#374151">Projected readiness (472-528): ON 489.6 vs OFF/PLAIN 480.3  (ON-PLAIN +9.3)</text>
+<text x="360" y="486" text-anchor="middle" font-size="12" fill="#111827">Honest null: with no prerequisite edges all three arms are equal (see ABLATION.md)</text>
+</svg>

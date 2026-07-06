@@ -54,6 +54,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** With A equal to 20%, thymine is also 20%, leaving 60% split equally between guanine and cytosine, so guanine is 30%.
 - **Tags:** `KC::Bio::DNA` `MCAT::Bio_Biochem` `Difficulty::3`
 
+### MCAT-BIO-DNA-008
+
+- **KC:** `Bio::DNA`
+- **Prereqs:** none
+- **Difficulty:** 3
+- **Question:** One strand of a DNA segment reads TACGGA in the 5-prime to 3-prime direction. Reading 5-prime to 3-prime, what is the sequence of the complementary strand?
+- **A:** TCCGTA
+- **B:** ATGCCT
+- **C:** AUGCCU
+- **D:** TACGGA
+- **Correct:** A
+- **Explanation:** Bases pair A-T and G-C on antiparallel strands, giving the complement 3-prime-ATGCCT-5-prime; read in the 5-prime to 3-prime direction that strand is TCCGTA.
+- **Tags:** `KC::Bio::DNA` `MCAT::Bio_Biochem` `Difficulty::3`
+
 ## Bio::DNA_Replication
 
 ### MCAT-BIO-DNAR-001
@@ -83,6 +97,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Because synthesis proceeds only 5-prime to 3-prime, the strand oriented opposite to fork movement must be made in short pieces as template is exposed.
 - **Tags:** `KC::Bio::DNA_Replication` `Prereq::Bio::DNA` `Prereq::Biochem::Enzymes` `MCAT::Bio_Biochem` `Difficulty::4`
+
+### MCAT-BIO-DNAR-003
+
+- **KC:** `Bio::DNA_Replication`
+- **Prereqs:** `Prereq::Bio::DNA` `Prereq::Biochem::Enzymes`
+- **Difficulty:** 3
+- **Question:** Which enzyme relieves the torsional strain (overwinding) that accumulates in the double helix just ahead of the advancing replication fork?
+- **A:** DNA ligase
+- **B:** Primase
+- **C:** Topoisomerase
+- **D:** Helicase
+- **Correct:** C
+- **Explanation:** Topoisomerase nicks and reseals the backbone to release supercoiling ahead of the fork; helicase only separates the two strands at the fork itself.
+- **Tags:** `KC::Bio::DNA_Replication` `Prereq::Bio::DNA` `Prereq::Biochem::Enzymes` `MCAT::Bio_Biochem` `Difficulty::3`
 
 ## Bio::Transcription
 
@@ -114,6 +142,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** Exons carry coding information, so losing one can shift the reading frame or delete residues, yielding an altered or nonfunctional protein without changing the DNA.
 - **Tags:** `KC::Bio::Transcription` `Prereq::Bio::DNA` `Prereq::Biochem::Nucleotides_and_Nucleic_Acids` `MCAT::Bio_Biochem` `Difficulty::4`
 
+### MCAT-BIO-TRA-003
+
+- **KC:** `Bio::Transcription`
+- **Prereqs:** `Prereq::Bio::DNA` `Prereq::Biochem::Nucleotides_and_Nucleic_Acids`
+- **Difficulty:** 3
+- **Question:** In eukaryotes, which modification is added to the 5-prime end of a pre-mRNA to protect it from degradation and help ribosomes recognize it?
+- **A:** A poly-A tail
+- **B:** A 7-methylguanosine cap
+- **C:** An added intron
+- **D:** A second template strand
+- **Correct:** B
+- **Explanation:** The 5-prime 7-methylguanosine cap stabilizes the transcript and is bound during translation initiation; the poly-A tail is instead added to the 3-prime end.
+- **Tags:** `KC::Bio::Transcription` `Prereq::Bio::DNA` `Prereq::Biochem::Nucleotides_and_Nucleic_Acids` `MCAT::Bio_Biochem` `Difficulty::3`
+
 ## Bio::Translation
 
 ### MCAT-BIO-TRA2-001
@@ -143,6 +185,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** A premature stop codon ends translation early, producing a shortened and often nonfunctional protein.
 - **Tags:** `KC::Bio::Translation` `Prereq::Bio::Transcription` `Prereq::Biochem::Peptides_and_Proteins` `MCAT::Bio_Biochem` `Difficulty::4`
+
+### MCAT-BIO-TRA2-003
+
+- **KC:** `Bio::Translation`
+- **Prereqs:** `Prereq::Bio::Transcription` `Prereq::Biochem::Peptides_and_Proteins`
+- **Difficulty:** 3
+- **Question:** During elongation, which ribosomal site holds the tRNA attached to the growing polypeptide chain?
+- **A:** The A (aminoacyl) site
+- **B:** The P (peptidyl) site
+- **C:** The E (exit) site
+- **D:** The promoter site
+- **Correct:** B
+- **Explanation:** The P site carries the peptidyl-tRNA with the growing chain; the A site accepts incoming aminoacyl-tRNAs and the E site releases deacylated tRNAs.
+- **Tags:** `KC::Bio::Translation` `Prereq::Bio::Transcription` `Prereq::Biochem::Peptides_and_Proteins` `MCAT::Bio_Biochem` `Difficulty::3`
 
 ## Bio::Gene_Expression_Regulation
 
@@ -174,6 +230,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** Heritable epigenetic marks change how accessible genes are for transcription, letting cells with the same DNA keep distinct, stable expression programs.
 - **Tags:** `KC::Bio::Gene_Expression_Regulation` `Prereq::Bio::Transcription` `Prereq::Bio::Translation` `MCAT::Bio_Biochem` `Difficulty::5`
 
+### MCAT-BIO-GENER-003
+
+- **KC:** `Bio::Gene_Expression_Regulation`
+- **Prereqs:** `Prereq::Bio::Transcription` `Prereq::Bio::Translation`
+- **Difficulty:** 4
+- **Question:** In an inducible bacterial operon, adding the pathway's substrate (an inducer) switches on transcription of the metabolic genes. How does the inducer most directly produce this effect?
+- **A:** It binds the repressor and changes its shape so the repressor releases the operator
+- **B:** It permanently deletes the operator from the chromosome
+- **C:** It binds the promoter so RNA polymerase can no longer attach
+- **D:** It degrades the mRNA as soon as it is transcribed
+- **Correct:** A
+- **Explanation:** In an inducible operon the inducer binds the repressor and alters its conformation, so the repressor lets go of the operator and RNA polymerase can transcribe the genes.
+- **Tags:** `KC::Bio::Gene_Expression_Regulation` `Prereq::Bio::Transcription` `Prereq::Bio::Translation` `MCAT::Bio_Biochem` `Difficulty::4`
+
 ## Bio::Biotechnology
 
 ### MCAT-BIO-BIO-001
@@ -203,6 +273,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** DNA is uniformly negative and moves toward the positive electrode, and the gel sieves by size, so smaller fragments travel faster and farther.
 - **Tags:** `KC::Bio::Biotechnology` `Prereq::Bio::DNA` `Prereq::Bio::Genetics` `MCAT::Bio_Biochem` `Difficulty::4`
+
+### MCAT-BIO-BIO-003
+
+- **KC:** `Bio::Biotechnology`
+- **Prereqs:** `Prereq::Bio::DNA` `Prereq::Bio::Genetics`
+- **Difficulty:** 2
+- **Question:** In molecular cloning, what does a restriction endonuclease do to DNA?
+- **A:** It cuts DNA at specific recognition sequences
+- **B:** It joins two DNA fragments end to end
+- **C:** It synthesizes RNA from a DNA template
+- **D:** It adds a protective cap to the DNA
+- **Correct:** A
+- **Explanation:** Restriction endonucleases recognize specific short sequences and cleave the DNA backbone there; joining fragments is instead the job of DNA ligase.
+- **Tags:** `KC::Bio::Biotechnology` `Prereq::Bio::DNA` `Prereq::Bio::Genetics` `MCAT::Bio_Biochem` `Difficulty::2`
 
 ## Bio::Genetics
 
@@ -234,6 +318,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** When a single working allele makes sufficient product, the loss-of-function allele behaves recessively and carriers appear unaffected.
 - **Tags:** `KC::Bio::Genetics` `Prereq::Bio::DNA` `MCAT::Bio_Biochem` `Difficulty::4`
 
+### MCAT-BIO-GEN-008
+
+- **KC:** `Bio::Genetics`
+- **Prereqs:** `Prereq::Bio::DNA`
+- **Difficulty:** 3
+- **Question:** Crossing a true-breeding red-flowered plant with a true-breeding white-flowered plant produces offspring that are all pink. This pattern of inheritance is best described as:
+- **A:** Complete dominance of the red allele
+- **B:** Incomplete dominance
+- **C:** X-linked recessive inheritance
+- **D:** Epistasis between two genes
+- **Correct:** B
+- **Explanation:** In incomplete dominance the heterozygote shows an intermediate, blended phenotype, such as pink arising from red and white parents.
+- **Tags:** `KC::Bio::Genetics` `Prereq::Bio::DNA` `MCAT::Bio_Biochem` `Difficulty::3`
+
 ## Bio::Meiosis
 
 ### MCAT-BIO-MEI-001
@@ -263,6 +361,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Crossing over swaps segments between non-sister chromatids of homologous chromosomes at chiasmata, producing recombinant chromosomes.
 - **Tags:** `KC::Bio::Meiosis` `Prereq::Bio::Cell_Cycle_and_Mitosis` `MCAT::Bio_Biochem` `Difficulty::4`
+
+### MCAT-BIO-MEI-003
+
+- **KC:** `Bio::Meiosis`
+- **Prereqs:** `Prereq::Bio::Cell_Cycle_and_Mitosis`
+- **Difficulty:** 3
+- **Question:** The separation of homologous chromosome pairs, which reduces the chromosome number from diploid to haploid, occurs during which stage of meiosis?
+- **A:** Anaphase I
+- **B:** Anaphase II
+- **C:** Metaphase II
+- **D:** Telophase II
+- **Correct:** A
+- **Explanation:** Homologous chromosomes separate during anaphase I, the reductional division; sister chromatids do not separate until anaphase II.
+- **Tags:** `KC::Bio::Meiosis` `Prereq::Bio::Cell_Cycle_and_Mitosis` `MCAT::Bio_Biochem` `Difficulty::3`
 
 ## Bio::Mendelian_Genetics
 
@@ -294,6 +406,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** Each gene independently gives 1/4 homozygous recessive, so both together occur at 1/4 times 1/4, which is 1/16.
 - **Tags:** `KC::Bio::Mendelian_Genetics` `Prereq::Bio::Genetics` `Prereq::Bio::Meiosis` `MCAT::Bio_Biochem` `Difficulty::5`
 
+### MCAT-BIO-MENG-003
+
+- **KC:** `Bio::Mendelian_Genetics`
+- **Prereqs:** `Prereq::Bio::Genetics` `Prereq::Bio::Meiosis`
+- **Difficulty:** 4
+- **Question:** An organism shows a dominant phenotype but its genotype is unknown. Crossing it with a homozygous recessive individual is useful because it:
+- **A:** Always yields only offspring with the dominant phenotype
+- **B:** Reveals the unknown genotype from the offspring phenotype ratio
+- **C:** Converts the dominant allele into a recessive one
+- **D:** Guarantees a 9:3:3:1 offspring ratio
+- **Correct:** B
+- **Explanation:** In a test cross, a homozygous dominant parent gives all dominant offspring while a heterozygous parent gives about half recessive, so the offspring ratio reveals the unknown genotype.
+- **Tags:** `KC::Bio::Mendelian_Genetics` `Prereq::Bio::Genetics` `Prereq::Bio::Meiosis` `MCAT::Bio_Biochem` `Difficulty::4`
+
 ## Bio::Eukaryotic_Cell
 
 ### MCAT-BIO-EUKC-001
@@ -323,6 +449,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Secreted proteins are made on the rough ER and then processed and packaged by the Golgi, so both are prominent in secretory cells.
 - **Tags:** `KC::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::3`
+
+### MCAT-BIO-EUKC-003
+
+- **KC:** `Bio::Eukaryotic_Cell`
+- **Prereqs:** none
+- **Difficulty:** 4
+- **Question:** A researcher isolates eukaryotic organelles filled with hydrolytic enzymes that work best at an acidic internal pH. These organelles are most likely:
+- **A:** Lysosomes
+- **B:** Ribosomes
+- **C:** Mitochondria
+- **D:** Peroxisomes
+- **Correct:** A
+- **Explanation:** Lysosomes contain acid hydrolases that degrade macromolecules at low pH; peroxisomes instead use oxidative enzymes and are not maintained at an acidic pH.
+- **Tags:** `KC::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::4`
 
 ## Bio::Prokaryotes_vs_Eukaryotes
 
@@ -354,6 +494,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** Many prokaryotes have a peptidoglycan cell wall, a feature not found in animal cells.
 - **Tags:** `KC::Bio::Prokaryotes_vs_Eukaryotes` `Prereq::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::2`
 
+### MCAT-BIO-PROE-003
+
+- **KC:** `Bio::Prokaryotes_vs_Eukaryotes`
+- **Prereqs:** `Prereq::Bio::Eukaryotic_Cell`
+- **Difficulty:** 3
+- **Question:** In prokaryotes, ribosomes can begin translating a messenger RNA while it is still being transcribed. Which feature of prokaryotic cells makes this simultaneous process possible?
+- **A:** The absence of a nuclear membrane separating the DNA from the ribosomes
+- **B:** The presence of introns in every gene
+- **C:** The addition of a 5-prime cap before translation begins
+- **D:** Their use of large 80S ribosomes
+- **Correct:** A
+- **Explanation:** Because prokaryotes lack a nucleus, transcription and translation both occur in the cytoplasm, so ribosomes can attach to an mRNA that is still being made; eukaryotes separate these steps with the nuclear envelope.
+- **Tags:** `KC::Bio::Prokaryotes_vs_Eukaryotes` `Prereq::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::3`
+
 ## Bio::Cell_Membrane_and_Transport
 
 ### MCAT-BIO-CELMT-001
@@ -383,6 +537,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Secondary active transport uses the energy stored in one ion's gradient (sodium) to drive the uphill movement of another solute (glucose).
 - **Tags:** `KC::Bio::Cell_Membrane_and_Transport` `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Carbohydrates_and_Lipids` `MCAT::Bio_Biochem` `Difficulty::4`
+
+### MCAT-BIO-CELMT-003
+
+- **KC:** `Bio::Cell_Membrane_and_Transport`
+- **Prereqs:** `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Carbohydrates_and_Lipids`
+- **Difficulty:** 3
+- **Question:** A red blood cell is placed in a hypertonic solution. What is the most likely result?
+- **A:** The cell swells and may burst as water enters
+- **B:** The cell shrinks as water leaves it by osmosis
+- **C:** The cell stays the same size because water cannot cross the membrane
+- **D:** The cell actively pumps in solutes to match the outside
+- **Correct:** B
+- **Explanation:** A hypertonic solution has a higher solute concentration outside the cell, so water leaves by osmosis and the cell shrinks.
+- **Tags:** `KC::Bio::Cell_Membrane_and_Transport` `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Carbohydrates_and_Lipids` `MCAT::Bio_Biochem` `Difficulty::3`
 
 ## Bio::Cell_Signaling
 
@@ -414,6 +582,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** Because each enzyme activates many targets, a cascade greatly amplifies an initially small signal.
 - **Tags:** `KC::Bio::Cell_Signaling` `Prereq::Bio::Cell_Membrane_and_Transport` `Prereq::Biochem::Protein_Structure_and_Function` `MCAT::Bio_Biochem` `Difficulty::5`
 
+### MCAT-BIO-CELS-003
+
+- **KC:** `Bio::Cell_Signaling`
+- **Prereqs:** `Prereq::Bio::Cell_Membrane_and_Transport` `Prereq::Biochem::Protein_Structure_and_Function`
+- **Difficulty:** 4
+- **Question:** Binding of epinephrine to a G-protein-coupled receptor activates adenylate cyclase. What is the immediate role of the cyclic AMP that this enzyme produces?
+- **A:** It acts as an intracellular second messenger that activates downstream proteins
+- **B:** It is secreted from the cell to act as the primary hormone
+- **C:** It enters the nucleus and is transcribed into messenger RNA
+- **D:** It anchors the receptor within the plasma membrane
+- **Correct:** A
+- **Explanation:** Cyclic AMP is a second messenger that relays and amplifies the extracellular signal inside the cell, commonly by activating protein kinase A.
+- **Tags:** `KC::Bio::Cell_Signaling` `Prereq::Bio::Cell_Membrane_and_Transport` `Prereq::Biochem::Protein_Structure_and_Function` `MCAT::Bio_Biochem` `Difficulty::4`
+
 ## Bio::Cytoskeleton
 
 ### MCAT-BIO-CYT-001
@@ -443,6 +625,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** The mitotic spindle relies on dynamic microtubules that shorten to pull chromosomes apart, so blocking depolymerization halts proper chromosome separation.
 - **Tags:** `KC::Bio::Cytoskeleton` `Prereq::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::3`
+
+### MCAT-BIO-CYT-003
+
+- **KC:** `Bio::Cytoskeleton`
+- **Prereqs:** `Prereq::Bio::Eukaryotic_Cell`
+- **Difficulty:** 4
+- **Question:** A cell type that must withstand strong mechanical stress is found to be rich in keratin filaments that resist stretching. To which cytoskeletal element do keratins belong?
+- **A:** Microtubules
+- **B:** Intermediate filaments
+- **C:** Microfilaments (actin)
+- **D:** Centrioles
+- **Correct:** B
+- **Explanation:** Keratins are intermediate filaments, which provide tensile strength and help cells resist mechanical stress, unlike the more dynamic microtubules and actin microfilaments.
+- **Tags:** `KC::Bio::Cytoskeleton` `Prereq::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::4`
 
 ## Bio::Cell_Cycle_and_Mitosis
 
@@ -474,6 +670,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** Checkpoints normally halt division until damage is repaired, so bypassing them lets mutated DNA be transmitted to daughter cells, a step toward cancer.
 - **Tags:** `KC::Bio::Cell_Cycle_and_Mitosis` `Prereq::Bio::DNA_Replication` `Prereq::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::4`
 
+### MCAT-BIO-CELCM-003
+
+- **KC:** `Bio::Cell_Cycle_and_Mitosis`
+- **Prereqs:** `Prereq::Bio::DNA_Replication` `Prereq::Bio::Eukaryotic_Cell`
+- **Difficulty:** 3
+- **Question:** During which stage of mitosis do sister chromatids separate and move toward opposite poles of the cell?
+- **A:** Prophase
+- **B:** Metaphase
+- **C:** Anaphase
+- **D:** Telophase
+- **Correct:** C
+- **Explanation:** In anaphase the centromeres split and the sister chromatids are pulled to opposite poles; they had lined up single-file at the metaphase plate during the preceding metaphase.
+- **Tags:** `KC::Bio::Cell_Cycle_and_Mitosis` `Prereq::Bio::DNA_Replication` `Prereq::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::3`
+
 ## Bio::Viruses
 
 ### MCAT-BIO-VIR-001
@@ -503,6 +713,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Reverse transcriptase makes a DNA copy of the viral RNA, which can then integrate into the host genome.
 - **Tags:** `KC::Bio::Viruses` `Prereq::Bio::DNA` `MCAT::Bio_Biochem` `Difficulty::4`
+
+### MCAT-BIO-VIR-003
+
+- **KC:** `Bio::Viruses`
+- **Prereqs:** `Prereq::Bio::DNA`
+- **Difficulty:** 3
+- **Question:** A bacteriophage inserts its genome into the host chromosome and remains dormant, being copied along with the host DNA for many generations. This describes which viral cycle?
+- **A:** The lytic cycle
+- **B:** The lysogenic cycle
+- **C:** Binary fission
+- **D:** Budding
+- **Correct:** B
+- **Explanation:** In the lysogenic cycle the viral genome integrates as a prophage and is replicated with the host DNA without immediately lysing the cell; the lytic cycle instead rapidly makes new virions and destroys the host.
+- **Tags:** `KC::Bio::Viruses` `Prereq::Bio::DNA` `MCAT::Bio_Biochem` `Difficulty::3`
 
 ## Bio::Bacteria
 
@@ -534,6 +758,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** Conjugation transfers DNA, often a plasmid, from one bacterium to another through direct contact, spreading traits such as resistance.
 - **Tags:** `KC::Bio::Bacteria` `Prereq::Bio::Genetics` `Prereq::Bio::Prokaryotes_vs_Eukaryotes` `MCAT::Bio_Biochem` `Difficulty::4`
 
+### MCAT-BIO-BAC-003
+
+- **KC:** `Bio::Bacteria`
+- **Prereqs:** `Prereq::Bio::Genetics` `Prereq::Bio::Prokaryotes_vs_Eukaryotes`
+- **Difficulty:** 3
+- **Question:** A bacterium takes up fragments of free DNA released into its surroundings by dead cells and incorporates them into its own genome. This mode of horizontal gene transfer is called:
+- **A:** Transformation
+- **B:** Conjugation
+- **C:** Binary fission
+- **D:** Translation
+- **Correct:** A
+- **Explanation:** Transformation is the uptake of naked DNA from the environment; conjugation, by contrast, requires direct cell-to-cell contact to transfer DNA.
+- **Tags:** `KC::Bio::Bacteria` `Prereq::Bio::Genetics` `Prereq::Bio::Prokaryotes_vs_Eukaryotes` `MCAT::Bio_Biochem` `Difficulty::3`
+
 ## Bio::Fungi
 
 ### MCAT-BIO-FUN-001
@@ -563,6 +801,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Fungal cell walls are built largely of chitin, distinguishing them from the cellulose walls of plants and the peptidoglycan walls of bacteria.
 - **Tags:** `KC::Bio::Fungi` `Prereq::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::3`
+
+### MCAT-BIO-FUN-003
+
+- **KC:** `Bio::Fungi`
+- **Prereqs:** `Prereq::Bio::Eukaryotic_Cell`
+- **Difficulty:** 4
+- **Question:** Many fungi grow as branching networks of thread-like hyphae rather than as compact spheres. How does this filamentous growth form most directly support their nutrition?
+- **A:** It maximizes surface area for secreting enzymes and absorbing nutrients
+- **B:** It allows the fungus to carry out photosynthesis
+- **C:** It lets the fungus swim toward food using flagella
+- **D:** It reduces contact with the environment to conserve water
+- **Correct:** A
+- **Explanation:** An extensive hyphal network gives a very high surface-area-to-volume ratio, which favors external digestion and absorption of nutrients across the fungal surface.
+- **Tags:** `KC::Bio::Fungi` `Prereq::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::4`
 
 ## Bio::Nervous_System
 
@@ -594,6 +846,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** At threshold, voltage-gated sodium channels open and the resulting sodium influx rapidly depolarizes the membrane.
 - **Tags:** `KC::Bio::Nervous_System` `Prereq::Bio::Cell_Membrane_and_Transport` `Prereq::GenChem::Ions_in_Solutions` `Prereq::Physics::Electrical_Circuits` `MCAT::Bio_Biochem` `Difficulty::5`
 
+### MCAT-BIO-NERS-003
+
+- **KC:** `Bio::Nervous_System`
+- **Prereqs:** `Prereq::Bio::Cell_Membrane_and_Transport` `Prereq::GenChem::Ions_in_Solutions` `Prereq::Physics::Electrical_Circuits`
+- **Difficulty:** 4
+- **Question:** Myelination of an axon increases the speed of action potential conduction primarily by:
+- **A:** Increasing the number of voltage-gated sodium channels along the whole axon
+- **B:** Allowing the impulse to jump between the nodes of Ranvier
+- **C:** Lowering the resting membrane potential to zero
+- **D:** Supplying extra ATP directly to the axon interior
+- **Correct:** B
+- **Explanation:** Myelin insulates the axon so the action potential is regenerated only at the nodes of Ranvier, jumping from node to node (saltatory conduction) and greatly speeding conduction.
+- **Tags:** `KC::Bio::Nervous_System` `Prereq::Bio::Cell_Membrane_and_Transport` `Prereq::GenChem::Ions_in_Solutions` `Prereq::Physics::Electrical_Circuits` `MCAT::Bio_Biochem` `Difficulty::4`
+
 ## Bio::Endocrine_System
 
 ### MCAT-BIO-ENDS-001
@@ -623,6 +889,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Negative feedback occurs when a hormone suppresses its own upstream signals, keeping hormone levels near a set point.
 - **Tags:** `KC::Bio::Endocrine_System` `Prereq::Bio::Cell_Signaling` `MCAT::Bio_Biochem` `Difficulty::5`
+
+### MCAT-BIO-ENDS-003
+
+- **KC:** `Bio::Endocrine_System`
+- **Prereqs:** `Prereq::Bio::Cell_Signaling`
+- **Difficulty:** 4
+- **Question:** Insulin and glucagon have opposite effects on blood glucose. What does having such a pair of antagonistic hormones allow the body to do?
+- **A:** Adjust blood glucose in both directions around a set point
+- **B:** Store all excess glucose permanently as protein
+- **C:** Remove the need for any negative feedback
+- **D:** Raise blood glucose without any upper limit
+- **Correct:** A
+- **Explanation:** With insulin lowering and glucagon raising blood glucose, the body can correct deviations in either direction and hold glucose near a set point.
+- **Tags:** `KC::Bio::Endocrine_System` `Prereq::Bio::Cell_Signaling` `MCAT::Bio_Biochem` `Difficulty::4`
 
 ## Bio::Muscular_System
 
@@ -654,6 +934,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** ATP binding to myosin is required for the head to release actin, so without ATP the cross-bridges stay attached, as in rigor.
 - **Tags:** `KC::Bio::Muscular_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Bioenergetics` `MCAT::Bio_Biochem` `Difficulty::4`
 
+### MCAT-BIO-MUSS-003
+
+- **KC:** `Bio::Muscular_System`
+- **Prereqs:** `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Bioenergetics`
+- **Difficulty:** 3
+- **Question:** The release of calcium ions into the cytoplasm of a muscle fiber triggers contraction by:
+- **A:** Binding troponin and shifting tropomyosin to expose myosin-binding sites on actin
+- **B:** Directly splitting ATP into ADP and phosphate
+- **C:** Depolarizing the sarcoplasmic reticulum membrane
+- **D:** Cross-linking neighboring thick filaments to each other
+- **Correct:** A
+- **Explanation:** Calcium binds troponin, which moves tropomyosin off the binding sites on actin so myosin heads can attach and the cross-bridge cycle can begin.
+- **Tags:** `KC::Bio::Muscular_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Bioenergetics` `MCAT::Bio_Biochem` `Difficulty::3`
+
 ## Bio::Skeletal_System
 
 ### MCAT-BIO-SKES-001
@@ -683,6 +977,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Osteoclasts break down bone matrix, releasing calcium into the bloodstream to help restore normal blood calcium.
 - **Tags:** `KC::Bio::Skeletal_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::GenChem::Ions_in_Solutions` `MCAT::Bio_Biochem` `Difficulty::3`
+
+### MCAT-BIO-SKES-003
+
+- **KC:** `Bio::Skeletal_System`
+- **Prereqs:** `Prereq::Bio::Eukaryotic_Cell` `Prereq::GenChem::Ions_in_Solutions`
+- **Difficulty:** 4
+- **Question:** When blood calcium falls, parathyroid hormone (PTH) is secreted. Which combination of effects would most directly raise blood calcium?
+- **A:** Stimulating osteoclasts and increasing calcium reabsorption in the kidney
+- **B:** Stimulating osteoblasts to deposit more bone matrix
+- **C:** Increasing calcium excretion in the urine
+- **D:** Blocking calcium absorption in the intestine
+- **Correct:** A
+- **Explanation:** PTH raises blood calcium by promoting bone resorption through osteoclasts and by increasing calcium reabsorption in the kidney, among other actions.
+- **Tags:** `KC::Bio::Skeletal_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::GenChem::Ions_in_Solutions` `MCAT::Bio_Biochem` `Difficulty::4`
 
 ## Bio::Circulatory_System
 
@@ -714,6 +1022,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** Capillaries have very thin walls and an enormous combined surface area, allowing efficient diffusion of gases and nutrients.
 - **Tags:** `KC::Bio::Circulatory_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::Physics::Fluid_Dynamics` `MCAT::Bio_Biochem` `Difficulty::4`
 
+### MCAT-BIO-CIRS-003
+
+- **KC:** `Bio::Circulatory_System`
+- **Prereqs:** `Prereq::Bio::Eukaryotic_Cell` `Prereq::Physics::Fluid_Dynamics`
+- **Difficulty:** 3
+- **Question:** The atrioventricular (AV) valves, located between the atria and ventricles, serve mainly to:
+- **A:** Prevent backflow of blood from the ventricles into the atria
+- **B:** Add oxygen to blood as it passes through the heart
+- **C:** Generate the electrical signal that sets the heart rate
+- **D:** Pump blood directly into the aorta
+- **Correct:** A
+- **Explanation:** The AV valves close during ventricular contraction to stop blood from flowing back into the atria, keeping blood moving in one direction.
+- **Tags:** `KC::Bio::Circulatory_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::Physics::Fluid_Dynamics` `MCAT::Bio_Biochem` `Difficulty::3`
+
 ## Bio::Respiratory_System
 
 ### MCAT-BIO-RESS-001
@@ -743,6 +1065,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Carbon dioxide combines with water to form carbonic acid, which dissociates into bicarbonate and hydrogen ions, lowering pH and stimulating ventilation.
 - **Tags:** `KC::Bio::Respiratory_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::GenChem::Gas_Phase` `MCAT::Bio_Biochem` `Difficulty::4`
+
+### MCAT-BIO-RESS-003
+
+- **KC:** `Bio::Respiratory_System`
+- **Prereqs:** `Prereq::Bio::Eukaryotic_Cell` `Prereq::GenChem::Gas_Phase`
+- **Difficulty:** 3
+- **Question:** During quiet inhalation, the diaphragm contracts and moves downward. How does this bring air into the lungs?
+- **A:** It increases the thoracic volume, lowering the pressure so air flows in
+- **B:** It decreases the thoracic volume, raising the pressure so air flows in
+- **C:** It actively pumps oxygen across the alveolar wall
+- **D:** It warms the incoming air so that it expands
+- **Correct:** A
+- **Explanation:** Contraction of the diaphragm expands the thoracic cavity; by Boyle's law the larger volume lowers the pressure in the lungs below atmospheric, so air flows in.
+- **Tags:** `KC::Bio::Respiratory_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::GenChem::Gas_Phase` `MCAT::Bio_Biochem` `Difficulty::3`
 
 ## Bio::Digestive_System
 
@@ -774,6 +1110,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** Secreting inactive precursors keeps the enzymes from digesting the tissue that produces them; they are switched on only after reaching the intestinal lumen.
 - **Tags:** `KC::Bio::Digestive_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Enzymes` `MCAT::Bio_Biochem` `Difficulty::4`
 
+### MCAT-BIO-DIGS-003
+
+- **KC:** `Bio::Digestive_System`
+- **Prereqs:** `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Enzymes`
+- **Difficulty:** 3
+- **Question:** Bile released into the small intestine aids in fat digestion primarily by:
+- **A:** Breaking peptide bonds within dietary proteins
+- **B:** Emulsifying large fat globules into many smaller droplets
+- **C:** Neutralizing and inactivating all intestinal enzymes
+- **D:** Absorbing fatty acids directly into the bloodstream
+- **Correct:** B
+- **Explanation:** Bile salts emulsify fats into smaller droplets, increasing the surface area on which lipase can act; bile itself contains no digestive enzymes.
+- **Tags:** `KC::Bio::Digestive_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Enzymes` `MCAT::Bio_Biochem` `Difficulty::3`
+
 ## Bio::Immune_System
 
 ### MCAT-BIO-IMMS-001
@@ -803,6 +1153,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** The first exposure produces long-lived memory cells that respond rapidly upon re-exposure, giving the faster, stronger secondary response.
 - **Tags:** `KC::Bio::Immune_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Protein_Structure_and_Function` `MCAT::Bio_Biochem` `Difficulty::5`
+
+### MCAT-BIO-IMMS-003
+
+- **KC:** `Bio::Immune_System`
+- **Prereqs:** `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Protein_Structure_and_Function`
+- **Difficulty:** 4
+- **Question:** A body cell is infected by a virus and displays viral peptides on its surface. Which immune cell is primarily responsible for recognizing and killing such infected cells?
+- **A:** Cytotoxic (CD8) T lymphocytes
+- **B:** Plasma cells secreting antibodies
+- **C:** Red blood cells
+- **D:** Platelets
+- **Correct:** A
+- **Explanation:** Cytotoxic T cells recognize viral peptides displayed on infected cells and destroy them, a central part of cell-mediated immunity; antibodies from plasma cells act mainly on extracellular pathogens.
+- **Tags:** `KC::Bio::Immune_System` `Prereq::Bio::Eukaryotic_Cell` `Prereq::Biochem::Protein_Structure_and_Function` `MCAT::Bio_Biochem` `Difficulty::4`
 
 ## Bio::Lymphatic_System
 
@@ -834,6 +1198,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** Lymph nodes filter lymph and provide a site where immune cells encounter and respond to trapped pathogens.
 - **Tags:** `KC::Bio::Lymphatic_System` `Prereq::Bio::Circulatory_System` `Prereq::Bio::Immune_System` `MCAT::Bio_Biochem` `Difficulty::3`
 
+### MCAT-BIO-LYMS-003
+
+- **KC:** `Bio::Lymphatic_System`
+- **Prereqs:** `Prereq::Bio::Circulatory_System` `Prereq::Bio::Immune_System`
+- **Difficulty:** 4
+- **Question:** Specialized lymphatic capillaries called lacteals in the lining of the small intestine are important because they:
+- **A:** Take up absorbed dietary fats and carry them into the lymphatic system
+- **B:** Secrete digestive enzymes into the gut lumen
+- **C:** Reabsorb glucose directly into the hepatic portal vein
+- **D:** Produce new red blood cells for the circulation
+- **Correct:** A
+- **Explanation:** Lacteals absorb dietary fats (packaged as chylomicrons) and transport them through the lymphatic system, which eventually drains into the bloodstream.
+- **Tags:** `KC::Bio::Lymphatic_System` `Prereq::Bio::Circulatory_System` `Prereq::Bio::Immune_System` `MCAT::Bio_Biochem` `Difficulty::4`
+
 ## Bio::Skin_System
 
 ### MCAT-BIO-SKIS-001
@@ -863,6 +1241,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Vasodilation moves more warm blood near the skin surface, increasing heat transfer to the environment and lowering body temperature.
 - **Tags:** `KC::Bio::Skin_System` `Prereq::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::3`
+
+### MCAT-BIO-SKIS-003
+
+- **KC:** `Bio::Skin_System`
+- **Prereqs:** `Prereq::Bio::Eukaryotic_Cell`
+- **Difficulty:** 2
+- **Question:** When you sweat on a hot day, how does perspiration help lower body temperature?
+- **A:** Evaporation of sweat from the skin carries away heat, cooling the body
+- **B:** Sweat chemically reacts with the skin to destroy heat
+- **C:** Sweat forms an insulating film that traps heat inside
+- **D:** Sweat raises blood glucose to power internal cooling
+- **Correct:** A
+- **Explanation:** As sweat evaporates, the water absorbs energy to vaporize and carries that heat away from the skin, lowering body temperature.
+- **Tags:** `KC::Bio::Skin_System` `Prereq::Bio::Eukaryotic_Cell` `MCAT::Bio_Biochem` `Difficulty::2`
 
 ## Bio::Excretory_System
 
@@ -894,6 +1286,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** ADH promotes water reabsorption from the collecting duct back into the blood, producing a smaller volume of more concentrated urine.
 - **Tags:** `KC::Bio::Excretory_System` `Prereq::Bio::Circulatory_System` `Prereq::GenChem::Acid_Base_Equilibria` `Prereq::GenChem::Ions_in_Solutions` `MCAT::Bio_Biochem` `Difficulty::5`
 
+### MCAT-BIO-EXCS-003
+
+- **KC:** `Bio::Excretory_System`
+- **Prereqs:** `Prereq::Bio::Circulatory_System` `Prereq::GenChem::Acid_Base_Equilibria` `Prereq::GenChem::Ions_in_Solutions`
+- **Difficulty:** 4
+- **Question:** Besides removing nitrogenous waste, the kidney helps regulate blood pH. During acidosis, the kidney most directly responds by:
+- **A:** Secreting more hydrogen ions into the filtrate and reabsorbing bicarbonate into the blood
+- **B:** Reabsorbing hydrogen ions and excreting all of the body's bicarbonate
+- **C:** Stopping filtration at the glomerulus entirely
+- **D:** Converting urea into glucose to buffer the blood
+- **Correct:** A
+- **Explanation:** To counter acidosis, the kidney secretes excess hydrogen ions into the urine and reabsorbs bicarbonate into the blood, helping to raise the pH toward normal.
+- **Tags:** `KC::Bio::Excretory_System` `Prereq::Bio::Circulatory_System` `Prereq::GenChem::Acid_Base_Equilibria` `Prereq::GenChem::Ions_in_Solutions` `MCAT::Bio_Biochem` `Difficulty::4`
+
 ## Bio::Reproductive_System
 
 ### MCAT-BIO-REPS-001
@@ -923,6 +1329,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** The mid-cycle LH surge triggers ovulation, the release of a mature egg from the ovarian follicle.
 - **Tags:** `KC::Bio::Reproductive_System` `Prereq::Bio::Endocrine_System` `Prereq::Bio::Meiosis` `MCAT::Bio_Biochem` `Difficulty::4`
+
+### MCAT-BIO-REPS-003
+
+- **KC:** `Bio::Reproductive_System`
+- **Prereqs:** `Prereq::Bio::Endocrine_System` `Prereq::Bio::Meiosis`
+- **Difficulty:** 3
+- **Question:** After ovulation, the ruptured ovarian follicle becomes the corpus luteum. Which hormone does the corpus luteum secrete to maintain the uterine lining for a possible pregnancy?
+- **A:** Progesterone
+- **B:** Follicle-stimulating hormone (FSH)
+- **C:** Luteinizing hormone (LH)
+- **D:** Oxytocin
+- **Correct:** A
+- **Explanation:** The corpus luteum secretes progesterone (along with estrogen), which maintains the endometrium after ovulation in preparation for possible implantation.
+- **Tags:** `KC::Bio::Reproductive_System` `Prereq::Bio::Endocrine_System` `Prereq::Bio::Meiosis` `MCAT::Bio_Biochem` `Difficulty::3`
 
 ## Bio::Embryology
 
@@ -954,6 +1374,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** Differentiation arises because cells express different subsets of the same genome in response to positional and regulatory signals.
 - **Tags:** `KC::Bio::Embryology` `Prereq::Bio::Gene_Expression_Regulation` `Prereq::Bio::Reproductive_System` `MCAT::Bio_Biochem` `Difficulty::5`
 
+### MCAT-BIO-EMB-003
+
+- **KC:** `Bio::Embryology`
+- **Prereqs:** `Prereq::Bio::Gene_Expression_Regulation` `Prereq::Bio::Reproductive_System`
+- **Difficulty:** 4
+- **Question:** The nervous system and the epidermis of the skin both develop primarily from which embryonic germ layer?
+- **A:** Ectoderm
+- **B:** Mesoderm
+- **C:** Endoderm
+- **D:** The blastocoel
+- **Correct:** A
+- **Explanation:** The ectoderm gives rise to the nervous system and the outer epidermis; the mesoderm forms muscle and bone, and the endoderm forms the gut lining and its associated organs.
+- **Tags:** `KC::Bio::Embryology` `Prereq::Bio::Gene_Expression_Regulation` `Prereq::Bio::Reproductive_System` `MCAT::Bio_Biochem` `Difficulty::4`
+
 ## Bio::Evolution
 
 ### MCAT-BIO-EVO-001
@@ -983,6 +1417,20 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Selection acts on pre-existing variation: resistant individuals survive treatment and pass resistance alleles to offspring, so their frequency rises.
 - **Tags:** `KC::Bio::Evolution` `Prereq::Bio::Genetics` `MCAT::Bio_Biochem` `Difficulty::4`
+
+### MCAT-BIO-EVO-003
+
+- **KC:** `Bio::Evolution`
+- **Prereqs:** `Prereq::Bio::Genetics`
+- **Difficulty:** 3
+- **Question:** A small group of individuals colonizes a new island, and by chance their allele frequencies differ from those of the large source population. This change in allele frequencies due to chance in a small group is called:
+- **A:** Natural selection
+- **B:** The founder effect, a form of genetic drift
+- **C:** Gene flow between established populations
+- **D:** Directional selection
+- **Correct:** B
+- **Explanation:** The founder effect is a case of genetic drift in which a small founding group carries, purely by chance, allele frequencies that are not representative of the original population.
+- **Tags:** `KC::Bio::Evolution` `Prereq::Bio::Genetics` `MCAT::Bio_Biochem` `Difficulty::3`
 
 ## Bio::Population_Genetics
 
@@ -1014,6 +1462,20 @@ Conventions used here (from the generation harness / content contract):
 - **Explanation:** The recessive phenotype frequency equals q squared, so q equals 0.2 and the dominant allele frequency p equals 1 minus 0.2, which is 0.8.
 - **Tags:** `KC::Bio::Population_Genetics` `Prereq::Bio::Evolution` `Prereq::Bio::Mendelian_Genetics` `MCAT::Bio_Biochem` `Difficulty::5`
 
+### MCAT-BIO-POPG-003
+
+- **KC:** `Bio::Population_Genetics`
+- **Prereqs:** `Prereq::Bio::Evolution` `Prereq::Bio::Mendelian_Genetics`
+- **Difficulty:** 4
+- **Question:** In a population at Hardy-Weinberg equilibrium, the recessive allele has a frequency of 0.1. What fraction of the population is expected to be heterozygous carriers?
+- **A:** 0.01
+- **B:** 0.18
+- **C:** 0.81
+- **D:** 0.10
+- **Correct:** B
+- **Explanation:** With q equal to 0.1, p equals 0.9, so the heterozygote frequency 2pq equals 2 times 0.9 times 0.1, which is 0.18.
+- **Tags:** `KC::Bio::Population_Genetics` `Prereq::Bio::Evolution` `Prereq::Bio::Mendelian_Genetics` `MCAT::Bio_Biochem` `Difficulty::4`
+
 ## Bio::Biodiversity_and_Phylogeny
 
 ### MCAT-BIO-BIOP-001
@@ -1043,3 +1505,17 @@ Conventions used here (from the generation harness / content contract):
 - **Correct:** D
 - **Explanation:** Homologous structures derive from a shared ancestor, whereas analogous structures arise independently through convergent evolution.
 - **Tags:** `KC::Bio::Biodiversity_and_Phylogeny` `Prereq::Bio::Evolution` `MCAT::Bio_Biochem` `Difficulty::3`
+
+### MCAT-BIO-BIOP-003
+
+- **KC:** `Bio::Biodiversity_and_Phylogeny`
+- **Prereqs:** `Prereq::Bio::Evolution`
+- **Difficulty:** 4
+- **Question:** The streamlined body shapes of sharks (fish) and dolphins (mammals) evolved independently for fast swimming. Structures that are similar because of independent adaptation to a similar environment, rather than shared ancestry, are called:
+- **A:** Homologous structures
+- **B:** Analogous structures resulting from convergent evolution
+- **C:** Vestigial structures
+- **D:** Shared derived traits inherited from a recent common ancestor
+- **Correct:** B
+- **Explanation:** Analogous structures arise through convergent evolution when unrelated lineages independently evolve similar features in response to similar selective pressures.
+- **Tags:** `KC::Bio::Biodiversity_and_Phylogeny` `Prereq::Bio::Evolution` `MCAT::Bio_Biochem` `Difficulty::4`

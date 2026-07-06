@@ -1,6 +1,8 @@
 // Copyright: Ankitects Pty Ltd and contributors
 // License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+use std::collections::HashSet;
+
 use super::DueCard;
 use super::NewCard;
 use super::QueueBuilder;
@@ -8,6 +10,7 @@ use crate::deckconfig::NewCardGatherPriority;
 use crate::decks::limits::LimitKind;
 use crate::prelude::*;
 use crate::scheduler::queue::DueCardKind;
+use crate::search::SortMode;
 use crate::storage::card::NewCardSorting;
 
 impl QueueBuilder {
@@ -15,9 +18,49 @@ impl QueueBuilder {
         self.gather_intraday_learning_cards(col)?;
         self.gather_due_cards(col, DueCardKind::Learning)?;
         self.gather_due_cards(col, DueCardKind::Review)?;
+        // Compute the section restriction BEFORE gathering new cards so that only
+        // the selected section's cards consume the daily new-card budget.
+        self.prepare_concept_section_filter(col)?;
         self.gather_new_cards(col)?;
         self.prepare_concept_new_card_sort(col)?;
 
+        Ok(())
+    }
+
+    /// When the concept scheduler is enabled and the learner has chosen an MCAT
+    /// section to study, collect the note ids of cards filed under that section so
+    /// [`Self::add_new_card`] can restrict the new-card pool to it. This runs
+    /// before new-card gathering so in-section cards fill the daily budget instead
+    /// of being crowded out by earlier-positioned cards from other sections.
+    ///
+    /// Graceful fallbacks keep the queue non-empty and behavior unchanged in the
+    /// common case: no restriction is applied when the scheduler is off, when no
+    /// section is selected, or when the section matches no cards at all.
+    fn prepare_concept_section_filter(&mut self, col: &mut Collection) -> Result<()> {
+        if !self
+            .context
+            .root_deck
+            .normal()
+            .map(|deck| deck.concept_scheduler_enabled)
+            .unwrap_or(false)
+        {
+            return Ok(());
+        }
+        let persisted = col.get_concept_scheduler_state(self.context.root_deck.id);
+        let Some(section) = persisted.state.selected_section else {
+            return Ok(());
+        };
+        // Match the card's authored primary-section tag (e.g. `MCAT::Chem_Phys`).
+        let search = format!("tag:MCAT::{}", section.tag_suffix());
+        let in_section: HashSet<NoteId> = col
+            .search_notes(&search, SortMode::NoOrder)?
+            .into_iter()
+            .collect();
+        // Fall back to no restriction if the section has no cards, so a section
+        // that isn't represented in this deck can never empty the new-card queue.
+        if !in_section.is_empty() {
+            self.concept_section_notes = Some(in_section);
+        }
         Ok(())
     }
 
@@ -156,6 +199,15 @@ impl QueueBuilder {
 
     // True if limit should be decremented.
     fn add_new_card(&mut self, card: NewCard) -> bool {
+        // Study-by-section restriction: skip (without consuming the new-card
+        // budget or touching sibling bury state) any card whose note is not in the
+        // selected section. All cards of a note share its tags, so membership is
+        // consistent across a note's siblings.
+        if let Some(in_section) = &self.concept_section_notes {
+            if !in_section.contains(&card.note_id) {
+                return false;
+            }
+        }
         let bury_this_card = self
             .get_and_update_bury_mode_for_note(card.into())
             .map(|mode| mode.bury_new)
