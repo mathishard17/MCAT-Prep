@@ -218,21 +218,27 @@ just bench                     # bench-latency.svg  (+ evals/BENCHMARK.md)
 
 **Memory & performance models**
 
-Memory calibration — reliability diagram: predicted vs observed recall by decile (Brier 0.1677, ECE 0.0617)
-Performance ROC — IRT 3PL performance model (AUC 0.769)
-Performance reliability — P(correct) calibration (Brier 0.1957)
-Performance vs baselines — IRT 3PL vs mastery-only vs majority, with the 0.70 cutoff
+![Memory calibration reliability diagram: predicted vs observed recall by decile (Brier 0.1677, ECE 0.0617)](evals/memory-calibration.svg)
+
+![Performance ROC curve: IRT 3PL performance model, AUC 0.769](evals/performance-roc.svg)
+
+![Performance reliability: P(correct) calibration, Brier 0.1957](evals/performance-reliability.svg)
+
+![Performance vs baselines: IRT 3PL vs mastery-only vs majority, with the 0.70 accuracy cutoff](evals/performance-baselines.svg)
 
 **Study-feature ablation (3 builds, same learners)**
 
-Ablation — prerequisite violations: ON 8.5 vs OFF/PLAIN 56 (~85% fewer)
-Ablation — secondary metrics (held-out accuracy / memory / coverage) ON/OFF/PLAIN
+![Ablation, prerequisite violations: scheduler ON 8.5 vs OFF / plain-Anki 56 (~85% fewer)](evals/ablation.svg)
 
-**Readiness, AI & speed**
+![Ablation, secondary metrics: held-out accuracy / memory / coverage across ON / OFF / plain](evals/ablation-secondary.svg)
 
-Readiness as a range, not a point — projected 472–528 + per-section 118–132 bands
-AI eval pass rates vs pre-committed cutoffs (tagging 85 vs 35 baseline, rewording 98, injection 100/100)
-Engine latency p95 vs target on a 50k-card deck (dashboard-refresh over target)
+**Readiness & speed**
+
+![Readiness as a range, not a point: projected total 472-528 with per-section 118-132 bands and one abstain](evals/readiness-projection.svg)
+
+![Engine latency p95 vs target on a 50k-card deck (dashboard-refresh over target)](evals/bench-latency.svg)
+
+The AI-eval pass-rate chart is embedded in the **AI evaluation** section below.
 
 ## AI evaluation (held-out, pre-committed cutoffs)
 
@@ -257,6 +263,8 @@ one adversarial miss out of 40 is the held-out test doing its job.
 | Prompt-injection: card-tagger  | 98% (39/40; 1 breach) | n/a                                 | 100%                 | MISS  |
 | Prompt-injection: Ask-AI tutor | 100% (40/40)          | n/a                                 | 100%                 | PASS  |
 | Gold-label leaks               | 0 (contamination 0)   | n/a                                 | 0                    | PASS  |
+
+![AI evaluation results vs pre-committed cutoffs: KC-tagging 88% (vs 35% lexical baseline), rewording 95%, prompt-injection 98% card-tagger / 100% tutor; 0 gold-label leaks and 0 contamination](evals/ai-eval.svg)
 
 
 - **KC-tagging accuracy:** the AI tagger scored **88% top-1 (35/40, 5 wrong)** on
