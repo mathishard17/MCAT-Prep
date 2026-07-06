@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="500" viewBox="0 0 640 500" font-family="Helvetica,Arial,sans-serif">
+<rect x="0" y="0" width="640" height="500" fill="#ffffff"/>
+<text x="320" y="28" text-anchor="middle" font-size="18" font-weight="bold" fill="#111827">Performance model -- reliability diagram</text>
+<text x="320" y="48" text-anchor="middle" font-size="12" fill="#6b7280">SYNTHETIC held-out attempts (n=1560) -- predicted vs observed P(correct) by decile</text>
+<line x1="70.0" y1="70" x2="70.0" y2="410" stroke="#eef2f7" stroke-width="1"/>
+<line x1="70" y1="410.0" x2="610" y2="410.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="70.0" y="428" text-anchor="middle" font-size="10" fill="#6b7280">0.0</text>
+<text x="62" y="413.0" text-anchor="end" font-size="10" fill="#6b7280">0.0</text>
+<line x1="124.0" y1="70" x2="124.0" y2="410" stroke="#eef2f7" stroke-width="1"/>
+<line x1="70" y1="376.0" x2="610" y2="376.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="124.0" y="428" text-anchor="middle" font-size="10" fill="#6b7280">0.1</text>
+<text x="62" y="379.0" text-anchor="end" font-size="10" fill="#6b7280">0.1</text>
+<line x1="178.0" y1="70" x2="178.0" y2="410" stroke="#eef2f7" stroke-width="1"/>
+<line x1="70" y1="342.0" x2="610" y2="342.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="178.0" y="428" text-anchor="middle" font-size="10" fill="#6b7280">0.2</text>
+<text x="62" y="345.0" text-anchor="end" font-size="10" fill="#6b7280">0.2</text>
+<line x1="232.0" y1="70" x2="232.0" y2="410" stroke="#eef2f7" stroke-width="1"/>
+<line x1="70" y1="308.0" x2="610" y2="308.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="232.0" y="428" text-anchor="middle" font-size="10" fill="#6b7280">0.3</text>
+<text x="62" y="311.0" text-anchor="end" font-size="10" fill="#6b7280">0.3</text>
+<line x1="286.0" y1="70" x2="286.0" y2="410" stroke="#eef2f7" stroke-width="1"/>
+<line x1="70" y1="274.0" x2="610" y2="274.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="286.0" y="428" text-anchor="middle" font-size="10" fill="#6b7280">0.4</text>
+<text x="62" y="277.0" text-anchor="end" font-size="10" fill="#6b7280">0.4</text>
+<line x1="340.0" y1="70" x2="340.0" y2="410" stroke="#eef2f7" stroke-width="1"/>
+<line x1="70" y1="240.0" x2="610" y2="240.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="340.0" y="428" text-anchor="middle" font-size="10" fill="#6b7280">0.5</text>
+<text x="62" y="243.0" text-anchor="end" font-size="10" fill="#6b7280">0.5</text>
+<line x1="394.0" y1="70" x2="394.0" y2="410" stroke="#eef2f7" stroke-width="1"/>
+<line x1="70" y1="206.0" x2="610" y2="206.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="394.0" y="428" text-anchor="middle" font-size="10" fill="#6b7280">0.6</text>
+<text x="62" y="209.0" text-anchor="end" font-size="10" fill="#6b7280">0.6</text>
+<line x1="448.0" y1="70" x2="448.0" y2="410" stroke="#eef2f7" stroke-width="1"/>
+<line x1="70" y1="172.0" x2="610" y2="172.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="448.0" y="428" text-anchor="middle" font-size="10" fill="#6b7280">0.7</text>
+<text x="62" y="175.0" text-anchor="end" font-size="10" fill="#6b7280">0.7</text>
+<line x1="502.0" y1="70" x2="502.0" y2="410" stroke="#eef2f7" stroke-width="1"/>
+<line x1="70" y1="138.0" x2="610" y2="138.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="502.0" y="428" text-anchor="middle" font-size="10" fill="#6b7280">0.8</text>
+<text x="62" y="141.0" text-anchor="end" font-size="10" fill="#6b7280">0.8</text>
+<line x1="556.0" y1="70" x2="556.0" y2="410" stroke="#eef2f7" stroke-width="1"/>
+<line x1="70" y1="104.0" x2="610" y2="104.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="556.0" y="428" text-anchor="middle" font-size="10" fill="#6b7280">0.9</text>
+<text x="62" y="107.0" text-anchor="end" font-size="10" fill="#6b7280">0.9</text>
+<line x1="610.0" y1="70" x2="610.0" y2="410" stroke="#eef2f7" stroke-width="1"/>
+<line x1="70" y1="70.0" x2="610" y2="70.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="610.0" y="428" text-anchor="middle" font-size="10" fill="#6b7280">1.0</text>
+<text x="62" y="73.0" text-anchor="end" font-size="10" fill="#6b7280">1.0</text>
+<rect x="70" y="70" width="540" height="340" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="70.0" y1="410.0" x2="610.0" y2="70.0" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="6,5"/>
+<text x="502.0" y="110.8" font-size="10" fill="#6b7280" transform="rotate(-33 502.0 110.8)">perfect calibration</text>
+<polyline points="218.5,338.2 257.1,309.4 313.5,277.0 364.4,249.3 421.3,186.0 475.6,160.5 530.6,149.2 585.4,115.9" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="218.5" cy="338.2" r="7.5" fill="#2563eb" fill-opacity="0.65" stroke="#1e3a8a" stroke-width="1"/>
+<circle cx="257.1" cy="309.4" r="7.9" fill="#2563eb" fill-opacity="0.65" stroke="#1e3a8a" stroke-width="1"/>
+<circle cx="313.5" cy="277.0" r="8.1" fill="#2563eb" fill-opacity="0.65" stroke="#1e3a8a" stroke-width="1"/>
+<circle cx="364.4" cy="249.3" r="7.5" fill="#2563eb" fill-opacity="0.65" stroke="#1e3a8a" stroke-width="1"/>
+<circle cx="421.3" cy="186.0" r="7.6" fill="#2563eb" fill-opacity="0.65" stroke="#1e3a8a" stroke-width="1"/>
+<circle cx="475.6" cy="160.5" r="7.6" fill="#2563eb" fill-opacity="0.65" stroke="#1e3a8a" stroke-width="1"/>
+<circle cx="530.6" cy="149.2" r="8.1" fill="#2563eb" fill-opacity="0.65" stroke="#1e3a8a" stroke-width="1"/>
+<circle cx="585.4" cy="115.9" r="9.0" fill="#2563eb" fill-opacity="0.65" stroke="#1e3a8a" stroke-width="1"/>
+<text x="340" y="458" text-anchor="middle" font-size="13" fill="#374151">Predicted P(correct)</text>
+<text x="20" y="240" text-anchor="middle" font-size="13" fill="#374151" transform="rotate(-90 20 240)">Observed correct frequency</text>
+<text x="320" y="486" text-anchor="middle" font-size="12" fill="#111827">Brier 0.1957 (cutoff &amp;lt;= 0.22)   marker area ~ attempts in bin   [PASS]</text>
+</svg>

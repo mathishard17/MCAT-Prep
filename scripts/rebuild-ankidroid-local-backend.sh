@@ -4,10 +4,22 @@ set -euo pipefail
 ROOT="${ROOT:-"$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"}"
 ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-"$HOME/Library/Android/sdk"}}"
 
-if [[ -z "${JAVA_HOME:-}" ]]; then
-  if command -v /usr/libexec/java_home >/dev/null 2>&1; then
-    JAVA_HOME="$(/usr/libexec/java_home -v 21 2>/dev/null || true)"
-  fi
+# Pick a JDK the Android backend accepts (17 / 21 / 25). A pre-set JAVA_HOME on an
+# incompatible version (notably JDK 20) otherwise makes Gradle abort with
+# "Incompatible major version detected". Homebrew's openjdk@N is keg-only and is
+# NOT registered with /usr/libexec/java_home, so probe brew as well.
+_java_major() { { "$1/bin/java" -version 2>&1 || true; } | sed -n 's/.*version "\([0-9][0-9]*\).*/\1/p' | head -1; }
+_java_ok() { [[ -x "$1/bin/java" ]] && case "$(_java_major "$1")" in 17|21|25) true ;; *) false ;; esac; }
+
+if [[ -z "${JAVA_HOME:-}" ]] || ! _java_ok "$JAVA_HOME"; then
+  for _cand in \
+    "$(brew --prefix openjdk@21 2>/dev/null || true)/libexec/openjdk.jdk/Contents/Home" \
+    "$(brew --prefix openjdk@17 2>/dev/null || true)/libexec/openjdk.jdk/Contents/Home" \
+    "$(/usr/libexec/java_home -v 21 2>/dev/null || true)" \
+    "$(/usr/libexec/java_home -v 17 2>/dev/null || true)" \
+    "$(/usr/libexec/java_home -v 25 2>/dev/null || true)"; do
+    if _java_ok "$_cand"; then JAVA_HOME="$_cand"; break; fi
+  done
 fi
 JAVA_HOME="${JAVA_HOME:-}"
 

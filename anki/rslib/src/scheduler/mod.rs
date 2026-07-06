@@ -8,6 +8,8 @@ use crate::prelude::*;
 
 pub mod answering;
 pub mod bury_and_suspend;
+#[cfg(test)]
+mod concept_ablation;
 pub(crate) mod concept;
 pub(crate) mod concept_demo;
 pub(crate) mod congrats;

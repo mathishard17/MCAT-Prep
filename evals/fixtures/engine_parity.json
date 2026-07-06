@@ -1,0 +1,1734 @@
+{
+  "base_recall_for_button": [
+    {
+      "base": 0.2,
+      "button": 1
+    },
+    {
+      "base": 0.55,
+      "button": 2
+    },
+    {
+      "base": 0.8,
+      "button": 3
+    },
+    {
+      "base": 0.9,
+      "button": 4
+    }
+  ],
+  "difficulty_to_irt_b": [
+    {
+      "b": -2.0,
+      "difficulty": 1
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5
+    }
+  ],
+  "fsrs_constants": {
+    "fsrs5_default_decay": 0.5,
+    "fsrs_factor": 0.23456790123456783,
+    "memory_horizon_days": 1.0
+  },
+  "fsrs_curve": [
+    {
+      "elapsed_days": 0.5,
+      "recall_analytic": 0.9,
+      "recall_fsrs_crate": 0.8999999761581421,
+      "stability": 1.0,
+      "t_eval_days": 1.0
+    },
+    {
+      "elapsed_days": 0.5,
+      "recall_analytic": 0.977337546216906,
+      "recall_fsrs_crate": 0.9773375391960144,
+      "stability": 5.0,
+      "t_eval_days": 1.0
+    },
+    {
+      "elapsed_days": 0.5,
+      "recall_analytic": 0.9941868866509825,
+      "recall_fsrs_crate": 0.9941868782043457,
+      "stability": 20.0,
+      "t_eval_days": 1.0
+    },
+    {
+      "elapsed_days": 0.5,
+      "recall_analytic": 0.998050980349662,
+      "recall_fsrs_crate": 0.9980509877204895,
+      "stability": 60.0,
+      "t_eval_days": 1.0
+    },
+    {
+      "elapsed_days": 1.0,
+      "recall_analytic": 0.9,
+      "recall_fsrs_crate": 0.8999999761581421,
+      "stability": 1.0,
+      "t_eval_days": 1.0
+    },
+    {
+      "elapsed_days": 1.0,
+      "recall_analytic": 0.977337546216906,
+      "recall_fsrs_crate": 0.9773375391960144,
+      "stability": 5.0,
+      "t_eval_days": 1.0
+    },
+    {
+      "elapsed_days": 1.0,
+      "recall_analytic": 0.9941868866509825,
+      "recall_fsrs_crate": 0.9941868782043457,
+      "stability": 20.0,
+      "t_eval_days": 1.0
+    },
+    {
+      "elapsed_days": 1.0,
+      "recall_analytic": 0.998050980349662,
+      "recall_fsrs_crate": 0.9980509877204895,
+      "stability": 60.0,
+      "t_eval_days": 1.0
+    },
+    {
+      "elapsed_days": 3.0,
+      "recall_analytic": 0.7661308776828738,
+      "recall_fsrs_crate": 0.766130805015564,
+      "stability": 1.0,
+      "t_eval_days": 3.0
+    },
+    {
+      "elapsed_days": 3.0,
+      "recall_analytic": 0.936281675898539,
+      "recall_fsrs_crate": 0.9362816214561462,
+      "stability": 5.0,
+      "t_eval_days": 3.0
+    },
+    {
+      "elapsed_days": 3.0,
+      "recall_analytic": 0.982858450364341,
+      "recall_fsrs_crate": 0.982858419418335,
+      "stability": 20.0,
+      "t_eval_days": 3.0
+    },
+    {
+      "elapsed_days": 3.0,
+      "recall_analytic": 0.9941868866509825,
+      "recall_fsrs_crate": 0.9941868782043457,
+      "stability": 60.0,
+      "t_eval_days": 3.0
+    },
+    {
+      "elapsed_days": 10.0,
+      "recall_analytic": 0.5467110653077084,
+      "recall_fsrs_crate": 0.5467109680175781,
+      "stability": 1.0,
+      "t_eval_days": 10.0
+    },
+    {
+      "elapsed_days": 10.0,
+      "recall_analytic": 0.8250286473253902,
+      "recall_fsrs_crate": 0.8250285983085632,
+      "stability": 5.0,
+      "t_eval_days": 10.0
+    },
+    {
+      "elapsed_days": 10.0,
+      "recall_analytic": 0.946058996209746,
+      "recall_fsrs_crate": 0.9460589289665222,
+      "stability": 20.0,
+      "t_eval_days": 10.0
+    },
+    {
+      "elapsed_days": 10.0,
+      "recall_analytic": 0.9810077663422255,
+      "recall_fsrs_crate": 0.9810077548027039,
+      "stability": 60.0,
+      "t_eval_days": 10.0
+    },
+    {
+      "elapsed_days": 30.0,
+      "recall_analytic": 0.35273781075132926,
+      "recall_fsrs_crate": 0.35273775458335876,
+      "stability": 1.0,
+      "t_eval_days": 30.0
+    },
+    {
+      "elapsed_days": 30.0,
+      "recall_analytic": 0.6445033866354897,
+      "recall_fsrs_crate": 0.6445032954216003,
+      "stability": 5.0,
+      "t_eval_days": 30.0
+    },
+    {
+      "elapsed_days": 30.0,
+      "recall_analytic": 0.8600732686214939,
+      "recall_fsrs_crate": 0.8600732684135437,
+      "stability": 20.0,
+      "t_eval_days": 30.0
+    },
+    {
+      "elapsed_days": 30.0,
+      "recall_analytic": 0.9460589962097461,
+      "recall_fsrs_crate": 0.9460589289665222,
+      "stability": 60.0,
+      "t_eval_days": 30.0
+    }
+  ],
+  "irt_probability_correct": [
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": -2.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": -2.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": -2.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": -2.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": -2.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": -2.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.75197958490209,
+      "theta": -1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.7674808608457093,
+      "theta": -1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.784846862904004,
+      "theta": -1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.7982939339725037,
+      "theta": -1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.8417471108468655,
+      "theta": -1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.8516379164189363,
+      "theta": -1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.8656147081071397,
+      "theta": 0.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.8740137888504433,
+      "theta": 0.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.9046376623823058,
+      "theta": 0.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.9105978084834118,
+      "theta": 0.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.954140659280905,
+      "theta": 0.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.9570068680758484,
+      "theta": 0.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.9334618428048622,
+      "theta": 1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.9376204776295582,
+      "theta": 1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.9620593014579468,
+      "theta": 1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.964430595116825,
+      "theta": 1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.9881807746453817,
+      "theta": 1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.9889194762300452,
+      "theta": 1.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.9686674217625886,
+      "theta": 2.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.9706257079024267,
+      "theta": 2.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.9856110320303269,
+      "theta": 2.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.9865103425284314,
+      "theta": 2.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.9970526080804514,
+      "theta": 2.0
+    },
+    {
+      "b": -2.0,
+      "difficulty": 1,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.9972368200754231,
+      "theta": 2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.4480204150979101,
+      "theta": -2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.4825191391542907,
+      "theta": -2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.4151531370959961,
+      "theta": -2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.4517060660274963,
+      "theta": -2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.35825288915313463,
+      "theta": -2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.3983620835810637,
+      "theta": -2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": -1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": -1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": -1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": -1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": -1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": -1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.75197958490209,
+      "theta": 0.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.7674808608457093,
+      "theta": 0.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.784846862904004,
+      "theta": 0.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.7982939339725037,
+      "theta": 0.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.8417471108468655,
+      "theta": 0.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.8516379164189363,
+      "theta": 0.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.8656147081071397,
+      "theta": 1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.8740137888504433,
+      "theta": 1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.9046376623823058,
+      "theta": 1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.9105978084834118,
+      "theta": 1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.954140659280905,
+      "theta": 1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.9570068680758484,
+      "theta": 1.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.9334618428048622,
+      "theta": 2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.9376204776295582,
+      "theta": 2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.9620593014579468,
+      "theta": 2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.964430595116825,
+      "theta": 2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.9881807746453817,
+      "theta": 2.0
+    },
+    {
+      "b": -1.0,
+      "difficulty": 2,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.9889194762300452,
+      "theta": 2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.3343852918928604,
+      "theta": -2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.37598621114955666,
+      "theta": -2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.29536233761769404,
+      "theta": -2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.3394021915165881,
+      "theta": -2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.24585934071909502,
+      "theta": -2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.29299313192415155,
+      "theta": -2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.4480204150979101,
+      "theta": -1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.4825191391542907,
+      "theta": -1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.4151531370959961,
+      "theta": -1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.4517060660274963,
+      "theta": -1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.35825288915313463,
+      "theta": -1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.3983620835810637,
+      "theta": -1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": 0.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": 0.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": 0.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": 0.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": 0.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": 0.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.75197958490209,
+      "theta": 1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.7674808608457093,
+      "theta": 1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.784846862904004,
+      "theta": 1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.7982939339725037,
+      "theta": 1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.8417471108468655,
+      "theta": 1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.8516379164189363,
+      "theta": 1.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.8656147081071397,
+      "theta": 2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.8740137888504433,
+      "theta": 2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.9046376623823058,
+      "theta": 2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.9105978084834118,
+      "theta": 2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.954140659280905,
+      "theta": 2.0
+    },
+    {
+      "b": 0.0,
+      "difficulty": 3,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.9570068680758484,
+      "theta": 2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.2665381571951379,
+      "theta": -2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.31237952237044175,
+      "theta": -2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.23794069854205344,
+      "theta": -2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.28556940488317506,
+      "theta": -2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.21181922535461847,
+      "theta": -2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.2610805237699548,
+      "theta": -2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.3343852918928604,
+      "theta": -1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.37598621114955666,
+      "theta": -1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.29536233761769404,
+      "theta": -1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.3394021915165881,
+      "theta": -1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.24585934071909502,
+      "theta": -1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.29299313192415155,
+      "theta": -1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.4480204150979101,
+      "theta": 0.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.4825191391542907,
+      "theta": 0.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.4151531370959961,
+      "theta": 0.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.4517060660274963,
+      "theta": 0.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.35825288915313463,
+      "theta": 0.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.3983620835810637,
+      "theta": 0.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": 1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": 1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": 1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": 1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": 1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": 1.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.75197958490209,
+      "theta": 2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.7674808608457093,
+      "theta": 2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.784846862904004,
+      "theta": 2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.7982939339725037,
+      "theta": 2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.8417471108468655,
+      "theta": 2.0
+    },
+    {
+      "b": 1.0,
+      "difficulty": 4,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.8516379164189363,
+      "theta": 2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.2313325782374115,
+      "theta": -2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.27937429209757325,
+      "theta": -2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.21438896796967327,
+      "theta": -2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.26348965747156866,
+      "theta": -2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.2029473919195488,
+      "theta": -2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.252763179924577,
+      "theta": -2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.2665381571951379,
+      "theta": -1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.31237952237044175,
+      "theta": -1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.23794069854205344,
+      "theta": -1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.28556940488317506,
+      "theta": -1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.21181922535461847,
+      "theta": -1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.2610805237699548,
+      "theta": -1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.3343852918928604,
+      "theta": 0.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.37598621114955666,
+      "theta": 0.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.29536233761769404,
+      "theta": 0.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.3394021915165881,
+      "theta": 0.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.24585934071909502,
+      "theta": 0.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.29299313192415155,
+      "theta": 0.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.4480204150979101,
+      "theta": 1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.4825191391542907,
+      "theta": 1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.4151531370959961,
+      "theta": 1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.4517060660274963,
+      "theta": 1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.35825288915313463,
+      "theta": 1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.3983620835810637,
+      "theta": 1.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 0.8,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": 2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 0.8,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": 2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.0,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": 2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.0,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": 2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.4,
+      "guessing": 0.2,
+      "p": 0.6000000000000001,
+      "theta": 2.0
+    },
+    {
+      "b": 2.0,
+      "difficulty": 5,
+      "discrimination": 1.4,
+      "guessing": 0.25,
+      "p": 0.625,
+      "theta": 2.0
+    }
+  ],
+  "memory_fallback": [
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 0.5,
+      "interval_days": 1.0,
+      "recall": 0.1213061319425267
+    },
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 0.5,
+      "interval_days": 3.0,
+      "recall": 0.16929634497812285
+    },
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 0.5,
+      "interval_days": 14.0,
+      "recall": 0.19298318887447402
+    },
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 1.0,
+      "interval_days": 1.0,
+      "recall": 0.07357588823428847
+    },
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 1.0,
+      "interval_days": 3.0,
+      "recall": 0.14330626211475786
+    },
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 1.0,
+      "interval_days": 14.0,
+      "recall": 0.18621255594080455
+    },
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 5.0,
+      "interval_days": 1.0,
+      "recall": 0.0013475893998170934
+    },
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 5.0,
+      "interval_days": 3.0,
+      "recall": 0.037775120567512366
+    },
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 5.0,
+      "interval_days": 14.0,
+      "recall": 0.1399345074750261
+    },
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 20.0,
+      "interval_days": 1.0,
+      "recall": 4.122307244877116e-10
+    },
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 20.0,
+      "interval_days": 3.0,
+      "recall": 0.0002545267602679616
+    },
+    {
+      "base": 0.2,
+      "button": 1,
+      "elapsed_days": 20.0,
+      "interval_days": 14.0,
+      "recall": 0.04793020728835516
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 0.5,
+      "interval_days": 1.0,
+      "recall": 0.3335918628419484
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 0.5,
+      "interval_days": 3.0,
+      "recall": 0.46556494868983783
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 0.5,
+      "interval_days": 14.0,
+      "recall": 0.5307037694048036
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 1.0,
+      "interval_days": 1.0,
+      "recall": 0.2023336926442933
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 1.0,
+      "interval_days": 3.0,
+      "recall": 0.39409222081558415
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 1.0,
+      "interval_days": 14.0,
+      "recall": 0.5120845288372126
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 5.0,
+      "interval_days": 1.0,
+      "recall": 0.003705870849497007
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 5.0,
+      "interval_days": 3.0,
+      "recall": 0.10388158156065902
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 5.0,
+      "interval_days": 14.0,
+      "recall": 0.38481989555632173
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 20.0,
+      "interval_days": 1.0,
+      "recall": 1.133634492341207e-9
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 20.0,
+      "interval_days": 3.0,
+      "recall": 0.0006999485907368944
+    },
+    {
+      "base": 0.55,
+      "button": 2,
+      "elapsed_days": 20.0,
+      "interval_days": 14.0,
+      "recall": 0.1318080700429767
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 0.5,
+      "interval_days": 1.0,
+      "recall": 0.4852245277701068
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 0.5,
+      "interval_days": 3.0,
+      "recall": 0.6771853799124914
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 0.5,
+      "interval_days": 14.0,
+      "recall": 0.7719327554978961
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 1.0,
+      "interval_days": 1.0,
+      "recall": 0.2943035529371539
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 1.0,
+      "interval_days": 3.0,
+      "recall": 0.5732250484590314
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 1.0,
+      "interval_days": 14.0,
+      "recall": 0.7448502237632182
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 5.0,
+      "interval_days": 1.0,
+      "recall": 0.005390357599268374
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 5.0,
+      "interval_days": 3.0,
+      "recall": 0.15110048227004946
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 5.0,
+      "interval_days": 14.0,
+      "recall": 0.5597380299001044
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 20.0,
+      "interval_days": 1.0,
+      "recall": 1.6489228979508464e-9
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 20.0,
+      "interval_days": 3.0,
+      "recall": 0.0010181070410718463
+    },
+    {
+      "base": 0.8,
+      "button": 3,
+      "elapsed_days": 20.0,
+      "interval_days": 14.0,
+      "recall": 0.19172082915342065
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 0.5,
+      "interval_days": 1.0,
+      "recall": 0.5458775937413701
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 0.5,
+      "interval_days": 3.0,
+      "recall": 0.7618335524015527
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 0.5,
+      "interval_days": 14.0,
+      "recall": 0.8684243499351331
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 1.0,
+      "interval_days": 1.0,
+      "recall": 0.33109149705429813
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 1.0,
+      "interval_days": 3.0,
+      "recall": 0.6448781795164104
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 1.0,
+      "interval_days": 14.0,
+      "recall": 0.8379565017336205
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 5.0,
+      "interval_days": 1.0,
+      "recall": 0.006064152299176921
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 5.0,
+      "interval_days": 3.0,
+      "recall": 0.16998804255380565
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 5.0,
+      "interval_days": 14.0,
+      "recall": 0.6297052836376174
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 20.0,
+      "interval_days": 1.0,
+      "recall": 1.8550382601947021e-9
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 20.0,
+      "interval_days": 3.0,
+      "recall": 0.001145370421205827
+    },
+    {
+      "base": 0.9,
+      "button": 4,
+      "elapsed_days": 20.0,
+      "interval_days": 14.0,
+      "recall": 0.2156859327975982
+    }
+  ],
+  "meta": {
+    "description": "Reference values emitted by the REAL Anki Rust engine for Python<->Rust parity of the MCAT model evals.",
+    "generated_by": "anki/rslib/src/scheduler/concept.rs::tests::emit_engine_parity_fixture",
+    "tolerance": 1e-9
+  }
+}

@@ -40,3 +40,51 @@ h3 {
 #study {
     @include button.base($primary: true);
 }
+
+/* ---- MCAT cohesion: match the deck-browser Readiness Dashboard ---- */
+:root {
+    --mc-brand: #6366f1;
+    --mc-brand-strong: #4f46e5;
+    --mc-brand-soft: rgba(99, 102, 241, 0.14);
+    --mc-text-faint: #8b95ac;
+}
+.nightMode {
+    --mc-brand: #8b8ff8;
+    --mc-brand-strong: #a5a8fb;
+    --mc-brand-soft: rgba(139, 143, 248, 0.18);
+    --mc-text-faint: #6f7a93;
+}
+
+body {
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+        sans-serif;
+}
+
+h3 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-top: 0.4rem;
+}
+
+/* A prominent, on-brand "Study now" call to action. */
+#study {
+    background: linear-gradient(135deg, var(--mc-brand), var(--mc-brand-strong));
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 8px 20px var(--mc-brand-soft);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    min-width: 11rem;
+    padding: 0.7rem 1.6rem;
+    transition:
+        transform 0.08s ease,
+        filter 0.12s ease;
+
+    &:hover {
+        filter: brightness(1.06);
+        transform: translateY(-1px);
+    }
+}

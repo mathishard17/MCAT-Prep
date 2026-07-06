@@ -25,9 +25,6 @@ use super::concept::SectionScoreStatus;
 use crate::card::Card;
 use crate::prelude::*;
 
-const MCAT_DEMO_CARDS_MD: &str = include_str!("../../../added features/mcat_demo_cards.md");
-
-pub(crate) const MCAT_DEMO_DECK_NAME: &str = "MCAT Demo";
 pub(crate) const MCAT_FULL_DECK_NAME: &str = "MCAT";
 
 #[cfg(test)]
@@ -107,10 +104,6 @@ const LESSON_MD: [&str; 7] = [
     include_str!("../../../added features/lessons-physics.md"),
     include_str!("../../../added features/lessons-psych-soc.md"),
 ];
-
-pub(crate) fn parse_mcat_demo_cards() -> Vec<McatDemoCard> {
-    parse_cards_md(MCAT_DEMO_CARDS_MD)
-}
 
 fn parse_generated_mcat_cards() -> Vec<McatDemoCard> {
     let mut cards = Vec::new();
@@ -410,35 +403,24 @@ pub(crate) fn canonical_mcat_demo_edges() -> Vec<(KnowledgeComponentId, Knowledg
         .collect()
 }
 
+/// A deck card paired with its note's parsed concept metadata. The dashboard
+/// status build produces one of these per card in a single deck scan (see
+/// [`Collection::concept_deck_cards`]) so the card+note fetch and tag parse are
+/// not repeated by the graph, memory, and revlog-reconstruction steps.
+struct DeckConceptCard {
+    card: Card,
+    metadata: CardConceptMetadata,
+}
+
+/// Build the knowledge graph from an already-scanned deck. Cards without a
+/// target KC contribute no nodes or edges (their empty `target_components`
+/// iterate to nothing in [`KnowledgeGraph::from_card_metadata`]), matching the
+/// per-deck builder exactly.
+fn graph_from_deck_cards(cards: &[DeckConceptCard]) -> KnowledgeGraph {
+    KnowledgeGraph::from_card_metadata(cards.iter().map(|entry| &entry.metadata))
+}
+
 impl Collection {
-    pub(crate) fn import_mcat_demo_deck(&mut self) -> Result<DeckId> {
-        let mut deck = self.get_or_create_normal_deck(MCAT_DEMO_DECK_NAME)?;
-        deck.normal_mut()?.concept_scheduler_enabled = true;
-        self.add_or_update_deck(&mut deck)?;
-
-        let mut persisted = self.get_concept_scheduler_state(deck.id);
-        persisted.config.readiness_min_seen_cards = 10;
-        self.set_concept_scheduler_state(deck.id, &persisted, false)?;
-
-        if !self.storage.all_cards_in_single_deck(deck.id)?.is_empty() {
-            self.set_current_deck(deck.id)?;
-            return Ok(deck.id);
-        }
-
-        let nt = self.get_notetype_by_name("Basic")?.unwrap();
-        for card in parse_mcat_demo_cards() {
-            let mut note = nt.new_note();
-            note.set_field(0, card.front_html())?;
-            note.set_field(1, card.back_html())?;
-            note.tags = card.tags;
-            self.add_note(&mut note, deck.id)?;
-        }
-
-        self.set_current_deck(deck.id)?;
-
-        Ok(deck.id)
-    }
-
     /// Import the full generated MCAT library (at least one card per KC across all
     /// disciplines) into a separate "MCAT" deck. Idempotent: only adds cards not
     /// already present (dedup by the question field), and does not change the
@@ -489,8 +471,13 @@ impl Collection {
             .map(|normal| normal.concept_scheduler_enabled)
             .unwrap_or(false);
         let mut persisted = self.get_concept_scheduler_state(deck_id);
-        let reconstructed =
-            self.reconstruct_mcat_demo_state_from_revlogs(deck_id, &persisted.config)?;
+        // Scan the deck once: fetch every card+note and parse its concept tags a
+        // single time, then derive the revlog-reconstructed state, the knowledge
+        // graph, and the per-KC memory maps from that one scan. Previously each of
+        // these re-fetched every card+note independently (3-4 full deck scans),
+        // which dominated dashboard load on large decks.
+        let deck_cards = self.concept_deck_cards(deck_id)?;
+        let reconstructed = self.reconstruct_state_from_cards(&deck_cards, &persisted.config)?;
         if merge_reconstructed_state(&mut persisted.state, reconstructed) {
             self.set_concept_scheduler_state_inner(deck_id, &persisted)?;
         }
@@ -501,12 +488,13 @@ impl Collection {
             .get(&today)
             .copied()
             .unwrap_or_default();
-        let graph = self.concept_graph_for_deck(deck_id)?;
+        let graph = graph_from_deck_cards(&deck_cards);
         // Current recall (for the graph/memory display) plus recall projected to the
         // exam date (for readiness). With no exam set, both use "now".
-        let kc_memory = self.concept_kc_memory_for_deck(deck_id)?;
+        let now = self.timing_today()?.now;
+        let kc_memory = self.kc_memory_from_deck_cards(&deck_cards, now)?;
         let kc_memory_exam = match persisted.state.exam_timestamp {
-            Some(secs) => self.concept_kc_memory_for_deck_at(deck_id, TimestampSecs(secs))?,
+            Some(secs) => self.kc_memory_from_deck_cards(&deck_cards, TimestampSecs(secs))?,
             None => kc_memory.clone(),
         };
         let evidence = persisted.state.readiness_evidence_status(&persisted.config);
@@ -662,61 +650,58 @@ impl Collection {
             target_total_score: persisted.state.target_total_score.unwrap_or(0),
             probability_hit_target,
             has_target,
+            selected_section: persisted
+                .state
+                .selected_section
+                .map(|section| mcat_section_to_proto(section) as i32),
         })
+    }
+
+    /// Load every card in the deck together with its note's parsed
+    /// [`CardConceptMetadata`], fetching each card+note and parsing its tags
+    /// exactly once. Callers that need the graph, per-KC memory, and/or the
+    /// revlog-reconstructed state build all of them from the returned list so the
+    /// deck is scanned a single time.
+    fn concept_deck_cards(&self, deck_id: DeckId) -> Result<Vec<DeckConceptCard>> {
+        let card_ids = self.storage.all_cards_in_single_deck(deck_id)?;
+        let mut cards = Vec::with_capacity(card_ids.len());
+        for card_id in card_ids {
+            let card = self.storage.get_card(card_id)?.or_not_found(card_id)?;
+            let note = self
+                .storage
+                .get_note(card.note_id)?
+                .or_not_found(card.note_id)?;
+            let metadata = CardConceptMetadata::from_tags(&note.tags);
+            cards.push(DeckConceptCard { card, metadata });
+        }
+        Ok(cards)
     }
 
     /// Build the concept knowledge graph for a deck from its cards' `KC::`/`Prereq::`
     /// tags, so the scheduler reflects the deck's actual tagged content instead of a
     /// fixed demo graph. KCs with no cards in the deck are not included.
     pub(crate) fn concept_graph_for_deck(&self, deck_id: DeckId) -> Result<KnowledgeGraph> {
-        let mut metadata = Vec::new();
-        for card_id in self.storage.all_cards_in_single_deck(deck_id)? {
-            let card = self.storage.get_card(card_id)?.or_not_found(card_id)?;
-            let note = self
-                .storage
-                .get_note(card.note_id)?
-                .or_not_found(card.note_id)?;
-            let card_metadata = CardConceptMetadata::from_tags(&note.tags);
-            if card_metadata.target_components.is_empty() {
-                continue;
-            }
-            metadata.push(card_metadata);
-        }
-        Ok(KnowledgeGraph::from_card_metadata(&metadata))
+        Ok(graph_from_deck_cards(&self.concept_deck_cards(deck_id)?))
     }
 
     /// Average per-KC card memory (recall probability of already-studied cards)
-    /// for a deck, keyed by KC id. KCs with no studied cards are omitted.
-    pub(crate) fn concept_kc_memory_for_deck(
-        &mut self,
-        deck_id: DeckId,
-    ) -> Result<BTreeMap<KnowledgeComponentId, f64>> {
-        let now = self.timing_today()?.now;
-        self.concept_kc_memory_for_deck_at(deck_id, now)
-    }
-
-    /// Like `concept_kc_memory_for_deck`, but evaluates recall at `at_time` (e.g.
-    /// the exam date) instead of now, so readiness can be projected to test day.
-    pub(crate) fn concept_kc_memory_for_deck_at(
-        &mut self,
-        deck_id: DeckId,
+    /// evaluated at `at_time`, keyed by KC id, over an already-scanned deck. KCs
+    /// with no studied cards are omitted. Passing the current time yields "what you
+    /// remember now"; passing the exam date projects recall to test day.
+    fn kc_memory_from_deck_cards(
+        &self,
+        cards: &[DeckConceptCard],
         at_time: TimestampSecs,
     ) -> Result<BTreeMap<KnowledgeComponentId, f64>> {
         let mut totals: BTreeMap<KnowledgeComponentId, (f64, u32)> = BTreeMap::new();
-        for card_id in self.storage.all_cards_in_single_deck(deck_id)? {
-            let card = self.storage.get_card(card_id)?.or_not_found(card_id)?;
-            let Some(memory) = self.card_memory(&card, at_time)? else {
+        for entry in cards {
+            let Some(memory) = self.card_memory(&entry.card, at_time)? else {
                 continue;
             };
-            let note = self
-                .storage
-                .get_note(card.note_id)?
-                .or_not_found(card.note_id)?;
-            let metadata = CardConceptMetadata::from_tags(&note.tags);
-            for component in metadata.target_components {
-                let entry = totals.entry(component).or_insert((0.0, 0));
-                entry.0 += memory;
-                entry.1 += 1;
+            for component in &entry.metadata.target_components {
+                let totals_entry = totals.entry(component.clone()).or_insert((0.0, 0));
+                totals_entry.0 += memory;
+                totals_entry.1 += 1;
             }
         }
         Ok(totals
@@ -747,6 +732,26 @@ impl Collection {
             }
         }
         persisted.state.selected_topic = topic;
+        self.set_concept_scheduler_state(deck_id, &persisted, false)?;
+        // Rebuild the queue so the choice takes effect on the next fetch.
+        self.clear_study_queues();
+        Ok(())
+    }
+
+    /// Record (or clear) the user's chosen MCAT section for a concept-scheduler
+    /// deck. When set, the new-card pool is restricted to cards filed under that
+    /// section on the next queue build (see the queue builder's section filter);
+    /// `None` returns to scheduling across all sections. Mirrors
+    /// `set_concept_selected_topic`: any of the four sections is always valid, so
+    /// there is no fringe check. Persisting + clearing the queue is undo-safe (a
+    /// config write plus a queue clear, no card/note mutations).
+    pub(crate) fn set_concept_selected_section(
+        &mut self,
+        deck_id: DeckId,
+        section: Option<McatSection>,
+    ) -> Result<()> {
+        let mut persisted = self.get_concept_scheduler_state(deck_id);
+        persisted.state.selected_section = section;
         self.set_concept_scheduler_state(deck_id, &persisted, false)?;
         // Rebuild the queue so the choice takes effect on the next fetch.
         self.clear_study_queues();
@@ -829,24 +834,25 @@ impl Collection {
         Ok(Some((base * decay_factor).clamp(0.0, 1.0)))
     }
 
-    fn reconstruct_mcat_demo_state_from_revlogs(
+    /// Reconstruct scheduler state (mastery + IRT responses) from each card's
+    /// revlog history over an already-scanned deck, mirroring the per-card evidence
+    /// recording that live reviews perform. This lets a status read reflect prior
+    /// reviews even when the persisted counters are stale. Cards are visited in the
+    /// deck's card order and revlogs in chronological order, so the accumulated
+    /// state is identical to the former per-deck reconstruction.
+    fn reconstruct_state_from_cards(
         &self,
-        deck_id: DeckId,
+        cards: &[DeckConceptCard],
         config: &super::concept::ConceptSchedulerConfig,
     ) -> Result<ConceptSchedulerState> {
         let mut state = ConceptSchedulerState::default();
-        for card_id in self.storage.all_cards_in_single_deck(deck_id)? {
-            let card = self.storage.get_card(card_id)?.or_not_found(card_id)?;
-            let note = self
-                .storage
-                .get_note(card.note_id)?
-                .or_not_found(card.note_id)?;
-            let metadata = CardConceptMetadata::from_tags(&note.tags);
+        for entry in cards {
+            let metadata = &entry.metadata;
             if metadata.target_components.is_empty() {
                 continue;
             }
 
-            for revlog in self.storage.get_revlog_entries_for_card(card_id)? {
+            for revlog in self.storage.get_revlog_entries_for_card(entry.card.id)? {
                 let Some(evidence) = evidence_from_revlog_button(revlog.button_chosen) else {
                     continue;
                 };
@@ -855,14 +861,14 @@ impl Collection {
                     state.record_evidence(component.clone(), evidence, config);
                 }
                 state.note_card_answered();
-                let irt_item = super::concept::IrtItemMetadata::from_card_metadata(&metadata);
+                let irt_item = super::concept::IrtItemMetadata::from_card_metadata(metadata);
                 for section in metadata
                     .sections
                     .iter()
                     .filter_map(|section| super::concept::McatSection::from_tag(section))
                 {
                     let disciplines =
-                        super::concept::section_disciplines_for_metadata(&metadata, section);
+                        super::concept::section_disciplines_for_metadata(metadata, section);
                     state.record_irt_response(section, disciplines, irt_item, evidence);
                 }
             }
@@ -904,7 +910,16 @@ fn mcat_section_to_proto(section: McatSection) -> scheduler::McatSection {
     }
 }
 
-fn base_recall_for_button(button: u8) -> Option<f64> {
+pub(crate) fn mcat_section_from_proto(section: scheduler::McatSection) -> McatSection {
+    match section {
+        scheduler::McatSection::BioBiochem => McatSection::BioBiochem,
+        scheduler::McatSection::ChemPhys => McatSection::ChemPhys,
+        scheduler::McatSection::PsychSoc => McatSection::PsychSoc,
+        scheduler::McatSection::Cars => McatSection::Cars,
+    }
+}
+
+pub(crate) fn base_recall_for_button(button: u8) -> Option<f64> {
     // Track E fallback: base recall probability implied by the last rating.
     match button {
         1 => Some(0.20),
@@ -1182,36 +1197,53 @@ impl McatDemoCard {
         )
     }
 
-    #[cfg(test)]
-    fn metadata(&self) -> super::concept::CardConceptMetadata {
-        super::concept::CardConceptMetadata::from_tags(&self.tags)
-    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::super::concept::CardConceptMetadata;
     use super::super::concept::ConceptMasteryState;
     use super::*;
 
-    #[test]
-    fn parses_all_demo_cards_and_tags() {
-        let cards = parse_mcat_demo_cards();
-        assert_eq!(cards.len(), 50);
-        for card in cards {
-            assert!(!card.id.is_empty());
-            assert!(!card.question.is_empty());
-            assert!(!card.explanation.is_empty());
-            assert!(matches!(card.correct.as_str(), "A" | "B" | "C" | "D"));
-            assert!((1..=5).contains(&card.difficulty));
-            let metadata = card.metadata();
-            assert_eq!(metadata.target_components.len(), 1);
-            assert!(metadata
-                .sections
+    /// Small canonical test deck (the 10 KCs / 9 edges of `DEMO_EDGES`) used by the
+    /// concept-scheduler unit tests. Replaces the removed 50-card demo importer; the
+    /// root `Bio::DNA` gets several cards so answer-order-sensitive assertions
+    /// (`dna.answered == N`) deterministically land on it first.
+    fn import_concept_test_deck(col: &mut Collection) -> Result<DeckId> {
+        let mut deck = col.get_or_create_normal_deck("Concept Test")?;
+        deck.normal_mut()?.concept_scheduler_enabled = true;
+        col.add_or_update_deck(&mut deck)?;
+        let mut persisted = col.get_concept_scheduler_state(deck.id);
+        persisted.config.readiness_min_seen_cards = 10;
+        col.set_concept_scheduler_state(deck.id, &persisted, false)?;
+
+        let nt = col.get_notetype_by_name("Basic")?.unwrap();
+        let mut position = 0;
+        for kc in DEMO_KCS {
+            let prereqs: Vec<&str> = DEMO_EDGES
                 .iter()
-                .any(|section| section == "Bio_Biochem"));
-            assert_eq!(metadata.difficulty, Some(card.difficulty));
+                .filter(|(_, target)| *target == kc)
+                .map(|(prereq, _)| *prereq)
+                .collect();
+            let count = if kc == "Bio::DNA" { 6 } else { 1 };
+            for _ in 0..count {
+                let mut note = nt.new_note();
+                note.set_field(0, format!("Q{position} about {kc}"))?;
+                note.set_field(1, "answer")?;
+                let mut tags = vec![
+                    format!("KC::{kc}"),
+                    "MCAT::Bio_Biochem".to_string(),
+                    "Difficulty::3".to_string(),
+                ];
+                for prereq in &prereqs {
+                    tags.push(format!("Prereq::{prereq}"));
+                }
+                note.tags = tags;
+                col.add_note(&mut note, deck.id)?;
+                position += 1;
+            }
         }
+        col.set_current_deck(deck.id)?;
+        Ok(deck.id)
     }
 
     #[test]
@@ -1228,38 +1260,9 @@ mod tests {
     }
 
     #[test]
-    fn demo_card_prereq_tags_match_canonical_graph_edges() {
-        let graph = canonical_mcat_demo_graph();
-        for card in parse_mcat_demo_cards() {
-            let target = kc_id(&card.kc);
-            assert!(graph.contains(&target), "missing target KC {}", card.kc);
-            let prerequisites = graph.prerequisites(&target).unwrap();
-            let card_prerequisites = card
-                .prerequisites
-                .iter()
-                .map(|prerequisite| kc_id(prerequisite))
-                .collect::<std::collections::BTreeSet<_>>();
-            assert_eq!(
-                &card_prerequisites, prerequisites,
-                "{} prereqs do not match canonical graph",
-                card.id
-            );
-            for prerequisite in &card.prerequisites {
-                let prerequisite = kc_id(prerequisite);
-                assert!(
-                    prerequisites.contains(&prerequisite),
-                    "{} declares prereq {} that is not a canonical edge",
-                    card.id,
-                    prerequisite.as_str()
-                );
-            }
-        }
-    }
-
-    #[test]
     fn deck_concept_graph_is_built_from_card_metadata() -> Result<()> {
         let mut col = Collection::new();
-        let deck_id = col.import_mcat_demo_deck()?;
+        let deck_id = import_concept_test_deck(&mut col)?;
 
         // The demo deck's card tags reproduce the canonical 10-node graph.
         let graph = col.concept_graph_for_deck(deck_id)?;
@@ -1330,30 +1333,9 @@ mod tests {
     }
 
     #[test]
-    fn imports_demo_deck_with_fifty_tagged_cards() -> Result<()> {
-        let mut col = Collection::new();
-        let deck_id = col.import_mcat_demo_deck()?;
-        assert_eq!(col.import_mcat_demo_deck()?, deck_id);
-        let deck = col.get_deck(deck_id)?.unwrap();
-        assert_eq!(deck.human_name(), "MCAT Demo");
-        assert!(deck.normal()?.concept_scheduler_enabled);
-
-        let card_ids = col.storage.all_cards_in_single_deck(deck_id)?;
-        assert_eq!(card_ids.len(), 50);
-        for card_id in card_ids {
-            let card = col.storage.get_card(card_id)?.unwrap();
-            let note = col.storage.get_note(card.note_id)?.unwrap();
-            let metadata = CardConceptMetadata::from_tags(&note.tags);
-            assert_eq!(metadata.target_components.len(), 1);
-        }
-
-        Ok(())
-    }
-
-    #[test]
     fn demo_algorithm_updates_percentages_and_status() -> Result<()> {
         let mut col = Collection::new();
-        let deck_id = col.import_mcat_demo_deck()?;
+        let deck_id = import_concept_test_deck(&mut col)?;
         for _ in 0..5 {
             col.answer_good();
         }
@@ -1477,7 +1459,7 @@ mod tests {
     #[test]
     fn demo_status_reports_memory_after_reviews() -> Result<()> {
         let mut col = Collection::new();
-        let deck_id = col.import_mcat_demo_deck()?;
+        let deck_id = import_concept_test_deck(&mut col)?;
         for _ in 0..5 {
             col.answer_good();
         }
@@ -1513,7 +1495,7 @@ mod tests {
     #[test]
     fn demo_status_marks_outer_fringe_after_foundation_mastery() -> Result<()> {
         let mut col = Collection::new();
-        let deck_id = col.import_mcat_demo_deck()?;
+        let deck_id = import_concept_test_deck(&mut col)?;
         let mut persisted = col.get_concept_scheduler_state(deck_id);
         persisted.state.kcs.insert(
             kc_id("Bio::DNA"),
@@ -1542,7 +1524,7 @@ mod tests {
     #[test]
     fn demo_status_reconstructs_mastery_from_revlog_history() -> Result<()> {
         let mut col = Collection::new();
-        let deck_id = col.import_mcat_demo_deck()?;
+        let deck_id = import_concept_test_deck(&mut col)?;
         for _ in 0..3 {
             col.answer_good();
         }
@@ -1567,7 +1549,7 @@ mod tests {
     #[test]
     fn demo_status_reconstructs_nodes_even_when_total_counter_is_stale() -> Result<()> {
         let mut col = Collection::new();
-        let deck_id = col.import_mcat_demo_deck()?;
+        let deck_id = import_concept_test_deck(&mut col)?;
         for _ in 0..2 {
             col.answer_good();
         }
@@ -1592,7 +1574,7 @@ mod tests {
     #[test]
     fn demo_status_backfills_stale_irt_coverage_buckets() -> Result<()> {
         let mut col = Collection::new();
-        let deck_id = col.import_mcat_demo_deck()?;
+        let deck_id = import_concept_test_deck(&mut col)?;
         for _ in 0..5 {
             col.answer_good();
         }

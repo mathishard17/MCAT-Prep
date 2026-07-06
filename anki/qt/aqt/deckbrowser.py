@@ -12,7 +12,7 @@ import aqt
 import aqt.operations
 from anki.collection import Collection, OpChanges
 from anki.decks import DeckCollapseScope, DeckId, DeckTreeNode
-from aqt import AnkiQt, gui_hooks
+from aqt import AnkiQt, gui_hooks, mcat_ui
 from aqt.deckoptions import display_options_for_deck_id
 from aqt.operations import QueryOp
 from aqt.operations.deck import (
@@ -27,7 +27,7 @@ from aqt.qt import *
 from aqt.sound import av_player
 from aqt.theme import Theme
 from aqt.toolbar import BottomBar
-from aqt.utils import getOnlyText, openLink, shortcut, showInfo, tr
+from aqt.utils import getOnlyText, openLink, shortcut, showInfo, tooltip, tr
 
 
 class DeckBrowserBottomBar:
@@ -43,6 +43,9 @@ class RenderData:
     current_deck_id: DeckId
     studied_today: str
     sched_upgrade_required: bool
+    # MCAT Readiness Dashboard (empty string when there is no MCAT deck).
+    mcat_dashboard: str = ""
+    mcat_deck_id: DeckId | None = None
 
 
 @dataclass
@@ -167,6 +170,16 @@ class DeckBrowser:
             ).run_in_background()
         elif cmd == "theme":
             self._toggle_theme()
+        elif cmd == "mcatStudy":
+            self._open_mcat_deck()
+        elif cmd == "mcatPlanSave":
+            self._set_mcat_plan(arg)
+        elif cmd == "mcatStart":
+            self._start_mcat_topic(arg)
+        elif cmd == "mcatSection":
+            self._select_mcat_section(arg)
+        elif cmd == "mcatSectionClear":
+            self._select_mcat_section("")
         return False
 
     def _toggle_theme(self) -> None:
@@ -187,6 +200,8 @@ class DeckBrowser:
 <div class="home-theme-toggle">
 <button onclick="pycmd('theme');">%(theme_toggle)s</button>
 </div>
+%(mcat)s
+%(deck_head)s
 <table cellspacing=0 cellpadding=3>
 %(tree)s
 </table>
@@ -200,11 +215,14 @@ class DeckBrowser:
         if not reuse:
 
             def get_data(col: Collection) -> RenderData:
+                mcat_did = self._mcat_deck_id(col)
                 return RenderData(
                     tree=col.sched.deck_due_tree(),
                     current_deck_id=col.decks.get_current_id(),
                     studied_today=col.studied_today(),
                     sched_upgrade_required=not col.v3_scheduler(),
+                    mcat_dashboard=self._mcat_dashboard_html(col, mcat_did),
+                    mcat_deck_id=mcat_did,
                 )
 
             def success(output: RenderData) -> None:
@@ -225,13 +243,24 @@ class DeckBrowser:
             tree=self._renderDeckTree(data.tree),
             stats=self._renderStats(),
         )
-        theme_label = (
-            "Dark mode" if self.mw.pm.theme() == Theme.LIGHT else "Light mode"
-        )
+        theme_label = "Dark mode" if self.mw.pm.theme() == Theme.LIGHT else "Light mode"
         gui_hooks.deck_browser_will_render_content(self, content)
+        deck_head = (
+            '<div class="mcat-decks-title">All decks</div>'
+            if data.mcat_dashboard
+            else ""
+        )
         self.web.stdHtml(
             self._v1_upgrade_message(data.sched_upgrade_required)
-            + self._body % (content.__dict__ | dict(theme_toggle=theme_label)),
+            + self._body
+            % (
+                content.__dict__
+                | dict(
+                    theme_toggle=theme_label,
+                    mcat=data.mcat_dashboard,
+                    deck_head=deck_head,
+                )
+            ),
             css=["css/deckbrowser.css"],
             js=[
                 "js/vendor/jquery.min.js",
@@ -252,6 +281,195 @@ class DeckBrowser:
         return '<div id="studiedToday"><span>{}</span></div>'.format(
             self._render_data.studied_today
         )
+
+    # MCAT Readiness Dashboard
+    ##########################################################################
+
+    def _mcat_deck_id(self, col: Collection) -> DeckId | None:
+        """The primary MCAT library deck, if this collection has one."""
+        try:
+            return col.decks.id_for_name("MCAT")
+        except Exception:
+            return None
+
+    def _mcat_dashboard_html(self, col: Collection, deck_id: DeckId | None) -> str:
+        """Build the readiness dashboard for the home screen, or "" when there is
+        no MCAT deck / concept data to show. Runs off the UI thread."""
+        if deck_id is None:
+            return ""
+        try:
+            status = col._backend.get_concept_scheduler_status(deck_id)
+        except Exception:
+            return ""
+        payload = self._mcat_status_dict(status)
+        if not payload["nodes"]:
+            return ""
+        return mcat_ui.build_dashboard_html(payload)
+
+    @staticmethod
+    def _mcat_status_dict(status: Any) -> dict[str, Any]:
+        """Convert the concept scheduler status proto into the plain dict the
+        dashboard consumes. Only reads existing fields; never mutates state."""
+
+        def fringe(value: int) -> str:
+            return {1: "inner", 2: "outer"}.get(value, "locked")
+
+        def section(value: int) -> str:
+            return {
+                0: "Bio/Biochem",
+                1: "Chem/Phys",
+                2: "Psych/Soc",
+                3: "CARS",
+            }.get(value, "Unknown")
+
+        nodes = [
+            dict(
+                id=node.id,
+                mastery=node.mastery,
+                fringe=fringe(node.fringe),
+                answered=node.answered,
+                positive=node.positive,
+                negative=node.negative,
+                memory=node.memory,
+                recommended=node.recommended,
+            )
+            for node in status.graph.nodes
+        ]
+        evidence = status.evidence
+        has_selected_section = status.HasField("selected_section")
+        return dict(
+            nodes=nodes,
+            hasSelectedSection=has_selected_section,
+            selectedSection=(
+                section(status.selected_section) if has_selected_section else ""
+            ),
+            edges=[
+                dict(prerequisiteId=edge.prerequisite_id, targetId=edge.target_id)
+                for edge in status.graph.edges
+            ],
+            sectionScores=[
+                dict(
+                    section=section(score.section),
+                    enoughEvidence=score.enough_evidence,
+                    coverage=score.coverage,
+                    readinessCenter=score.readiness_center,
+                    readinessLower=score.readiness_lower,
+                    readinessUpper=score.readiness_upper,
+                    readinessStandardError=score.readiness_standard_error,
+                    performanceCenter=score.performance_center,
+                    performanceLower=score.performance_lower,
+                    performanceUpper=score.performance_upper,
+                    performanceStandardError=score.performance_standard_error,
+                    theta=score.theta,
+                    sectionMastery=score.section_mastery,
+                    answeredItems=score.answered_items,
+                    requiredItems=score.required_items,
+                    sectionMemory=score.section_memory,
+                    sectionHasMemory=score.section_has_memory,
+                )
+                for score in status.section_scores
+            ],
+            # Overall evidence gate (drives the abstain / "building" states).
+            evidenceEnough=evidence.kind == 1,
+            evidenceSeenCards=evidence.seen_cards,
+            evidenceRequiredCards=evidence.required_seen_cards,
+            overallMemory=status.overall_memory,
+            hasMemory=status.has_memory,
+            hasProjection=status.has_projection,
+            projectedTotal=status.projected_total,
+            projectedTotalLower=status.projected_total_lower,
+            projectedTotalUpper=status.projected_total_upper,
+            examTimestamp=status.exam_timestamp,
+            hasTarget=status.has_target,
+            targetTotalScore=status.target_total_score,
+            probabilityHitTarget=status.probability_hit_target,
+        )
+
+    def _open_mcat_deck(self) -> None:
+        did = getattr(self._render_data, "mcat_deck_id", None)
+        if did is not None:
+            self.set_current_deck(did)
+
+    def _set_mcat_plan(self, raw: str) -> None:
+        """Persist the learner's exam date / target from the dashboard editor.
+        ``raw`` is "<epoch>,<target>"; 0 clears that field."""
+        did = getattr(self._render_data, "mcat_deck_id", None)
+        if did is None:
+            return
+        try:
+            epoch_str, target_str = raw.split(",", 1)
+            epoch = int(epoch_str)
+            target = int(target_str)
+        except ValueError:
+            return
+        from anki.scheduler_pb2 import SetConceptExamSettingsRequest
+
+        request = SetConceptExamSettingsRequest(deck_id=did)
+        if epoch > 0:
+            request.exam_timestamp = epoch
+        if 472 <= target <= 528:
+            request.target_total_score = target
+        try:
+            self.mw.col._backend.set_concept_exam_settings(request)
+        except Exception as exc:
+            showInfo(f"Couldn't save your study plan: {exc}")
+            return
+        tooltip("Study plan updated", period=2500)
+        self.refresh()
+
+    def _start_mcat_topic(self, topic: str) -> None:
+        did = getattr(self._render_data, "mcat_deck_id", None)
+        topic = topic.strip()
+        if did is None or not topic:
+            return
+        from anki.scheduler_pb2 import SetConceptSelectedTopicRequest
+
+        try:
+            self.mw.col._backend.set_concept_selected_topic(
+                SetConceptSelectedTopicRequest(deck_id=did, topic=topic)
+            )
+        except Exception as exc:
+            tooltip(f"Couldn't start that topic: {exc}")
+            return
+        short = topic.split("::")[-1].replace("_", " ")
+        tooltip(f"Next up: <b>{short}</b>", period=3000)
+        self.refresh()
+
+    # Section labels indexed by the McatSection enum value (0-3), used for the
+    # "study by section" tooltips and to validate the incoming index.
+    _MCAT_SECTION_LABELS = ["Bio/Biochem", "Chem/Phys", "Psych/Soc", "CARS"]
+
+    def _select_mcat_section(self, raw: str) -> None:
+        """Restrict studying to one MCAT section (``raw`` is the section index
+        0-3), or clear the restriction when ``raw`` is empty. Calls the backend
+        ``set_concept_selected_section`` RPC and refreshes the dashboard."""
+        did = getattr(self._render_data, "mcat_deck_id", None)
+        if did is None:
+            return
+        from anki.scheduler_pb2 import SetConceptSelectedSectionRequest
+
+        raw = raw.strip()
+        request = SetConceptSelectedSectionRequest(deck_id=did)
+        label = "all sections"
+        if raw != "":
+            try:
+                index = int(raw)
+            except ValueError:
+                return
+            if not 0 <= index < len(self._MCAT_SECTION_LABELS):
+                return
+            request.section = index
+            label = self._MCAT_SECTION_LABELS[index]
+        try:
+            self.mw.col._backend.set_concept_selected_section(request)
+        except Exception as exc:
+            tooltip(f"Couldn't switch section: {exc}")
+            return
+        if raw == "":
+            tooltip("Studying <b>all sections</b>", period=3000)
+        else:
+            tooltip(f"Studying <b>{label}</b>", period=3000)
+        self.refresh()
 
     def _renderDeckTree(self, top: DeckTreeNode) -> str:
         buf = """

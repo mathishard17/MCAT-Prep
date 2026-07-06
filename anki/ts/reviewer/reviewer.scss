@@ -8,11 +8,58 @@
 :root {
     --concept-secondary-text: #456582;
     --concept-muted-text: #538263;
+
+    // MCAT design system (shared with the deck-browser Readiness Dashboard).
+    --mc-brand: #6366f1;
+    --mc-brand-strong: #4f46e5;
+    --mc-brand-soft: rgba(99, 102, 241, 0.12);
+    --mc-sec-bio: #4f74d6;
+    --mc-sec-chem: #e0555f;
+    --mc-sec-psych: #2fa96a;
+    --mc-sec-cars: #dda032;
+    --mc-good: #21a866;
+    --mc-bad: #e0555f;
+    --mc-surface: #ffffff;
+    --mc-surface-2: #f7f8fc;
+    --mc-border: #e7eaf3;
+    --mc-border-strong: #d7dceb;
+    --mc-text: #1b2233;
+    --mc-text-muted: #5c6780;
+    --mc-text-faint: #8b95ac;
+    --mc-track: #eceef6;
+    --mc-shadow-sm: 0 1px 2px rgba(20, 27, 48, 0.06), 0 1px 3px rgba(20, 27, 48, 0.08);
+    --mc-shadow-md: 0 6px 18px rgba(20, 27, 48, 0.08);
+    --mc-shadow-lg: 0 18px 44px rgba(20, 27, 48, 0.14);
+    --mc-r-sm: 10px;
+    --mc-r-md: 14px;
+    --mc-r-lg: 20px;
+    --mc-r-pill: 999px;
 }
 
 .nightMode {
     --concept-secondary-text: #c8e2f4;
     --concept-muted-text: #c8e8d0;
+
+    --mc-brand: #8b8ff8;
+    --mc-brand-strong: #a5a8fb;
+    --mc-brand-soft: rgba(139, 143, 248, 0.16);
+    --mc-sec-bio: #6f92ec;
+    --mc-sec-chem: #f0767f;
+    --mc-sec-psych: #4cc389;
+    --mc-sec-cars: #eab857;
+    --mc-good: #43c98a;
+    --mc-bad: #f0767f;
+    --mc-surface: #171b26;
+    --mc-surface-2: #1e2331;
+    --mc-border: #2a3040;
+    --mc-border-strong: #353c50;
+    --mc-text: #e9edf7;
+    --mc-text-muted: #9aa5bd;
+    --mc-text-faint: #6f7a93;
+    --mc-track: #262c3b;
+    --mc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --mc-shadow-md: 0 8px 22px rgba(0, 0, 0, 0.45);
+    --mc-shadow-lg: 0 22px 50px rgba(0, 0, 0, 0.55);
 }
 
 hr {
@@ -86,30 +133,6 @@ pre {
     -webkit-text-stroke-color: black;
 }
 
-#_concept_kc_badge {
-    position: fixed;
-    [dir="ltr"] & {
-        right: 10px;
-    }
-    [dir="rtl"] & {
-        left: 10px;
-    }
-    bottom: 10px;
-    background: var(--canvas);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    color: var(--fg);
-    font-size: 12px;
-    line-height: 1.2;
-    max-width: min(24rem, calc(100vw - 2rem));
-    opacity: 0.86;
-    overflow: hidden;
-    padding: 0.35rem 0.55rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    z-index: 10;
-}
-
 #_concept_graph_sidebar {
     position: fixed;
     [dir="ltr"] & {
@@ -144,6 +167,11 @@ pre {
     display: flex;
     justify-content: space-between;
     gap: 0.5rem;
+
+    // No title text — just the Hide control, pinned to the end.
+    &.no-title {
+        justify-content: flex-end;
+    }
 
     button {
         margin: 0;
@@ -264,12 +292,16 @@ pre {
 }
 
 .concept-sidebar-graph.scroll {
+    // Short, centred panel: the nearby neighbourhood is only a handful of nodes,
+    // so fill the box and centre it (no dead space) instead of a tall empty area.
+    // `safe center` keeps it scrollable-from-start if the content overflows.
+    align-items: safe center;
     cursor: default;
-    // Bounded panel (not flex-greedy) so the node-description list below it stays
-    // visible and the whole sidebar can scroll down to it.
+    display: flex;
     flex: 0 0 auto;
-    height: 40vh;
-    min-height: 14rem;
+    height: 34vh;
+    justify-content: safe center;
+    min-height: 12.5rem;
     overflow: auto;
     touch-action: auto;
 }
@@ -280,8 +312,10 @@ pre {
 }
 
 .concept-graph-canvas {
+    flex: 0 0 auto;
     position: relative;
     transform-origin: 0 0;
+    transition: opacity 0.25s ease;
 }
 
 .concept-graph-controls {
@@ -301,28 +335,56 @@ pre {
     padding: 0.12rem 0.4rem;
 }
 
+.concept-graph-controls button {
+    transition: background 0.12s ease, transform 0.12s ease;
+}
+
 .concept-graph-controls button:hover {
     background: color-mix(in srgb, var(--canvas) 88%, #6f8fa8);
 }
 
-.concept-sidebar-node.dim {
-    opacity: 0.18;
+// Press response (~0.97) so no click feels dead (shared motion vocabulary).
+.concept-graph-controls button:active {
+    transform: scale(0.95);
 }
 
-.concept-sidebar-node.focus .concept-sidebar-dot {
-    box-shadow: 0 0 0 2px var(--fg), 0 0 6px rgba(0 0 0 / 0.35);
+// Fade nodes outside the active node's neighbourhood on hover / focus so the
+// path being explored stands out on a busy map.
+.concept-sidebar-node.faded {
+    opacity: 0.26;
+    transition: opacity 0.15s ease;
+}
+
+.concept-sidebar-node.faded .concept-sidebar-node-label {
+    display: none;
 }
 
 .concept-sidebar-graph svg {
     height: 100%;
     inset: 0;
+    overflow: visible;
     position: absolute;
     width: 100%;
 
-    line {
-        stroke: color-mix(in srgb, var(--concept-secondary-text) 55%, transparent);
-        stroke-width: 1;
+    // Directed prerequisite -> target edges (curve + arrowhead share one path).
+    path {
+        fill: none;
+        stroke: color-mix(in srgb, var(--concept-secondary-text) 52%, transparent);
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.3;
+        transition: opacity 0.15s ease, stroke 0.15s ease;
         vector-effect: non-scaling-stroke;
+    }
+
+    // Spotlight the active node's edges; fade the rest so a busy map stays readable.
+    path.hot {
+        stroke: color-mix(in srgb, var(--concept-secondary-text) 88%, transparent);
+        stroke-width: 1.8;
+    }
+
+    path.dim {
+        opacity: 0.12;
     }
 }
 
@@ -330,83 +392,157 @@ pre {
     position: absolute;
 }
 
+// Mastery arc: a ring that fills (in the section colour) with node.mastery over
+// a faint track. Sits behind the dot; the centre is masked out so only the
+// annulus shows, giving a clean progress ring around each concept.
+.concept-sidebar-arc {
+    --track: color-mix(in srgb, var(--fg) 15%, transparent);
+    background: conic-gradient(
+        from -90deg,
+        var(--sec, #4f74d6) 0 calc(var(--m, 0) * 360deg),
+        var(--track) calc(var(--m, 0) * 360deg) 360deg
+    );
+    border-radius: 999px;
+    height: calc(var(--dot, 0.6rem) + 0.6rem);
+    left: 0;
+    -webkit-mask: radial-gradient(circle, transparent 0 calc(50% - 2.2px), #000 calc(50% - 2.2px) 100%);
+    mask: radial-gradient(circle, transparent 0 calc(50% - 2.2px), #000 calc(50% - 2.2px) 100%);
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    transform: translate(-50%, -50%);
+    width: calc(var(--dot, 0.6rem) + 0.6rem);
+    z-index: 0;
+}
+
 .concept-sidebar-node .concept-sidebar-dot {
     left: 0;
     position: absolute;
     top: 0;
     transform: translate(-50%, -50%);
+    transition: box-shadow 0.15s ease, transform 0.12s ease;
+    z-index: 1;
 }
 
 .concept-sidebar-node.available {
     cursor: pointer;
 }
 
+// green ring = ready to start (prerequisites met, not yet mastered).
 .concept-sidebar-node.available .concept-sidebar-dot {
-    box-shadow: 0 0 0 2px #7c5cff, 0 0 8px rgba(124 92 255 / 0.55);
+    box-shadow: 0 0 0 2px #2fbf6b, 0 0 7px rgba(47 191 107 / 0.5);
 }
 
 .concept-sidebar-node.available:hover .concept-sidebar-dot {
-    box-shadow: 0 0 0 3px #7c5cff, 0 0 12px rgba(124 92 255 / 0.9);
+    box-shadow: 0 0 0 3px #2fbf6b, 0 0 12px rgba(47 191 107 / 0.9);
 }
 
-// Suggested next = a pulsing violet glow (larger + animated than the static
-// "ready" ring), so it stands out among the ready-to-start nodes.
+.concept-sidebar-node.available:active .concept-sidebar-dot {
+    transform: translate(-50%, -50%) scale(0.86);
+}
+
+// Suggested next keeps the green ready ring and adds a pulsing gold glow (plus a
+// ★) so it stands out among the ready-to-start nodes.
 .concept-sidebar-node.recommended .concept-sidebar-dot {
     animation: concept-suggest-pulse 1.6s ease-in-out infinite;
-    box-shadow: 0 0 0 2px #7c5cff, 0 0 14px 4px rgba(124 92 255 / 0.85);
 }
 
 @keyframes concept-suggest-pulse {
     0%,
     100% {
-        box-shadow: 0 0 0 2px #7c5cff, 0 0 9px 2px rgba(124 92 255 / 0.55);
+        box-shadow: 0 0 0 2px #2fbf6b, 0 0 9px 2px rgba(242 194 0 / 0.5);
     }
 
     50% {
-        box-shadow: 0 0 0 3px #7c5cff, 0 0 18px 6px rgba(124 92 255 / 0.95);
+        box-shadow: 0 0 0 2.5px #2fbf6b, 0 0 16px 5px rgba(242 194 0 / 0.95);
     }
 }
 
-// ★ = the concept you're currently studying.
+// ★ = a suggested-next topic (top-left badge).
 .concept-sidebar-star {
     color: #f2c200;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     left: 0;
     line-height: 1;
     pointer-events: none;
     position: absolute;
     text-shadow: 0 0 3px rgba(0 0 0 / 0.6), 0 0 2px rgba(0 0 0 / 0.8);
     top: 0;
-    transform: translate(-120%, -120%);
-    z-index: 2;
+    transform: translate(-115%, -115%);
+    z-index: 3;
 }
 
-// Make the current concept unmistakable: a bold gold ring, a larger dot, and a
-// gold glow that pulses. Defined after .available/.recommended so it wins.
+// violet pulsing ring = the concept you're currently studying. Defined last so
+// it wins over the ready / suggested rings.
 .concept-sidebar-node.focus .concept-sidebar-dot {
     animation: concept-current-pulse 1.8s ease-in-out infinite;
-    box-shadow:
-        0 0 0 2.5px #f2c200,
-        0 0 0 4.5px color-mix(in srgb, var(--canvas) 65%, transparent),
-        0 0 12px 3px rgba(242 194 0 / 0.85);
-    transform: translate(-50%, -50%) scale(1.3);
+    transform: translate(-50%, -50%) scale(1.28);
 }
 
 @keyframes concept-current-pulse {
     0%,
     100% {
         box-shadow:
-            0 0 0 2.5px #f2c200,
+            0 0 0 2.5px #7c5cff,
             0 0 0 4.5px color-mix(in srgb, var(--canvas) 65%, transparent),
-            0 0 8px 1px rgba(242 194 0 / 0.6);
+            0 0 12px 3px rgba(124 92 255 / 0.8);
     }
 
     50% {
         box-shadow:
-            0 0 0 3px #f2c200,
+            0 0 0 3px #7c5cff,
             0 0 0 5px color-mix(in srgb, var(--canvas) 65%, transparent),
-            0 0 20px 6px rgba(242 194 0 / 0.95);
+            0 0 26px 9px rgba(124 92 255 / 1);
     }
+}
+
+// Hover: raise the node above its neighbours and enlarge its dot.
+.concept-sidebar-node.hovered {
+    z-index: 5;
+}
+
+.concept-sidebar-node.hovered .concept-sidebar-dot {
+    transform: translate(-50%, -50%) scale(1.22);
+}
+
+.concept-sidebar-node.hovered.nolabel .concept-sidebar-node-label {
+    display: inline-block;
+}
+
+// A settled fade-in when the panel (re)opens.
+.concept-graph-canvas.entering {
+    opacity: 0;
+}
+
+// Honor the OS/browser reduced-motion preference: stop the looping pulses and
+// snap transitions so the reviewer surface matches the dashboard's a11y behaviour
+// (parity with `prefers-reduced-motion` in the Readiness Dashboard).
+@media (prefers-reduced-motion: reduce) {
+    .concept-sidebar-node.recommended .concept-sidebar-dot,
+    .concept-sidebar-node.focus .concept-sidebar-dot {
+        animation: none;
+    }
+
+    .concept-graph-canvas,
+    .concept-sidebar-graph svg path,
+    .concept-sidebar-node.faded,
+    .concept-sidebar-node .concept-sidebar-dot,
+    .concept-graph-controls button {
+        transition-duration: 0.001ms;
+    }
+}
+
+// Empty / single-node states.
+.concept-graph-empty {
+    color: var(--concept-secondary-text);
+    font-size: 11px;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    position: absolute;
+    text-align: center;
 }
 
 // ✓ = a mastered (inner-fringe) concept.
@@ -421,6 +557,7 @@ pre {
     text-shadow: 0 0 2px rgba(255 255 255 / 0.6);
     top: 0;
     transform: translate(135%, -135%);
+    z-index: 3;
 }
 
 .concept-sidebar-node.nolabel .concept-sidebar-node-label {
@@ -538,17 +675,16 @@ pre {
     width: 0.5rem;
 }
 
-// "ready to start" key: neutral dot with the same violet ring the graph nodes use
-// (violet, not green, so it doesn't read as the Psych/Soc section colour).
+// "ready to start" key: neutral dot with the green frontier ring the graph uses.
 .concept-sidebar-legend-dot.ready {
     background: color-mix(in srgb, var(--canvas) 55%, #8a8a8a);
-    box-shadow: 0 0 0 2px #7c5cff;
+    box-shadow: 0 0 0 2px #2fbf6b;
 }
 
-// suggested-next key: violet ring + glow halo (matches the pulsing graph node).
-.concept-sidebar-legend-dot.suggest {
+// "current" key: neutral dot with the violet ring marking the card you're on.
+.concept-sidebar-legend-dot.current {
     background: color-mix(in srgb, var(--canvas) 55%, #8a8a8a);
-    box-shadow: 0 0 0 1.5px #7c5cff, 0 0 6px 1px rgba(124 92 255 / 0.85);
+    box-shadow: 0 0 0 2px #7c5cff, 0 0 5px 1px rgba(124 92 255 / 0.7);
 }
 
 .concept-sidebar-legend-check {
@@ -559,14 +695,22 @@ pre {
 }
 
 .concept-sidebar-legend-star {
-    color: #e8b923;
+    color: #f2c200;
     font-size: 0.72rem;
     line-height: 1;
+    text-shadow: 0 0 2px rgba(0 0 0 / 0.5);
 }
 
 .concept-sidebar-legend-hint {
     color: var(--concept-secondary-text);
     flex-basis: 100%;
+}
+
+// The directional key ("builds on -> this -> unlocks") reads as a caption.
+.concept-sidebar-legend-hint.flow {
+    font-style: italic;
+    letter-spacing: 0.01em;
+    opacity: 0.85;
 }
 
 .concept-sidebar-row {
@@ -607,13 +751,81 @@ pre {
     background: color-mix(in srgb, var(--canvas) 78%, #7c5cff);
 }
 
+/* Node detail panel — pops below the graph when a concept is clicked. */
+.concept-sidebar-node-detail {
+    background: color-mix(in srgb, var(--canvas) 92%, #6f8fa8);
+    border: 1px solid rgba(69 101 130 / 0.22);
+    border-radius: 0.45rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-top: 0.55rem;
+    padding: 0.7rem 0.8rem;
+}
+
+/* Themed to the concept's MCAT section colour (`--sec` set inline on click). */
+.concept-sidebar-node-detail.themed {
+    background: color-mix(in srgb, var(--canvas) 87%, var(--sec, #6f8fa8));
+    border-color: color-mix(in srgb, var(--sec, #6f8fa8) 40%, transparent);
+    border-left: 3px solid var(--sec, #6f8fa8);
+}
+
+.concept-sidebar-node-detail.themed .concept-sidebar-detail-name {
+    color: var(--sec, inherit);
+}
+
+.concept-sidebar-detail-hint {
+    color: var(--concept-secondary-text);
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.concept-sidebar-detail-name {
+    font-size: 0.98rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.concept-sidebar-detail-meta {
+    color: var(--concept-secondary-text);
+    font-size: 0.78rem;
+}
+
+.concept-sidebar-detail-meta.outer {
+    color: #2f9e5e;
+    font-weight: 600;
+}
+
+.concept-sidebar-detail-role {
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.concept-sidebar-detail-start {
+    align-self: flex-start;
+    background: #538263;
+    border: 0;
+    border-radius: 0.35rem;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-top: 0.2rem;
+    padding: 0.35rem 0.85rem;
+}
+
+.concept-sidebar-detail-start:hover {
+    background: #46704f;
+}
+
 #_concept_lesson_panel {
     align-items: center;
-    background: rgba(0 0 0 / 0.45);
+    background: rgba(12 18 28 / 0.55);
+    backdrop-filter: blur(3px);
     display: flex;
     inset: 0;
     justify-content: center;
-    padding: 1.2rem;
+    padding: 1rem;
     position: fixed;
     z-index: 100;
 }
@@ -627,72 +839,196 @@ pre {
 
 .concept-lesson-card {
     background: var(--canvas, #fff);
-    border: 1px solid rgba(69 101 130 / 0.25);
-    border-radius: 0.6rem;
-    box-shadow: 0 1rem 3rem rgba(0 0 0 / 0.35);
+    border: 1px solid rgba(69 101 130 / 0.22);
+    border-radius: 0.9rem;
+    box-shadow: 0 1.5rem 4rem rgba(0 0 0 / 0.45);
     color: var(--fg);
     display: flex;
     flex-direction: column;
-    max-height: 82vh;
-    max-width: 38rem;
+    height: min(94vh, calc(100vh - 2rem));
+    max-height: none;
+    max-width: none;
+    opacity: 0;
     overflow: hidden;
-    width: 100%;
+    transform: scale(0.97) translateY(6px);
+    transition:
+        opacity 0.18s ease,
+        transform 0.22s cubic-bezier(0.2, 0, 0, 1);
+    width: min(94vw, 68rem);
+}
+
+.concept-lesson-card.in {
+    opacity: 1;
+    transform: none;
 }
 
 .concept-lesson-head {
-    align-items: center;
+    align-items: flex-start;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--canvas) 86%, #6f8fa8) 0%,
+        var(--canvas) 100%
+    );
     border-bottom: 1px solid rgba(69 101 130 / 0.18);
     display: flex;
-    gap: 0.75rem;
+    flex: 0 0 auto;
+    gap: 0.9rem;
     justify-content: space-between;
-    padding: 0.7rem 0.9rem;
+    padding: 1.1rem 1.4rem;
 }
 
-.concept-lesson-head strong {
-    font-size: 1.05rem;
+.concept-lesson-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
 }
 
-.concept-lesson-head button {
-    background: transparent;
-    border: 0;
-    color: inherit;
-    cursor: pointer;
-    font-size: 1rem;
-}
-
-.concept-lesson-section {
+.concept-lesson-eyebrow {
     color: var(--concept-secondary-text);
-    font-size: 0.72rem;
-    letter-spacing: 0.03em;
-    padding: 0.4rem 0.9rem 0;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
     text-transform: uppercase;
 }
 
+.concept-lesson-head strong {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+}
+
+.concept-lesson-chip {
+    align-self: center;
+    background: color-mix(in srgb, var(--canvas) 78%, #4f74d6);
+    border-radius: 999px;
+    color: var(--fg);
+    flex: 0 0 auto;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    margin-left: auto;
+    padding: 0.28rem 0.7rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.concept-lesson-close {
+    background: transparent;
+    border: 0;
+    border-radius: 0.4rem;
+    color: var(--concept-secondary-text);
+    cursor: pointer;
+    flex: 0 0 auto;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0.35rem 0.5rem;
+}
+
+.concept-lesson-close:hover {
+    background: color-mix(in srgb, var(--canvas) 82%, #e0555f);
+    color: var(--fg);
+}
+
 .concept-lesson-body {
+    flex: 1 1 auto;
+    margin: 0 auto;
+    max-width: 68ch;
     overflow-y: auto;
-    padding: 0.4rem 0.9rem 0.9rem;
+    padding: 1.3rem 1.6rem 2rem;
+    width: 100%;
+}
+
+/* Common misconception — distinct serif/italic, warm highlight, near the top. */
+.concept-lesson-misconception {
+    background: color-mix(in srgb, var(--canvas) 84%, #dda032);
+    border-left: 4px solid #d98a1f;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem 0.95rem;
+}
+
+.concept-lesson-misconception-label {
+    color: #a3630a;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.2rem;
+    text-transform: uppercase;
+}
+
+.concept-lesson-misconception-body {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    display: -webkit-box;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.02rem;
+    font-style: italic;
+    line-height: 1.45;
+    overflow: hidden;
 }
 
 .concept-lesson-sec {
-    margin-top: 0.7rem;
+    margin-top: 1.25rem;
 }
 
 .concept-lesson-sec-h {
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-bottom: 0.15rem;
+    align-items: center;
+    color: var(--concept-secondary-text);
+    display: flex;
+    font-size: 0.7rem;
+    font-weight: 700;
+    gap: 0.4rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+}
+
+.concept-lesson-sec-h::before {
+    background: #4f74d6;
+    border-radius: 999px;
+    content: "";
+    height: 0.8rem;
+    width: 0.2rem;
 }
 
 .concept-lesson-sec-b {
-    line-height: 1.5;
+    font-size: 1.02rem;
+    line-height: 1.6;
+}
+
+.concept-lesson-sec.muted .concept-lesson-sec-b {
+    color: var(--concept-secondary-text);
+    font-size: 0.92rem;
+}
+
+.concept-lesson-sec-b.clamp3 {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    display: -webkit-box;
+    overflow: hidden;
+}
+
+.concept-lesson-more {
+    color: var(--concept-secondary-text);
+    font-size: 0.8rem;
+    font-style: italic;
+    margin-top: 0.35rem;
 }
 
 .concept-lesson-figure {
+    align-items: center;
     background: #fff;
     border: 1px solid rgba(69 101 130 / 0.18);
-    border-radius: 0.4rem;
-    margin-top: 0.3rem;
-    padding: 0.5rem;
+    border-radius: 0.6rem;
+    display: flex;
+    justify-content: center;
+    margin-top: 0.4rem;
+    max-height: 44vh;
+    min-height: 12rem;
+    overflow: auto;
+    padding: 1rem;
 }
 
 .concept-lesson-figure svg {
@@ -704,40 +1040,49 @@ pre {
 
 .concept-lesson-figcaption {
     color: var(--concept-secondary-text);
-    font-size: 0.8rem;
-    margin-top: 0.25rem;
+    font-size: 0.82rem;
+    margin-top: 0.4rem;
+    text-align: center;
 }
 
 .concept-lesson-body ul {
     margin: 0.15rem 0 0;
-    padding-left: 1.1rem;
+    padding-left: 1.2rem;
 }
 
 .concept-lesson-body li {
+    font-size: 1.02rem;
+    line-height: 1.55;
+    margin-bottom: 0.3rem;
+}
+
+/* Try it — retrieval prompt as a call-to-action footer. */
+.concept-lesson-tryit {
+    background: color-mix(in srgb, var(--canvas) 86%, #3fae6e);
+    border: 1px solid color-mix(in srgb, var(--canvas) 62%, #3fae6e);
+    border-radius: 0.6rem;
+    margin-top: 1.6rem;
+    padding: 0.85rem 1rem;
+}
+
+.concept-lesson-tryit-label {
+    color: #1f8a55;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+}
+
+.concept-lesson-tryit-body {
+    font-size: 1.02rem;
     line-height: 1.5;
-    margin-bottom: 0.15rem;
 }
 
-.concept-lesson-actions {
-    border-top: 1px solid rgba(69 101 130 / 0.18);
-    display: flex;
-    justify-content: flex-end;
-    padding: 0.7rem 0.9rem;
-}
-
-.concept-lesson-start {
-    background: #3fae6e;
-    border: 0;
-    border-radius: 0.4rem;
-    color: #fff;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600;
-    padding: 0.45rem 1rem;
-}
-
-.concept-lesson-start:hover {
-    background: #369a60;
+@media (prefers-reduced-motion: reduce) {
+    .concept-lesson-card {
+        transition: none;
+    }
 }
 
 .nightMode {
@@ -757,8 +1102,17 @@ pre {
         border-color: rgba(143 184 154 / 0.28);
     }
 
-    .concept-sidebar-graph svg line {
-        stroke: color-mix(in srgb, var(--concept-muted-text) 70%, transparent);
+    .concept-sidebar-graph svg path {
+        stroke: color-mix(in srgb, var(--concept-muted-text) 65%, transparent);
+    }
+
+    .concept-sidebar-graph svg path.hot {
+        stroke: color-mix(in srgb, var(--concept-muted-text) 95%, transparent);
+    }
+
+    // A slightly brighter track so the mastery arc reads on the dark canvas.
+    .concept-sidebar-arc {
+        --track: color-mix(in srgb, var(--fg) 22%, transparent);
     }
 
     .concept-sidebar-node-label {
@@ -773,13 +1127,13 @@ pre {
         color: var(--concept-muted-text);
     }
 
-    .concept-sidebar-dot {
-        background: var(--fg);
-        box-shadow: 0 0 0 1px var(--canvas);
-    }
-
     .concept-sidebar-row.locked {
         border-left-color: var(--fg);
+    }
+
+    .concept-sidebar-node-detail {
+        background: color-mix(in srgb, var(--canvas) 92%, #456582);
+        border-color: rgba(143 184 154 / 0.28);
     }
 }
 
@@ -846,4 +1200,482 @@ button {
 }
 .nightMode img.drawing {
     filter: string.unquote("invert(1) hue-rotate(180deg)");
+}
+
+/* ======================================================================== *
+ * MCAT premium polish — cohesive with the deck-browser Readiness Dashboard. *
+ * Appended last so it layers over the base reviewer + inline quiz styles.    *
+ * ======================================================================== */
+
+/* --- concept graph sidebar: softer container + neutral score panel --- */
+#_concept_graph_sidebar {
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-md);
+    box-shadow: var(--mc-shadow-lg);
+}
+.concept-sidebar-header strong {
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+.concept-sidebar-scores {
+    background: var(--mc-surface-2);
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-md);
+    padding: 0.55rem;
+}
+/* Projected total = the headline estimate; make it a mini "hero". */
+.concept-sidebar-projection {
+    align-items: baseline;
+    background: linear-gradient(135deg, var(--mc-brand-soft), transparent);
+    border: 1px solid var(--mc-border);
+    border-bottom: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-sm);
+    margin-bottom: 0.35rem;
+    padding: 0.5rem 0.6rem;
+}
+.concept-sidebar-projection-score {
+    color: var(--mc-brand);
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+.concept-sidebar-daily-fill {
+    background: var(--mc-brand);
+}
+
+/* --- "pick your next topic" call-to-action --- */
+.concept-next-topics {
+    background: linear-gradient(135deg, var(--mc-brand-soft), transparent);
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-md);
+    padding: 0.6rem;
+}
+.concept-next-btn {
+    border: 1px solid var(--mc-border-strong);
+    border-radius: var(--mc-r-sm);
+    background: var(--mc-surface);
+    transition:
+        border-color 0.12s ease,
+        transform 0.06s ease;
+}
+.concept-next-btn:hover {
+    border-color: var(--mc-brand);
+    transform: translateY(-1px);
+}
+.concept-next-btn.rec {
+    border-color: var(--mc-good);
+}
+
+/* --- concept lesson panel: a premium near-fullscreen walkthrough --- */
+#_concept_lesson_panel {
+    background: rgba(9, 12, 20, 0.6);
+    backdrop-filter: blur(3px);
+}
+.concept-lesson-card {
+    background: var(--mc-surface);
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-lg);
+    box-shadow: var(--mc-shadow-lg);
+    /* Fill the screen — a real teaching moment, not a small popup. */
+    height: min(94vh, calc(100vh - 2rem));
+    max-height: none;
+    max-width: none;
+    width: min(94vw, 68rem);
+}
+.concept-lesson-head {
+    background: linear-gradient(180deg, var(--mc-brand-soft), transparent);
+    border-bottom: 1px solid var(--mc-border);
+    padding: 1.1rem 1.5rem;
+}
+.concept-lesson-eyebrow {
+    color: var(--mc-brand);
+    font-weight: 800;
+}
+.concept-lesson-head strong {
+    color: var(--mc-text);
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+}
+.concept-lesson-chip {
+    background: var(--mc-brand-soft);
+    color: var(--mc-brand);
+}
+.concept-lesson-close {
+    align-items: center;
+    border-radius: var(--mc-r-pill);
+    color: var(--mc-text-faint);
+    display: inline-flex;
+    height: 1.9rem;
+    justify-content: center;
+    width: 1.9rem;
+}
+.concept-lesson-close:hover {
+    background: var(--mc-surface-2);
+    color: var(--mc-text);
+}
+.concept-lesson-body {
+    color: var(--mc-text);
+    margin: 0 auto;
+    max-width: 68ch;
+    padding: 1.4rem 1.7rem 2.2rem;
+    width: 100%;
+}
+/* Misconception — warm translucent tint (mode-agnostic), serif italic, top. */
+.concept-lesson-misconception {
+    background: rgba(221 160 50 / 0.15);
+    border-left: 4px solid #d98a1f;
+    border-radius: var(--mc-r-md);
+}
+.concept-lesson-misconception-label {
+    color: #cf9126;
+}
+.concept-lesson-misconception-body {
+    color: var(--mc-text);
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+}
+.concept-lesson-sec-h {
+    color: var(--mc-text-muted);
+}
+.concept-lesson-sec-h::before {
+    background: var(--mc-brand);
+    height: 0.85rem;
+    width: 0.22rem;
+}
+.concept-lesson-sec-b {
+    color: var(--mc-text-muted);
+    line-height: 1.6;
+}
+.concept-lesson-sec.muted .concept-lesson-sec-b {
+    color: var(--mc-text-faint);
+}
+.concept-lesson-more {
+    color: var(--mc-text-faint);
+}
+.concept-lesson-figure {
+    background: #f5f7fc;
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-md);
+}
+.concept-lesson-figcaption {
+    color: var(--mc-text-faint);
+}
+.concept-lesson-body ul {
+    padding-left: 1.2rem;
+}
+.concept-lesson-body li {
+    color: var(--mc-text-muted);
+}
+/* Try it — retrieval prompt CTA, green translucent tint. */
+.concept-lesson-tryit {
+    background: rgba(63 174 110 / 0.14);
+    border: 1px solid rgba(63 174 110 / 0.34);
+    border-radius: var(--mc-r-md);
+}
+.concept-lesson-tryit-label {
+    color: #2e9e63;
+}
+.concept-lesson-tryit-body {
+    color: var(--mc-text);
+}
+
+/* --- MCAT multiple-choice quiz: re-skinned with the brand palette. Scoped
+   under body.mcat-quiz-active so these win over the inline quiz styles. --- */
+body.mcat-quiz-active {
+    .mcat-quiz-kc {
+        background: var(--mc-brand-soft);
+        border-radius: var(--mc-r-pill);
+        color: var(--mc-brand);
+        font-weight: 700;
+        padding: 0.2rem 0.7rem;
+    }
+
+    .mcat-quiz-question {
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .mcat-quiz-choice {
+        background: var(--mc-surface);
+        border: 1.5px solid var(--mc-border-strong);
+        border-radius: var(--mc-r-md);
+        box-shadow: var(--mc-shadow-sm);
+        transition:
+            border-color 0.12s ease,
+            background 0.12s ease,
+            transform 0.05s ease;
+    }
+    .mcat-quiz-choice:hover:not(:disabled) {
+        background: var(--mc-surface-2);
+        border-color: var(--mc-brand);
+    }
+    .mcat-quiz-letter {
+        background: var(--mc-brand-soft);
+        color: var(--mc-brand);
+        font-weight: 700;
+    }
+    .mcat-quiz-choice.correct {
+        background: color-mix(in srgb, var(--mc-good) 12%, var(--mc-surface));
+        border-color: var(--mc-good);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--mc-good) 28%, transparent);
+    }
+    .mcat-quiz-choice.correct .mcat-quiz-letter {
+        background: var(--mc-good);
+        color: #fff;
+    }
+    .mcat-quiz-choice.wrong {
+        background: color-mix(in srgb, var(--mc-bad) 12%, var(--mc-surface));
+        border-color: var(--mc-bad);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--mc-bad) 28%, transparent);
+    }
+    .mcat-quiz-choice.wrong .mcat-quiz-letter {
+        background: var(--mc-bad);
+        color: #fff;
+    }
+
+    .mcat-quiz-verdict.correct {
+        color: var(--mc-good);
+    }
+    .mcat-quiz-verdict.wrong {
+        color: var(--mc-bad);
+    }
+    .mcat-quiz-explanation {
+        background: var(--mc-surface-2);
+        border: 1px solid var(--mc-border);
+        border-radius: var(--mc-r-md);
+    }
+
+    .mcat-quiz-continue {
+        background: linear-gradient(135deg, var(--mc-brand), var(--mc-brand-strong));
+        border-radius: var(--mc-r-pill);
+        box-shadow: 0 6px 16px var(--mc-brand-soft);
+        transition: filter 0.12s ease;
+    }
+    .mcat-quiz-continue:hover {
+        background: linear-gradient(135deg, var(--mc-brand), var(--mc-brand-strong));
+        filter: brightness(1.06);
+    }
+    .mcat-quiz-rate {
+        background: var(--mc-surface);
+        border: 1.5px solid var(--mc-border-strong);
+        border-radius: var(--mc-r-md);
+    }
+    .mcat-quiz-rate:hover {
+        border-color: var(--mc-brand);
+    }
+    .mcat-quiz-rate.ease1:hover {
+        border-color: var(--mc-bad);
+        color: var(--mc-bad);
+    }
+    .mcat-quiz-rate.ease4:hover {
+        border-color: var(--mc-good);
+        color: var(--mc-good);
+    }
+
+    .mcat-quiz-ask,
+    .mcat-quiz-lesson,
+    .mcat-quiz-reword {
+        border: 1px solid var(--mc-border-strong);
+        border-radius: var(--mc-r-pill);
+        color: var(--mc-brand);
+        transition:
+            border-color 0.12s ease,
+            background 0.12s ease;
+    }
+    .mcat-quiz-ask:hover,
+    .mcat-quiz-lesson:hover,
+    .mcat-quiz-reword:hover:not(:disabled) {
+        background: var(--mc-brand-soft);
+        border-color: var(--mc-brand);
+    }
+}
+
+/* --- Periodic table: chemistry-card reference button + popup --- */
+.mcat-quiz-ptable {
+    background: color-mix(in srgb, var(--canvas, #fff) 88%, #4f74d6);
+    border: 1px solid color-mix(in srgb, var(--canvas, #fff) 55%, #4f74d6);
+    border-radius: 999px;
+    color: inherit;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin: 0 0 0.9rem;
+    padding: 0.32rem 0.75rem;
+    transition:
+        background 0.12s ease,
+        border-color 0.12s ease;
+}
+.mcat-quiz-ptable:hover {
+    background: color-mix(in srgb, var(--canvas, #fff) 76%, #4f74d6);
+    border-color: #4f74d6;
+}
+
+#_periodic_table_panel {
+    align-items: center;
+    background: rgba(9 12 20 / 0.6);
+    backdrop-filter: blur(3px);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 1rem;
+    position: fixed;
+    z-index: 101;
+}
+#_periodic_table_panel[hidden] {
+    display: none;
+}
+.pt-card {
+    background: var(--mc-surface, var(--canvas, #fff));
+    border: 1px solid var(--mc-border, rgba(69 101 130 / 0.22));
+    border-radius: var(--mc-r-lg, 0.9rem);
+    box-shadow: var(--mc-shadow-lg, 0 1.5rem 4rem rgba(0 0 0 / 0.45));
+    color: var(--mc-text, var(--fg));
+    display: flex;
+    flex-direction: column;
+    max-height: min(94vh, calc(100vh - 2rem));
+    opacity: 0;
+    overflow: hidden;
+    transform: scale(0.97) translateY(6px);
+    transition:
+        opacity 0.18s ease,
+        transform 0.22s cubic-bezier(0.2, 0, 0, 1);
+    width: min(96vw, 60rem);
+}
+.pt-card.in {
+    opacity: 1;
+    transform: none;
+}
+.pt-head {
+    align-items: flex-start;
+    border-bottom: 1px solid var(--mc-border, rgba(69 101 130 / 0.18));
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 1.3rem;
+}
+.pt-eyebrow {
+    color: var(--mc-brand, #4f74d6);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+.pt-head strong {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+}
+.pt-close {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: var(--mc-r-pill, 999px);
+    color: var(--mc-text-faint, var(--concept-secondary-text));
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 1.1rem;
+    height: 1.9rem;
+    justify-content: center;
+    width: 1.9rem;
+}
+.pt-close:hover {
+    background: var(--mc-surface-2, rgba(0 0 0 / 0.08));
+    color: var(--mc-text, var(--fg));
+}
+.pt-scroll {
+    overflow: auto;
+    padding: 1rem 1.3rem;
+}
+.pt-grid {
+    display: grid;
+    gap: 0.2rem;
+    grid-auto-rows: 2.6rem;
+    grid-template-columns: repeat(18, minmax(2.2rem, 1fr));
+    min-width: 42rem;
+}
+.pt-el {
+    align-items: center;
+    border-radius: 0.28rem;
+    color: #10202e;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.05;
+    padding: 0.12rem 0;
+}
+.pt-num {
+    font-size: 0.5rem;
+    opacity: 0.75;
+}
+.pt-sym {
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+.pt-fmark {
+    align-items: center;
+    border: 1px dashed var(--mc-border, rgba(69 101 130 / 0.4));
+    color: var(--mc-text-faint, var(--concept-secondary-text));
+    font-size: 0.6rem;
+    justify-content: center;
+}
+.pt-legend {
+    border-top: 1px solid var(--mc-border, rgba(69 101 130 / 0.18));
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.9rem;
+    padding: 0.7rem 1.3rem 1rem;
+}
+.pt-legend-item {
+    align-items: center;
+    color: var(--mc-text-muted, var(--concept-secondary-text));
+    display: inline-flex;
+    font-size: 0.72rem;
+    gap: 0.3rem;
+}
+.pt-legend-item i {
+    border-radius: 0.2rem;
+    display: inline-block;
+    height: 0.7rem;
+    width: 0.7rem;
+}
+.pt-alkali {
+    background: #f7cf6b;
+}
+.pt-alkaline {
+    background: #f4e694;
+}
+.pt-transition {
+    background: #f2b8c6;
+}
+.pt-post {
+    background: #bcd6cb;
+}
+.pt-metalloid {
+    background: #9fd0c9;
+}
+.pt-nonmetal {
+    background: #a8d8a8;
+}
+.pt-halogen {
+    background: #a7d3ef;
+}
+.pt-noble {
+    background: #cbb6e6;
+}
+.pt-lanth {
+    background: #f0b79a;
+}
+.pt-actin {
+    background: #eaa0b0;
+}
+.pt-unknown {
+    background: #d3d7dd;
+}
+@media (prefers-reduced-motion: reduce) {
+    .pt-card {
+        transition: none;
+    }
 }

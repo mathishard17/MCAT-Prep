@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="500" viewBox="0 0 660 500" font-family="Helvetica,Arial,sans-serif">
+<rect x="0" y="0" width="660" height="500" fill="#ffffff"/>
+<text x="330" y="28" text-anchor="middle" font-size="18" font-weight="bold" fill="#111827">Performance vs baselines</text>
+<text x="330" y="48" text-anchor="middle" font-size="12" fill="#6b7280">SYNTHETIC held-out attempts (n=1560) -- accuracy / AUC / Brier</text>
+<line x1="60" y1="430.0" x2="630" y2="430.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="433.0" text-anchor="end" font-size="10" fill="#6b7280">0.0</text>
+<line x1="60" y1="360.0" x2="630" y2="360.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="363.0" text-anchor="end" font-size="10" fill="#6b7280">0.2</text>
+<line x1="60" y1="290.0" x2="630" y2="290.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="293.0" text-anchor="end" font-size="10" fill="#6b7280">0.4</text>
+<line x1="60" y1="220.0" x2="630" y2="220.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="223.0" text-anchor="end" font-size="10" fill="#6b7280">0.6</text>
+<line x1="60" y1="150.0" x2="630" y2="150.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="153.0" text-anchor="end" font-size="10" fill="#6b7280">0.8</text>
+<line x1="60" y1="80.0" x2="630" y2="80.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="52" y="83.0" text-anchor="end" font-size="10" fill="#6b7280">1.0</text>
+<line x1="60" y1="185.0" x2="630" y2="185.0" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="5,4"/>
+<text x="626" y="181.0" text-anchor="end" font-size="10" fill="#dc2626">accuracy cutoff 0.70</text>
+<rect x="88.5" y="180.7" width="41.3" height="249.3" fill="#2563eb"/>
+<text x="109.2" y="176.7" text-anchor="middle" font-size="9" fill="#374151">0.712</text>
+<rect x="132.8" y="214.8" width="41.3" height="215.2" fill="#d97706"/>
+<text x="153.5" y="210.8" text-anchor="middle" font-size="9" fill="#374151">0.615</text>
+<rect x="177.2" y="229.6" width="41.3" height="200.4" fill="#9ca3af"/>
+<text x="197.8" y="225.6" text-anchor="middle" font-size="9" fill="#374151">0.572</text>
+<text x="155.0" y="448" text-anchor="middle" font-size="11" fill="#374151">Accuracy</text>
+<rect x="278.5" y="161.0" width="41.3" height="269.0" fill="#2563eb"/>
+<text x="299.2" y="157.0" text-anchor="middle" font-size="9" fill="#374151">0.769</text>
+<rect x="322.8" y="198.9" width="41.3" height="231.1" fill="#d97706"/>
+<text x="343.5" y="194.9" text-anchor="middle" font-size="9" fill="#374151">0.660</text>
+<rect x="367.2" y="255.0" width="41.3" height="175.0" fill="#9ca3af"/>
+<text x="387.8" y="251.0" text-anchor="middle" font-size="9" fill="#374151">0.500</text>
+<text x="345.0" y="448" text-anchor="middle" font-size="11" fill="#374151">AUC</text>
+<rect x="468.5" y="361.5" width="41.3" height="68.5" fill="#2563eb"/>
+<text x="489.2" y="357.5" text-anchor="middle" font-size="9" fill="#374151">0.196</text>
+<rect x="512.8" y="348.3" width="41.3" height="81.7" fill="#d97706"/>
+<text x="533.5" y="344.3" text-anchor="middle" font-size="9" fill="#374151">0.233</text>
+<rect x="557.2" y="344.3" width="41.3" height="85.7" fill="#9ca3af"/>
+<text x="577.8" y="340.3" text-anchor="middle" font-size="9" fill="#374151">0.245</text>
+<text x="535.0" y="448" text-anchor="middle" font-size="11" fill="#374151">Brier (lower=better)</text>
+<rect x="66" y="81" width="12" height="12" fill="#2563eb"/>
+<text x="83" y="91" font-size="11" fill="#374151">IRT 3PL (ours)</text>
+<rect x="196" y="81" width="12" height="12" fill="#d97706"/>
+<text x="213" y="91" font-size="11" fill="#374151">Mastery-only</text>
+<rect x="326" y="81" width="12" height="12" fill="#9ca3af"/>
+<text x="343" y="91" font-size="11" fill="#374151">Majority</text>
+<text x="330" y="486" text-anchor="middle" font-size="12" fill="#111827">IRT 3PL beats both baselines; accuracy cutoff 0.70 met [PASS]</text>
+</svg>

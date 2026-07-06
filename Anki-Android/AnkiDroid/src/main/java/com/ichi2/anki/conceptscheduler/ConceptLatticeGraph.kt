@@ -16,11 +16,21 @@
 package com.ichi2.anki.conceptscheduler
 
 import android.graphics.Paint
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateCentroid
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -47,8 +57,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
@@ -63,10 +77,12 @@ import anki.scheduler.ConceptFringe
 import anki.scheduler.ConceptGraph
 import anki.scheduler.ConceptGraphEdge
 import anki.scheduler.ConceptGraphNode
+import anki.scheduler.McatSection
 import kotlinx.coroutines.launch
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 /**
@@ -99,25 +115,37 @@ private fun disciplineOf(id: String): String = id.substringBefore("::").ifEmpty 
 /** The lane a KC belongs to: its discipline if it's a known one, else the catch-all [LANE_OTHER]. */
 private fun laneOf(id: String): String = disciplineOf(id).let { if (it in DISCIPLINE_ORDER) it else LANE_OTHER }
 
-// MCAT super-section colors (fixed, theme-independent, matching the desktop reviewer) so a concept's
-// section identity reads the same everywhere: Bio/Biochem blue, Chem/Phys red, Psych/Soc green.
-internal val SectionBioBiochemColor = Color(0xFF4F74D6)
-internal val SectionChemPhysColor = Color(0xFFD65F5F)
-internal val SectionPsychSocColor = Color(0xFF5AA469)
-internal val SectionCarsColor = Color(0xFFC99A3A)
-internal val SectionOtherColor = Color(0xFF8A8A8A)
+/**
+ * The gold used to badge a backend-"recommended" (suggested next) topic — matches the desktop
+ * reviewer's `#f2c200` star so the affordance reads identically across platforms.
+ */
+internal val RecommendedStarColor = Color(0xFFF2C200)
 
-/** Bright green ring marking a "ready to start" (outer-fringe) topic — the frontier to pick from. */
-internal val FrontierRingColor = Color(0xFF34C759)
-
-/** Resolves the MCAT super-section color for a KC from its discipline prefix. */
-internal fun sectionColorOf(id: String): Color =
+/**
+ * Resolves the canonical MCAT super-section color for a KC from its discipline prefix, drawn from the
+ * shared [McatPalette] so the hue matches the desktop app and adapts to light/dark: Bio/Biochem blue,
+ * Chem/Phys red, Psych/Soc green, CARS amber.
+ */
+internal fun McatPalette.colorForKc(id: String): Color =
     when (disciplineOf(id)) {
-        "Bio", "Biochem" -> SectionBioBiochemColor
-        "GenChem", "Orgo", "Physics" -> SectionChemPhysColor
-        "PsychSoc" -> SectionPsychSocColor
-        "CARS" -> SectionCarsColor
-        else -> SectionOtherColor
+        "Bio", "Biochem" -> bio
+        "GenChem", "Orgo", "Physics" -> chem
+        "PsychSoc" -> psych
+        "CARS" -> cars
+        else -> other
+    }
+
+/**
+ * The canonical brand color for an MCAT [section], matching [colorForKc] so a section reads the same
+ * hue in the readiness cards, the lattice dots, and the legend.
+ */
+internal fun McatPalette.colorForSection(section: McatSection): Color =
+    when (section) {
+        McatSection.MCAT_SECTION_BIO_BIOCHEM -> bio
+        McatSection.MCAT_SECTION_CHEM_PHYS -> chem
+        McatSection.MCAT_SECTION_PSYCH_SOC -> psych
+        McatSection.MCAT_SECTION_CARS -> cars
+        else -> other
     }
 
 /**
@@ -204,10 +232,89 @@ private fun neighbourhoodIds(
     return ids.toList()
 }
 
+/**
+ * The startable frontier plus its immediate neighbours: every outer-fringe (ready-to-start) node and
+ * their direct prerequisites/dependents. Shown by default when there is no current/recommended focus,
+ * so the graph still opens on a small, meaningful slice rather than the whole map.
+ */
+private fun frontierNeighbourhood(
+    frontier: List<String>,
+    edges: List<ConceptGraphEdge>,
+): List<String> {
+    val ids = linkedSetOf<String>().apply { addAll(frontier) }
+    val frontierSet = frontier.toHashSet()
+    for (edge in edges) {
+        if (edge.targetId in frontierSet) ids.add(edge.prerequisiteId)
+        if (edge.prerequisiteId in frontierSet) ids.add(edge.targetId)
+    }
+    return ids.toList()
+}
+
+/** The de-dup key for a KC id: its leaf name, case/spacing-normalized (`GenChem::Atomic_Structure` -> `atomic structure`). */
+private fun conceptLeafKey(id: String): String = id.substringAfterLast("::").replace('_', ' ').trim().lowercase()
+
+/** The nearby node set + prerequisite edges to render, after neighbourhood selection and de-duplication. */
+private data class NearbySet(
+    val ids: List<String>,
+    val edges: List<Pair<String, String>>,
+)
+
+/**
+ * Builds the nearby neighbourhood to render and de-dupes concepts that share a leaf name across
+ * disciplines (e.g. GenChem vs Physics "atomic structure") into a single representative node, remapping
+ * edges onto it so the same label never appears twice. Uses [focusId]'s one-hop neighbourhood when a
+ * focus exists, else the startable frontier + neighbours, else a small capped slice (never the galaxy).
+ */
+private fun buildNearbySet(
+    nodes: List<ConceptGraphNode>,
+    edges: List<ConceptGraphEdge>,
+    focusId: String?,
+): NearbySet {
+    val byId = nodes.associateBy { it.id }
+    val neighbourhood: List<String> =
+        when {
+            focusId != null -> neighbourhoodIds(focusId, edges)
+            else -> {
+                val frontier = nodes.filter { it.fringe == ConceptFringe.CONCEPT_FRINGE_OUTER }.map { it.id }
+                if (frontier.isNotEmpty()) {
+                    frontierNeighbourhood(frontier, edges)
+                } else {
+                    nodes.map { it.id }.take(NO_FOCUS_FALLBACK_CAP)
+                }
+            }
+        }
+    // Prefer keeping the focus, then recommended nodes, then original order as the representative per leaf.
+    val priority =
+        buildList {
+            if (focusId != null && focusId in neighbourhood) add(focusId)
+            addAll(neighbourhood.filter { byId[it]?.recommended == true })
+            addAll(neighbourhood)
+        }.distinct()
+    val repByLeaf = HashMap<String, String>()
+    val canonical = HashMap<String, String>()
+    for (id in priority) {
+        canonical[id] = repByLeaf.getOrPut(conceptLeafKey(id)) { id }
+    }
+    val ids = neighbourhood.map { canonical.getValue(it) }.distinct()
+    val idSet = ids.toHashSet()
+    val remapped =
+        edges
+            .mapNotNull { e ->
+                val p = canonical[e.prerequisiteId] ?: return@mapNotNull null
+                val t = canonical[e.targetId] ?: return@mapNotNull null
+                if (p == t || p !in idSet || t !in idSet) null else p to t
+            }.distinct()
+    return NearbySet(ids, remapped)
+}
+
 /** Theme colors captured from the call site (a [DrawScope] can't read MaterialTheme directly). */
 data class LatticeColors(
     val edge: Color,
+    // Accent used to "trace" the edges of the selected node so its path pops out of the map.
+    val edgeStrong: Color,
     val label: Color,
+    // Chip background behind a floating node label, so it stays legible over edges in light AND dark.
+    val labelBg: Color,
     val selectedRing: Color,
     val recommended: Color,
     val frontier: Color,
@@ -219,15 +326,23 @@ private const val ROW_H_DP = 46f
 private const val PAD_DP = 18f
 
 /** Extra room on the right so a node's floating label isn't clipped at the canvas edge. */
-private const val LABEL_PAD_DP = 96f
+private const val LABEL_PAD_DP = 84f
 private const val NODE_RADIUS_DP = 8f
-private const val GRAPH_HEIGHT_DP = 360f
+
+/** Shorter than the old full-map view: the nearby neighbourhood is a handful of nodes we fit + center. */
+private const val GRAPH_HEIGHT_DP = 300f
 
 private const val MIN_ZOOM = 0.3f
-private const val MAX_ZOOM = 2.4f
+private const val MAX_ZOOM = 3.0f
 
-/** Below this zoom the map is an overview, so labels are hidden to keep it uncluttered. */
-private const val LABEL_ZOOM = 0.8f
+/** Defensive cap for the rare "no focus and no startable frontier" case, so we never draw the whole galaxy. */
+private const val NO_FOCUS_FALLBACK_CAP = 12
+
+/** Eased duration for a button (+/−) zoom step; the paired scroll animates over the same span. */
+private const val ZOOM_ANIM_MS = 300
+
+/** Slightly longer eased duration for the "Fit"/open reframe so the whole map settles gently. */
+private const val FIT_ANIM_MS = 440
 
 /**
  * Computes the zoom that fits the whole [cols] x [rows] grid inside [viewport] (bounded by
@@ -253,14 +368,15 @@ private fun fitZoomFor(
 /**
  * Renders the concept knowledge lattice as a legible, tap-to-select graph.
  *
- * Nodes are laid out by prerequisite depth into discipline lanes (via [computeLatticeLayout]) and
- * drawn on a large canvas sized `units * step * zoom` that lives inside a both-axes scrollable box,
- * so the ~170-KC MCAT map can be panned and zoomed instead of being crammed into a fixed area.
- * By default only the focused neighbourhood (a selected/recommended KC plus its direct prerequisites
- * and dependents) is shown; a toggle reveals the full map. Dots are colored by MCAT super-section
- * and sized by how many concepts build on them ("lynchpin" importance); labels appear only when
- * zoomed in far enough to read them. Tapping a node reports it via [onNodeSelected] (and, in the
- * focused view, re-centers the neighbourhood on it), preserving the caller's detail card.
+ * Always shows the nearby neighbourhood (mirroring the desktop reviewer sidebar): the selected /
+ * recommended KC plus its direct prerequisites and dependents, or — when there is no focus — the
+ * startable frontier and its neighbours (never the whole galaxy). Nodes are laid out by prerequisite
+ * depth into discipline lanes (via [computeLatticeLayout]) and the small set is fit + centered to fill
+ * the (shorter) box. Concepts sharing a leaf name across disciplines are de-duped to one node. Dots
+ * are colored by MCAT super-section and sized by how many concepts build on them ("lynchpin"
+ * importance); labels are always drawn so the neighbourhood stays readable, and the current /
+ * recommended node glows strongly. Tapping a node reports it via [onNodeSelected] (and re-centers the
+ * neighbourhood on it), driving the caller's themed detail card.
  */
 @Composable
 fun ConceptLatticeGraph(
@@ -272,10 +388,27 @@ fun ConceptLatticeGraph(
 ) {
     val nodes = graph.nodesList
     val edges = graph.edgesList
-    if (nodes.isEmpty()) return
+    val palette = rememberMcatPalette()
+    if (nodes.isEmpty()) {
+        // Graceful empty state: keep the framed area so the card doesn't collapse to nothing.
+        Box(
+            modifier
+                .fillMaxWidth()
+                .height(GRAPH_HEIGHT_DP.dp)
+                .background(colors.background, RoundedCornerShape(8.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                "No concepts to display yet.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.label,
+            )
+        }
+        return
+    }
 
     // "Lynchpin" importance: how many other KCs list this one as a prerequisite (global, so a node's
-    // size reads the same in the focused and full views).
+    // size reads the same regardless of which neighbourhood is shown).
     val dependents =
         remember(edges) {
             val counts = HashMap<String, Int>()
@@ -285,37 +418,29 @@ fun ConceptLatticeGraph(
     val maxDependents = remember(dependents) { (dependents.values.maxOrNull() ?: 0).coerceAtLeast(1) }
 
     // Default focus: the tapped node, else a recommended/startable one, so the graph opens on a clean
-    // neighbourhood rather than the whole galaxy. Null only when there's nothing sensible to center.
+    // neighbourhood. When there is no focus at all we fall back to the startable frontier + neighbours.
     val recommendedId =
         remember(nodes) {
             nodes.firstOrNull { it.recommended }?.id
                 ?: nodes.firstOrNull { it.fringe == ConceptFringe.CONCEPT_FRINGE_OUTER }?.id
         }
     val focusId = selectedNodeId ?: recommendedId
-    var showFullMap by remember { mutableStateOf(false) }
-    val fullMap = showFullMap || focusId == null
 
-    // Keep the shown set stable in full-map mode so tapping a node (which changes the focus) doesn't
-    // needlessly rebuild the layout and re-fit the view. `neighbourhoodKey` is null exactly when we
-    // show the whole map, so it doubles as the layout-rebuild key.
-    val neighbourhoodKey = if (fullMap) null else focusId
-    val shownIds =
-        remember(graph, neighbourhoodKey) {
-            if (neighbourhoodKey == null) nodes.map { it.id } else neighbourhoodIds(neighbourhoodKey, edges)
+    // Always show the nearby neighbourhood, de-duped so a concept shared across disciplines appears once.
+    val shown =
+        remember(graph, focusId) {
+            buildNearbySet(nodes, edges, focusId)
         }
+    val shownIds = shown.ids
+    val shownEdges = shown.edges
     val shownNodes =
         remember(graph, shownIds) {
             val set = shownIds.toHashSet()
             nodes.filter { it.id in set }
         }
-    val shownEdges =
-        remember(graph, shownIds) {
-            val set = shownIds.toHashSet()
-            edges.filter { it.prerequisiteId in set && it.targetId in set }
-        }
     val layout =
         remember(shownIds, shownEdges) {
-            computeLatticeLayout(shownIds, shownEdges.map { it.prerequisiteId to it.targetId })
+            computeLatticeLayout(shownIds, shownEdges)
         }
 
     val density = LocalDensity.current
@@ -324,29 +449,63 @@ fun ConceptLatticeGraph(
     val padPx = with(density) { PAD_DP.dp.toPx() }
     val labelPadPx = with(density) { LABEL_PAD_DP.dp.toPx() }
     val baseRadiusPx = with(density) { NODE_RADIUS_DP.dp.toPx() }
+    // Draw margin (one un-zoomed column) so a partly off-screen node/edge near the viewport still paints.
+    val cullMarginPx = stepXpx
 
-    var zoom by remember { mutableStateOf(1f) }
+    // Zoom is animated so button/fit reframes glide and pinch tracks the fingers; reading `.value`
+    // recomputes positions each frame (cheap for <=172 nodes). Pan + fling come from the scroll box.
+    val zoomAnim = remember { Animatable(1f) }
+    val zoom = zoomAnim.value
     var viewport by remember { mutableStateOf(IntSize.Zero) }
     val hScroll = rememberScrollState()
     val vScroll = rememberScrollState()
     val scope = rememberCoroutineScope()
 
-    // Frame the shown set when it (or the viewport) changes: fit it to the box and reset scroll to the
-    // origin. Manual zoom (+/-) doesn't retrigger this, so the learner stays where they panned to.
+    // A gentle infinite pulse for the suggested-next halo (read only inside the draw so it repaints
+    // just the canvas), mirroring the desktop reviewer's pulsing "recommended" glow.
+    val pulse by rememberInfiniteTransition(label = "recommendedPulse").animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(animation = tween(1300), repeatMode = RepeatMode.Reverse),
+        label = "recommendedPulse",
+    )
+
+    // Tap ripple: the pressed node id plus a 0..1 expand/fade progress, for Material press feedback.
+    var pressedNodeId by remember { mutableStateOf<String?>(null) }
+    val pressAnim = remember { Animatable(1f) }
+
+    // Frame the shown set when it (or the viewport) changes: ease the zoom to fill the box (reserving
+    // only a little label room so a handful of nodes read large) and reset scroll to the origin. Manual
+    // zoom (+/−/pinch) doesn't retrigger this, so the learner stays where they were.
     LaunchedEffect(layout, viewport) {
         if (viewport != IntSize.Zero) {
-            zoom = fitZoomFor(layout.cols, layout.rows, viewport, stepXpx, stepYpx, padPx, labelPadPx)
+            val fit = fitZoomFor(layout.cols, layout.rows, viewport, stepXpx, stepYpx, padPx, labelPadPx * 0.5f)
             hScroll.scrollTo(0)
             vScroll.scrollTo(0)
+            zoomAnim.animateTo(fit, tween(FIT_ANIM_MS, easing = FastOutSlowInEasing))
         }
     }
+
+    // Content extent at the current zoom, plus the room labels/dots need on the right and bottom. Grow
+    // the canvas to at least the viewport and center the (usually small) neighbourhood inside it, so a
+    // few nodes fill the box with no dead space instead of clinging to the top-left corner.
+    val contentWpx = max(layout.cols - 1, 0) * stepXpx * zoom + labelPadPx
+    val contentHpx = max(layout.rows - 1, 0) * stepYpx * zoom + stepYpx
+    val boundedWpx = padPx * 2 + contentWpx
+    val boundedHpx = padPx * 2 + contentHpx
+    val canvasWpx = max(boundedWpx, viewport.width.toFloat())
+    val canvasHpx = max(boundedHpx, viewport.height.toFloat())
+    val offsetXpx = ((canvasWpx - boundedWpx) / 2f).coerceAtLeast(0f)
+    val offsetYpx = ((canvasHpx - boundedHpx) / 2f).coerceAtLeast(0f)
+    val canvasWdp = with(density) { canvasWpx.toDp() }
+    val canvasHdp = with(density) { canvasHpx.toDp() }
 
     // Untransformed pixel centers for the current zoom; dot/label size stays constant so nodes remain
     // legible and tappable at any zoom (only the spacing between them grows/shrinks).
     val positions =
-        remember(layout, zoom, stepXpx, stepYpx, padPx) {
+        remember(layout, zoom, stepXpx, stepYpx, padPx, offsetXpx, offsetYpx) {
             layout.positions.mapValues { (_, pos) ->
-                Offset(padPx + pos.col * stepXpx * zoom, padPx + pos.row * stepYpx * zoom)
+                Offset(padPx + offsetXpx + pos.col * stepXpx * zoom, padPx + offsetYpx + pos.row * stepYpx * zoom)
             }
         }
 
@@ -355,34 +514,54 @@ fun ConceptLatticeGraph(
         return baseRadiusPx * (0.8f + 0.7f * sqrt(dep.toFloat() / maxDependents))
     }
 
-    val canvasWpx = padPx * 2 + max(layout.cols - 1, 0) * stepXpx * zoom + labelPadPx
-    val canvasHpx = padPx * 2 + max(layout.rows - 1, 0) * stepYpx * zoom + stepYpx
-    val canvasWdp = with(density) { canvasWpx.toDp() }
-    val canvasHdp = with(density) { canvasHpx.toDp() }
     val tapSlopPx = with(density) { 12.dp.toPx() }
+
+    // Nearest node to a tap/press within its (importance-scaled) radius plus a small slop, else null.
+    fun nodeAt(point: Offset): String? =
+        positions.entries
+            .minByOrNull { hypot(it.value.x - point.x, it.value.y - point.y) }
+            ?.takeIf { hypot(it.value.x - point.x, it.value.y - point.y) <= radiusOf(it.key) + tapSlopPx }
+            ?.key
+
+    // Anchor a zoom change so the canvas point under [anchorX]/[anchorY] stays put, then ease the zoom
+    // and its paired scroll over the same span so the anchor holds across the whole animation.
+    fun zoomToAnimated(
+        target: Float,
+        anchorX: Float,
+        anchorY: Float,
+    ) {
+        val start = zoomAnim.value
+        if (start <= 0f) return
+        val clamped = target.coerceIn(MIN_ZOOM, MAX_ZOOM)
+        val ratio = clamped / start
+        val targetH = (hScroll.value + (anchorX - padPx) * (ratio - 1f)).roundToInt().coerceAtLeast(0)
+        val targetV = (vScroll.value + (anchorY - padPx) * (ratio - 1f)).roundToInt().coerceAtLeast(0)
+        scope.launch { zoomAnim.animateTo(clamped, tween(ZOOM_ANIM_MS, easing = FastOutSlowInEasing)) }
+        scope.launch { hScroll.animateScrollTo(targetH, tween(ZOOM_ANIM_MS, easing = FastOutSlowInEasing)) }
+        scope.launch { vScroll.animateScrollTo(targetV, tween(ZOOM_ANIM_MS, easing = FastOutSlowInEasing)) }
+    }
 
     Column(modifier.fillMaxWidth()) {
         val readyCount = shownNodes.count { it.fringe == ConceptFringe.CONCEPT_FRINGE_OUTER }
         Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                if (fullMap) "Full map · $readyCount ready to start" else "Nearby concepts",
+                if (readyCount > 0) "Nearby \u00b7 $readyCount ready" else "Nearby concepts",
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.weight(1f),
             )
-            GraphControl("\u2212") { zoom = (zoom / 1.2f).coerceIn(MIN_ZOOM, MAX_ZOOM) }
-            Spacer(Modifier.width(4.dp))
-            GraphControl("Fit") {
-                zoom = fitZoomFor(layout.cols, layout.rows, viewport, stepXpx, stepYpx, padPx, labelPadPx)
-                scope.launch {
-                    hScroll.scrollTo(0)
-                    vScroll.scrollTo(0)
-                }
+            GraphControl("\u2212") {
+                zoomToAnimated(zoom / 1.25f, hScroll.value + viewport.width / 2f, vScroll.value + viewport.height / 2f)
             }
             Spacer(Modifier.width(4.dp))
-            GraphControl("+") { zoom = (zoom * 1.2f).coerceIn(MIN_ZOOM, MAX_ZOOM) }
-            if (focusId != null) {
-                Spacer(Modifier.width(4.dp))
-                GraphControl(if (fullMap) "Nearby" else "Map") { showFullMap = !showFullMap }
+            GraphControl("Fit") {
+                val fit = fitZoomFor(layout.cols, layout.rows, viewport, stepXpx, stepYpx, padPx, labelPadPx * 0.5f)
+                scope.launch { zoomAnim.animateTo(fit, tween(FIT_ANIM_MS, easing = FastOutSlowInEasing)) }
+                scope.launch { hScroll.animateScrollTo(0, tween(FIT_ANIM_MS, easing = FastOutSlowInEasing)) }
+                scope.launch { vScroll.animateScrollTo(0, tween(FIT_ANIM_MS, easing = FastOutSlowInEasing)) }
+            }
+            Spacer(Modifier.width(4.dp))
+            GraphControl("+") {
+                zoomToAnimated(zoom * 1.25f, hScroll.value + viewport.width / 2f, vScroll.value + viewport.height / 2f)
             }
         }
 
@@ -400,53 +579,174 @@ fun ConceptLatticeGraph(
                 modifier =
                     Modifier
                         .size(canvasWdp, canvasHdp)
-                        .pointerInput(positions) {
-                            detectTapGestures { tap ->
-                                val hit =
-                                    positions.entries
-                                        .minByOrNull { hypot(it.value.x - tap.x, it.value.y - tap.y) }
-                                        ?.takeIf { hypot(it.value.x - tap.x, it.value.y - tap.y) <= radiusOf(it.key) + tapSlopPx }
-                                onNodeSelected(hit?.key.takeIf { it != selectedNodeId })
+                        // Two-finger pinch = zoom, anchored at the pinch centroid. Single-finger drags
+                        // aren't consumed here, so they fall through to the scroll box for pan + fling.
+                        .pointerInput(Unit) {
+                            awaitEachGesture {
+                                awaitFirstDown(requireUnconsumed = false)
+                                do {
+                                    val event = awaitPointerEvent()
+                                    if (event.changes.count { it.pressed } >= 2) {
+                                        val factor = event.calculateZoom()
+                                        if (factor != 1f) {
+                                            val centroid = event.calculateCentroid(useCurrent = true)
+                                            val start = zoomAnim.value
+                                            val next = (start * factor).coerceIn(MIN_ZOOM, MAX_ZOOM)
+                                            if (next != start && start > 0f) {
+                                                val ratio = next / start
+                                                val h = (hScroll.value + (centroid.x - padPx) * (ratio - 1f)).roundToInt().coerceAtLeast(0)
+                                                val v = (vScroll.value + (centroid.y - padPx) * (ratio - 1f)).roundToInt().coerceAtLeast(0)
+                                                // `awaitEachGesture` is a restricted scope, so hop to the
+                                                // composable scope to drive the (suspending) zoom + scroll.
+                                                scope.launch {
+                                                    zoomAnim.snapTo(next)
+                                                    hScroll.scrollTo(h)
+                                                    vScroll.scrollTo(v)
+                                                }
+                                            }
+                                            event.changes.forEach { it.consume() }
+                                        }
+                                    }
+                                } while (event.changes.any { it.pressed })
                             }
+                        }.pointerInput(positions) {
+                            detectTapGestures(
+                                onPress = { offset ->
+                                    val hit = nodeAt(offset)
+                                    if (hit != null) {
+                                        pressedNodeId = hit
+                                        scope.launch {
+                                            pressAnim.snapTo(0f)
+                                            pressAnim.animateTo(1f, tween(340, easing = FastOutSlowInEasing))
+                                        }
+                                    }
+                                    tryAwaitRelease()
+                                },
+                                onTap = { tap -> onNodeSelected(nodeAt(tap).takeIf { it != selectedNodeId }) },
+                            )
                         },
             ) {
-                val edgeStroke = 1.5.dp.toPx()
-                for (edge in shownEdges) {
-                    val from = positions[edge.prerequisiteId] ?: continue
-                    val to = positions[edge.targetId] ?: continue
-                    drawLine(color = colors.edge, start = from, end = to, strokeWidth = edgeStroke)
+                // Trace the selected node's edges in the accent color. No dimming: the nearby view is
+                // already just a handful of nodes, so there is no galaxy to cut through.
+                val traceId = selectedNodeId
+                val viewLeft = hScroll.value.toFloat()
+                val viewTop = vScroll.value.toFloat()
+                val viewRight = viewLeft + viewport.width
+                val viewBottom = viewTop + viewport.height
+                val labelBudgetPx = (COL_W_DP.dp.toPx() * zoom * 0.82f).coerceAtLeast(baseRadiusPx * 6f)
+                val labelTextPx = 12.sp.toPx()
+                val edgeStrokeThin = 1.4.dp.toPx()
+                val edgeStrokeStrong = 2.2.dp.toPx()
+                val arrowSizePx = 7.dp.toPx()
+
+                for ((prereqId, targetId) in shownEdges) {
+                    val from = positions[prereqId] ?: continue
+                    val to = positions[targetId] ?: continue
+                    if (max(from.x, to.x) < viewLeft - cullMarginPx || min(from.x, to.x) > viewRight + cullMarginPx ||
+                        max(from.y, to.y) < viewTop - cullMarginPx || min(from.y, to.y) > viewBottom + cullMarginPx
+                    ) {
+                        continue
+                    }
+                    val traced = traceId != null && (prereqId == traceId || targetId == traceId)
+                    drawLatticeEdge(
+                        from = from,
+                        to = to,
+                        targetRadius = radiusOf(targetId),
+                        color = if (traced) colors.edgeStrong else colors.edge,
+                        strokeWidth = if (traced) edgeStrokeStrong else edgeStrokeThin,
+                        arrowSize = arrowSizePx,
+                        drawArrow = true,
+                    )
                 }
 
-                val showLabels = zoom >= LABEL_ZOOM
-                val labelBudgetPx = (COL_W_DP.dp.toPx() * zoom * 0.82f).coerceAtLeast(baseRadiusPx * 6f)
-                for (node in shownNodes) {
+                // Nodes: rings + dot + glyphs, only near the viewport so the ~172-node map stays smooth.
+                // Labels get a second pass so a chip always sits above every dot and edge.
+                val visible =
+                    shownNodes.filter { node ->
+                        val c = positions[node.id] ?: return@filter false
+                        c.x >= viewLeft - cullMarginPx && c.x <= viewRight + cullMarginPx &&
+                            c.y >= viewTop - cullMarginPx && c.y <= viewBottom + cullMarginPx
+                    }
+                for (node in visible) {
                     val center = positions[node.id] ?: continue
                     val radius = radiusOf(node.id)
+                    val stateRingR = radius + 8.dp.toPx()
                     val startable = node.fringe == ConceptFringe.CONCEPT_FRINGE_OUTER
 
-                    if (node.id == selectedNodeId) {
-                        drawCircle(color = colors.selectedRing, radius = radius + 6f, center = center, style = Stroke(width = 3f))
-                    } else if (startable) {
-                        // Highlight the frontier: a green ring marks topics whose prerequisites are met.
-                        drawCircle(color = colors.frontier, radius = radius + 3.5f, center = center, style = Stroke(width = 2.5f))
+                    // Suggested-next / "you are here": a strong, prominent pulsing glow (layered soft
+                    // halos + a bright ring) so the current/recommended node clearly stands out.
+                    if (node.recommended) {
+                        drawCircle(
+                            color = colors.recommended.copy(alpha = 0.22f),
+                            radius = stateRingR + 12.dp.toPx() + pulse * 6.dp.toPx(),
+                            center = center,
+                        )
+                        drawCircle(
+                            color = colors.recommended.copy(alpha = 0.4f),
+                            radius = stateRingR + 6.dp.toPx() + pulse * 4.dp.toPx(),
+                            center = center,
+                        )
+                        drawCircle(
+                            color = colors.recommended.copy(alpha = 0.95f),
+                            radius = stateRingR + 2.dp.toPx(),
+                            center = center,
+                            style = Stroke(width = 3.dp.toPx()),
+                        )
                     }
-                    drawCircle(color = nodeFill(node), radius = radius, center = center)
+                    // Selected wins over the green "ready to start" frontier ring.
+                    when {
+                        node.id == selectedNodeId ->
+                            drawCircle(colors.selectedRing, radius = stateRingR, center = center, style = Stroke(width = 2.6.dp.toPx()))
+                        startable ->
+                            drawCircle(colors.frontier, radius = stateRingR, center = center, style = Stroke(width = 2.4.dp.toPx()))
+                    }
+                    // Mastery arc hugging the dot — only once attempted, so we never render the backend's
+                    // default prior as if it were real mastery.
+                    if (node.answered > 0) {
+                        drawMasteryRing(
+                            center = center,
+                            radius = radius,
+                            mastery = node.mastery,
+                            trackColor = colors.label.copy(alpha = 0.16f),
+                            arcColor = colors.label.copy(alpha = 0.85f),
+                        )
+                    }
+                    drawCircle(color = nodeFill(node, palette), radius = radius, center = center)
+                    // Press ripple over the tapped dot.
+                    if (node.id == pressedNodeId && pressAnim.value < 1f) {
+                        drawCircle(
+                            color = colors.selectedRing.copy(alpha = 0.28f * (1f - pressAnim.value)),
+                            radius = radius + pressAnim.value * 12.dp.toPx(),
+                            center = center,
+                        )
+                    }
                     if (node.fringe == ConceptFringe.CONCEPT_FRINGE_INNER) {
                         drawMasteredCheck(center, radius)
                     }
                     if (node.recommended) {
                         drawRecommendedStar(center, radius, colors.recommended)
                     }
-                    if (showLabels) {
-                        drawNodeLabel(node.id, center, radius, colors.label, labelBudgetPx)
-                    }
+                }
+                // Labels are always drawn in the nearby view so the neighbourhood stays readable.
+                for (node in visible) {
+                    val center = positions[node.id] ?: continue
+                    drawNodeLabel(
+                        node.id,
+                        center,
+                        radiusOf(node.id),
+                        colors.label,
+                        colors.labelBg,
+                        colors.edge,
+                        labelBudgetPx,
+                        labelTextPx,
+                    )
                 }
             }
         }
     }
 }
 
-/** A compact control chip for the graph header (zoom out / fit / zoom in / focus toggle). */
+/** A compact control chip for the graph header (zoom out / fit / zoom in). */
 @Composable
 private fun GraphControl(
     label: String,
@@ -464,8 +764,11 @@ private fun GraphControl(
  * The dot fill for a node: MCAT super-section hue, with opacity carrying its state. Locked topics
  * fade back; startable/mastered topics scale from clearly visible up to solid as mastery grows.
  */
-private fun nodeFill(node: ConceptGraphNode): Color {
-    val base = sectionColorOf(node.id)
+private fun nodeFill(
+    node: ConceptGraphNode,
+    palette: McatPalette,
+): Color {
+    val base = palette.colorForKc(node.id)
     return if (node.fringe == ConceptFringe.CONCEPT_FRINGE_LOCKED) {
         base.copy(alpha = 0.25f)
     } else {
@@ -510,27 +813,122 @@ private fun DrawScope.drawRecommendedStar(
 }
 
 /**
- * Draws the short KC label (last path segment) floating to the RIGHT of the node and vertically
- * centered on it, so a node's vertical spacing isn't eaten by its label. Truncated with an ellipsis
- * to fit [maxWidthPx] so long names don't overrun the next column. The full id is always available
- * via the detail card.
+ * Draws the short KC label (last path segment) as a rounded chip floating to the RIGHT of the node
+ * and vertically centered on it, so a node's vertical spacing isn't eaten by its label. The chip
+ * ([bgColor] fill + [borderColor] hairline) keeps the text legible over edges in both light and dark
+ * themes. Truncated with an ellipsis to fit [maxWidthPx] so long names don't overrun the next column;
+ * the full id is always available via the detail card.
  */
 private fun DrawScope.drawNodeLabel(
     id: String,
     center: Offset,
     radius: Float,
-    color: Color,
+    textColor: Color,
+    bgColor: Color,
+    borderColor: Color,
     maxWidthPx: Float,
+    textSizePx: Float,
 ) {
     val paint =
         Paint().apply {
-            this.color = color.toArgb()
-            textSize = 12.sp.toPx()
+            this.color = textColor.toArgb()
+            textSize = textSizePx
             textAlign = Paint.Align.LEFT
             isAntiAlias = true
         }
     val text = ellipsize(id.substringAfterLast("::").replace('_', ' '), paint, maxWidthPx)
-    drawContext.canvas.nativeCanvas.drawText(text, center.x + radius + 6f, center.y + paint.textSize / 3f, paint)
+    val textWidth = paint.measureText(text)
+    val padH = 5.dp.toPx()
+    val padV = 3.dp.toPx()
+    val left = center.x + radius + 6.dp.toPx()
+    val top = center.y - textSizePx / 2f - padV
+    val height = textSizePx + padV * 2
+    val corner = CornerRadius(4.dp.toPx(), 4.dp.toPx())
+    val chipTopLeft = Offset(left - padH, top)
+    val chipSize = Size(textWidth + padH * 2, height)
+    drawRoundRect(color = bgColor, topLeft = chipTopLeft, size = chipSize, cornerRadius = corner)
+    drawRoundRect(color = borderColor, topLeft = chipTopLeft, size = chipSize, cornerRadius = corner, style = Stroke(width = 1.dp.toPx()))
+    drawContext.canvas.nativeCanvas.drawText(text, left, center.y + textSizePx / 3f, paint)
+}
+
+/**
+ * Draws a mastery arc hugging the dot: a faint full-circle [trackColor] track with an [arcColor]
+ * sweep of `mastery × 360°` from the top, so a node's fill (section hue) reads at a glance while the
+ * ring shows how far mastery has progressed.
+ */
+private fun DrawScope.drawMasteryRing(
+    center: Offset,
+    radius: Float,
+    mastery: Float,
+    trackColor: Color,
+    arcColor: Color,
+) {
+    val ringRadius = radius + 3.dp.toPx()
+    val stroke = 2.2.dp.toPx()
+    val topLeft = Offset(center.x - ringRadius, center.y - ringRadius)
+    val size = Size(ringRadius * 2f, ringRadius * 2f)
+    drawArc(
+        color = trackColor,
+        startAngle = -90f,
+        sweepAngle = 360f,
+        useCenter = false,
+        topLeft = topLeft,
+        size = size,
+        style = Stroke(width = stroke),
+    )
+    val sweep = 360f * mastery.coerceIn(0f, 1f)
+    if (sweep > 0f) {
+        drawArc(
+            color = arcColor,
+            startAngle = -90f,
+            sweepAngle = sweep,
+            useCenter = false,
+            topLeft = topLeft,
+            size = size,
+            style = Stroke(width = stroke, cap = StrokeCap.Round),
+        )
+    }
+}
+
+/**
+ * Draws one directional prerequisite edge (prerequisite → target) as a smooth left-to-right cubic
+ * whose control points are pulled horizontally: same-row edges read as straight lines and cross-lane
+ * edges bow gently, so the map reads as "builds on → this → unlocks". When [drawArrow] is set (i.e.
+ * zoomed in enough to be legible) a small arrowhead is placed at the target's boundary so the
+ * direction is unambiguous. Because every target sits at least one column right of its prerequisite,
+ * the approach is always horizontal, so the arrow points cleanly into the node.
+ */
+private fun DrawScope.drawLatticeEdge(
+    from: Offset,
+    to: Offset,
+    targetRadius: Float,
+    color: Color,
+    strokeWidth: Float,
+    arrowSize: Float,
+    drawArrow: Boolean,
+) {
+    val handle = (to.x - from.x) * 0.42f
+    val path =
+        Path().apply {
+            moveTo(from.x, from.y)
+            cubicTo(from.x + handle, from.y, to.x - handle, to.y, to.x, to.y)
+        }
+    drawPath(path, color = color, style = Stroke(width = strokeWidth, cap = StrokeCap.Round))
+    if (drawArrow && to.x > from.x) {
+        // The cubic's control point sits directly left of the target, so the curve approaches
+        // horizontally: a rightward arrowhead at the target boundary reads as "into the node".
+        val tipX = to.x - targetRadius
+        val baseX = tipX - arrowSize
+        val half = arrowSize * 0.55f
+        val head =
+            Path().apply {
+                moveTo(tipX, to.y)
+                lineTo(baseX, to.y - half)
+                lineTo(baseX, to.y + half)
+                close()
+            }
+        drawPath(head, color = color)
+    }
 }
 
 /** Trims [text] with a trailing ellipsis until it fits within [maxWidth] px under [paint]. */

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="470" viewBox="0 0 760 470" font-family="Helvetica,Arial,sans-serif">
+<rect x="0" y="0" width="760" height="470" fill="#ffffff"/>
+<text x="380" y="28" text-anchor="middle" font-size="18" font-weight="bold" fill="#111827">Engine latency: p95 vs target</text>
+<text x="380" y="48" text-anchor="middle" font-size="12" fill="#6b7280">Real Rust backend on a 50,000-card MCAT deck -- log scale (ms); lower is better</text>
+<line x1="66" y1="386.0" x2="610" y2="386.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="58" y="389.0" text-anchor="end" font-size="10" fill="#6b7280">0.01</text>
+<line x1="66" y1="332.7" x2="610" y2="332.7" stroke="#eef2f7" stroke-width="1"/>
+<text x="58" y="335.7" text-anchor="end" font-size="10" fill="#6b7280">0.1</text>
+<line x1="66" y1="279.3" x2="610" y2="279.3" stroke="#eef2f7" stroke-width="1"/>
+<text x="58" y="282.3" text-anchor="end" font-size="10" fill="#6b7280">1</text>
+<line x1="66" y1="226.0" x2="610" y2="226.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="58" y="229.0" text-anchor="end" font-size="10" fill="#6b7280">10</text>
+<line x1="66" y1="172.7" x2="610" y2="172.7" stroke="#eef2f7" stroke-width="1"/>
+<text x="58" y="175.7" text-anchor="end" font-size="10" fill="#6b7280">100</text>
+<line x1="66" y1="119.3" x2="610" y2="119.3" stroke="#eef2f7" stroke-width="1"/>
+<text x="58" y="122.3" text-anchor="end" font-size="10" fill="#6b7280">1000</text>
+<line x1="66" y1="66.0" x2="610" y2="66.0" stroke="#eef2f7" stroke-width="1"/>
+<text x="58" y="69.0" text-anchor="end" font-size="10" fill="#6b7280">10000</text>
+<rect x="66" y="66" width="544" height="320" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
+<rect x="86.7" y="255.4" width="33.7" height="130.6" fill="#059669" fill-opacity="0.85"/>
+<text x="103.5" y="251.4" text-anchor="middle" font-size="9" fill="#374151">2.8</text>
+<rect x="120.4" y="82.1" width="33.7" height="303.9" fill="#9ca3af" fill-opacity="0.55"/>
+<text x="137.3" y="78.1" text-anchor="middle" font-size="9" fill="#6b7280">5000</text>
+<text x="120.4" y="402" text-anchor="middle" font-size="10" fill="#374151">collection open</text>
+<text x="120.4" y="416" text-anchor="middle" font-size="9" font-weight="bold" fill="#059669">PASS</text>
+<rect x="195.5" y="344.0" width="33.7" height="42.0" fill="#059669" fill-opacity="0.85"/>
+<text x="212.3" y="340.0" text-anchor="middle" font-size="9" fill="#374151">0.061</text>
+<rect x="229.2" y="172.7" width="33.7" height="213.3" fill="#9ca3af" fill-opacity="0.55"/>
+<text x="246.1" y="168.7" text-anchor="middle" font-size="9" fill="#6b7280">100</text>
+<text x="229.2" y="402" text-anchor="middle" font-size="10" fill="#374151">next card</text>
+<text x="229.2" y="416" text-anchor="middle" font-size="9" font-weight="bold" fill="#059669">PASS</text>
+<rect x="304.3" y="296.3" width="33.7" height="89.7" fill="#059669" fill-opacity="0.85"/>
+<text x="321.1" y="292.3" text-anchor="middle" font-size="9" fill="#374151">0.48</text>
+<rect x="338.0" y="188.7" width="33.7" height="197.3" fill="#9ca3af" fill-opacity="0.55"/>
+<text x="354.9" y="184.7" text-anchor="middle" font-size="9" fill="#6b7280">50</text>
+<text x="338.0" y="402" text-anchor="middle" font-size="10" fill="#374151">grade</text>
+<text x="338.0" y="416" text-anchor="middle" font-size="9" font-weight="bold" fill="#059669">PASS</text>
+<rect x="413.1" y="128.0" width="33.7" height="258.0" fill="#059669" fill-opacity="0.85"/>
+<text x="429.9" y="124.0" text-anchor="middle" font-size="9" fill="#374151">6.9e+02</text>
+<rect x="446.8" y="119.3" width="33.7" height="266.7" fill="#9ca3af" fill-opacity="0.55"/>
+<text x="463.7" y="115.3" text-anchor="middle" font-size="9" fill="#6b7280">1000</text>
+<text x="446.8" y="402" text-anchor="middle" font-size="10" fill="#374151">dashboard load</text>
+<text x="446.8" y="416" text-anchor="middle" font-size="9" font-weight="bold" fill="#059669">PASS</text>
+<rect x="521.9" y="128.3" width="33.7" height="257.7" fill="#dc2626" fill-opacity="0.85"/>
+<text x="538.7" y="124.3" text-anchor="middle" font-size="9" fill="#374151">6.8e+02</text>
+<rect x="555.6" y="135.4" width="33.7" height="250.6" fill="#9ca3af" fill-opacity="0.55"/>
+<text x="572.5" y="131.4" text-anchor="middle" font-size="9" fill="#6b7280">500</text>
+<text x="555.6" y="402" text-anchor="middle" font-size="10" fill="#374151">dashboard refresh</text>
+<text x="555.6" y="416" text-anchor="middle" font-size="9" font-weight="bold" fill="#dc2626">FAIL</text>
+<text x="18" y="226" text-anchor="middle" font-size="12" fill="#374151" transform="rotate(-90 18 226)">Latency (ms, log scale)</text>
+<rect x="628" y="72" width="12" height="12" fill="#059669" fill-opacity="0.85"/>
+<text x="646" y="83" font-size="11" fill="#374151">measured p95 (PASS)</text>
+<rect x="628" y="92" width="12" height="12" fill="#dc2626" fill-opacity="0.85"/>
+<text x="646" y="103" font-size="11" fill="#374151">measured p95 (FAIL)</text>
+<rect x="628" y="112" width="12" height="12" fill="#9ca3af" fill-opacity="0.55"/>
+<text x="646" y="123" font-size="11" fill="#374151">target p95</text>
+</svg>

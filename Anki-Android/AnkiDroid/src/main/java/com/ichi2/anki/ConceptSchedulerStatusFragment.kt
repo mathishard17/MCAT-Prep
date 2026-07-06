@@ -19,21 +19,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import anki.scheduler.ConceptSchedulerStatusResponse
+import anki.scheduler.McatSection
 import com.ichi2.anki.CollectionManager.withCol
 import com.ichi2.anki.conceptscheduler.ConceptLessonBottomSheet
 import com.ichi2.anki.conceptscheduler.ConceptSchedulerStatusScreen
+import com.ichi2.anki.conceptscheduler.DashboardSkeleton
+import com.ichi2.anki.conceptscheduler.trySetConceptSelectedSection
 import com.ichi2.anki.libanki.DeckId
 import com.ichi2.anki.utils.ext.requireLong
 import com.ichi2.compose.theme.AnkiDroidTheme
@@ -62,16 +62,16 @@ class ConceptSchedulerStatusFragment : Fragment() {
             setContent {
                 AnkiDroidTheme {
                     when (val s = status) {
-                        null ->
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator()
-                            }
+                        null -> DashboardSkeleton(Modifier.fillMaxSize())
                         else ->
                             ConceptSchedulerStatusScreen(
                                 s,
                                 Modifier.fillMaxSize(),
                                 onSelectTopic = { selectTopic(it) },
+                                onStudySection = { studySection(it) },
                                 onOpenLesson = { openLesson(it) },
+                                // "Continue studying" from the deck page returns to the deck list to start studying.
+                                onContinueStudying = { activity?.finish() },
                             )
                     }
                 }
@@ -83,7 +83,7 @@ class ConceptSchedulerStatusFragment : Fragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        (activity as? AnkiActivity)?.supportActionBar?.title = "Concept Scheduler"
+        (activity as? AnkiActivity)?.supportActionBar?.title = "MCAT Readiness"
         launchCatchingTask {
             status = withCol { backend.getConceptSchedulerStatus(deckId) }
         }
@@ -102,6 +102,15 @@ class ConceptSchedulerStatusFragment : Fragment() {
                     },
                 )
             }
+            status = withCol { backend.getConceptSchedulerStatus(selectedDeckId) }
+        }
+    }
+
+    /** Focuses study on one MCAT [section] (the section picker), then refreshes the read model. */
+    private fun studySection(section: McatSection) {
+        val selectedDeckId = deckId
+        launchCatchingTask {
+            withCol { trySetConceptSelectedSection(selectedDeckId, section) }
             status = withCol { backend.getConceptSchedulerStatus(selectedDeckId) }
         }
     }

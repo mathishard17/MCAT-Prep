@@ -114,6 +114,16 @@ impl CardConceptMetadata {
     pub(crate) fn is_overview(&self) -> bool {
         !self.overview_components.is_empty()
     }
+
+    /// Whether this card is filed under the given MCAT section, per its `MCAT::`
+    /// tag(s). Used by the "study by section" filter to restrict the new-card pool
+    /// to one section. A card with no recognized section tag belongs to none.
+    pub(crate) fn belongs_to_section(&self, section: McatSection) -> bool {
+        self.sections
+            .iter()
+            .filter_map(|tag| McatSection::from_tag(tag))
+            .any(|card_section| card_section == section)
+    }
 }
 
 fn push_unique_component(components: &mut Vec<KnowledgeComponentId>, value: &str) {
@@ -271,6 +281,20 @@ impl McatSection {
             "Psych_Soc" | "PsychSoc" => Some(Self::PsychSoc),
             "CARS" | "Cars" => Some(Self::Cars),
             _ => None,
+        }
+    }
+
+    /// The canonical `MCAT::` tag suffix that authored cards carry for this
+    /// section. This is the *primary* section a card is filed under (a biochem
+    /// card, for instance, is tagged either `Bio_Biochem` or `Chem_Phys`), so it
+    /// is the authoritative "study this section" signal — more precise than the
+    /// KC discipline, which can span two sections.
+    pub(crate) fn tag_suffix(self) -> &'static str {
+        match self {
+            Self::BioBiochem => "Bio_Biochem",
+            Self::ChemPhys => "Chem_Phys",
+            Self::PsychSoc => "Psych_Soc",
+            Self::Cars => "CARS",
         }
     }
 }
@@ -533,6 +557,7 @@ impl Collection {
         home_deck: &Deck,
         note_id: NoteId,
         rating: Rating,
+        mcat_answer_correct: Option<bool>,
         day: u32,
     ) -> Result<()> {
         let enabled = home_deck
@@ -554,16 +579,26 @@ impl Collection {
 
         let mut persisted = self.get_concept_scheduler_state(home_deck.id);
         let config = persisted.config;
-        let evidence = evidence_from_rating(rating);
+        // A WRONG interactive-MC answer can never grow the score, even if the learner
+        // self-rates Good/Easy (see `concept_evidence`): `None` here means "neutral".
+        let evidence = concept_evidence(mcat_answer_correct, rating);
+        // Prerequisite violations depend only on which card was served, not on whether
+        // it was answered correctly, so record them regardless of the evidence.
         if metadata.prerequisites.iter().any(|prerequisite| {
             persisted.state.mastery_for(prerequisite, &config) < config.outer_fringe_prereq_mastery
         }) {
             persisted.state.record_prerequisite_violation(day);
         }
         for component in &metadata.target_components {
-            persisted
-                .state
-                .record_evidence_on_day(component.clone(), evidence, day, &config);
+            match evidence {
+                Some(evidence) => persisted
+                    .state
+                    .record_evidence_on_day(component.clone(), evidence, day, &config),
+                // Neutral: still count the attempt (so the live counts stay equal to
+                // the revlog reconstruction and a status refresh can't override this),
+                // but leave mastery unchanged so the score cannot grow.
+                None => persisted.state.note_component_seen(component.clone(), &config),
+            }
         }
         persisted.state.note_card_answered();
         let irt_item = IrtItemMetadata::from_card_metadata(&metadata);
@@ -573,9 +608,15 @@ impl Collection {
             .filter_map(|section| McatSection::from_tag(section))
         {
             let disciplines = section_disciplines_for_metadata(&metadata, section);
-            persisted
-                .state
-                .record_irt_response(section, disciplines, irt_item, evidence);
+            match evidence {
+                Some(evidence) => {
+                    persisted
+                        .state
+                        .record_irt_response(section, disciplines, irt_item, evidence)
+                }
+                // Neutral: count toward coverage/answered without moving theta.
+                None => persisted.state.note_irt_item_seen(section, disciplines),
+            }
         }
 
         self.set_concept_scheduler_state_inner(home_deck.id, &persisted)?;
@@ -594,6 +635,29 @@ pub(crate) fn evidence_from_rating(rating: Rating) -> Evidence {
     match rating {
         Rating::Again | Rating::Hard => Evidence::Negative,
         Rating::Good | Rating::Easy => Evidence::Positive,
+    }
+}
+
+/// The concept-scheduler evidence for an answer, given the true MC correctness when
+/// the reviewer knows it (interactive multiple-choice cards).
+///
+/// A WRONG answer can never produce positive evidence — so a learner cannot grow
+/// their score by tapping "Good"/"Easy" after guessing wrong:
+/// - wrong + Again/Hard -> `Some(Negative)` (penalize),
+/// - wrong + Good/Easy  -> `None` (neutral: unpenalized, but no growth).
+///
+/// A CORRECT answer, or any card where correctness is unknown (`None`, i.e. normal
+/// non-MC reviews), keeps the rating-based signal (`evidence_from_rating`).
+pub(crate) fn concept_evidence(
+    mcat_answer_correct: Option<bool>,
+    rating: Rating,
+) -> Option<Evidence> {
+    match mcat_answer_correct {
+        Some(false) => match rating {
+            Rating::Again | Rating::Hard => Some(Evidence::Negative),
+            Rating::Good | Rating::Easy => None,
+        },
+        _ => Some(evidence_from_rating(rating)),
     }
 }
 
@@ -633,6 +697,14 @@ impl ConceptMasteryState {
         self.mastery = bayes_update(self.mastery, likelihood_if_mastered, likelihood_if_unmastered);
     }
 
+    /// Count one attempt without changing mastery (a neutral wrong + Good/Easy MC
+    /// answer). Bumps `answered` so the live count stays equal to the revlog
+    /// reconstruction; otherwise a status refresh could replace this neutral state
+    /// with a rating-derived (positive) one and re-open the exploit.
+    pub(crate) fn note_seen(&mut self) {
+        self.answered += 1;
+    }
+
     pub(crate) fn is_inner_fringe(&self, config: &ConceptSchedulerConfig) -> bool {
         self.mastery >= config.inner_fringe_mastery
             && self.answered >= config.inner_fringe_min_answers
@@ -659,6 +731,11 @@ pub(crate) struct ConceptSchedulerState {
     /// the live `ConceptSessionState.selected_topic` is seeded from this.
     #[serde(default)]
     pub(crate) selected_topic: Option<KnowledgeComponentId>,
+    /// The user-chosen MCAT section to study. When set, the new-card pool is
+    /// restricted to cards filed under this section (see the queue builder's
+    /// section filter); `None` leaves scheduling across all sections unchanged.
+    #[serde(default)]
+    pub(crate) selected_section: Option<McatSection>,
     /// Exam date as epoch seconds. Drives the retention projection: recall is
     /// evaluated at this date, so readiness reflects what will survive to test day.
     #[serde(default)]
@@ -805,6 +882,20 @@ impl IrtSectionState {
             self.correct += 1;
         }
         self.information += fisher_information.max(0.01);
+        for discipline in BTreeSet::from_iter(disciplines) {
+            *self.discipline_counts.entry(discipline).or_default() += 1;
+        }
+    }
+
+    /// Count one attempt toward coverage/`answered` without moving theta or adding
+    /// information (a neutral wrong + Good/Easy MC answer). Keeps the section's
+    /// `answered` and `discipline_counts` equal to the revlog reconstruction so a
+    /// status refresh cannot replace this neutral state with a theta-raising one.
+    pub(crate) fn note_item_seen(
+        &mut self,
+        disciplines: impl IntoIterator<Item = McatDiscipline>,
+    ) {
+        self.answered += 1;
         for discipline in BTreeSet::from_iter(disciplines) {
             *self.discipline_counts.entry(discipline).or_default() += 1;
         }
@@ -988,6 +1079,33 @@ impl ConceptSchedulerState {
             .record_response(item, evidence == Evidence::Positive, disciplines);
     }
 
+    /// Count a neutral MC attempt for a KC (a wrong answer rated Good/Easy): create or
+    /// keep the entry and bump `answered` without changing mastery, so the score
+    /// cannot grow and the revlog reconstruction cannot override it.
+    pub(crate) fn note_component_seen(
+        &mut self,
+        component: KnowledgeComponentId,
+        config: &ConceptSchedulerConfig,
+    ) {
+        self.kcs
+            .entry(component)
+            .or_insert_with(|| ConceptMasteryState::new(config.initial_mastery))
+            .note_seen();
+    }
+
+    /// Count a neutral MC attempt toward a section's IRT coverage/`answered` without
+    /// moving theta.
+    pub(crate) fn note_irt_item_seen(
+        &mut self,
+        section: McatSection,
+        disciplines: impl IntoIterator<Item = McatDiscipline>,
+    ) {
+        self.irt_sections
+            .entry(section)
+            .or_default()
+            .note_item_seen(disciplines);
+    }
+
     pub(crate) fn record_prerequisite_violation(&mut self, day: u32) {
         self.prerequisite_violations += 1;
         self.daily.entry(day).or_default().prerequisite_violations += 1;
@@ -1102,8 +1220,8 @@ impl ConceptSchedulerState {
         graph: &KnowledgeGraph,
         config: &ConceptSchedulerConfig,
         // Blueprint-weighted recall of the section's studied KCs, projected to the
-        // exam date (see `concept_kc_memory_for_deck_at`). `None` when nothing in
-        // the section has memory yet, in which case retention is not penalized.
+        // exam date (see `Collection::kc_memory_from_deck_cards`). `None` when
+        // nothing in the section has memory yet, so retention is not penalized.
         section_memory: Option<f64>,
     ) -> SectionScoreStatus {
         let irt = self.irt_sections.get(&section).cloned().unwrap_or_default();
@@ -2018,5 +2136,155 @@ mod tests {
         assert_approx_eq(lu_lo, GUESS_FLOOR + PARTIAL_MASTERY_LIFT * 0.20);
         assert_approx_eq(lu_hi, GUESS_FLOOR + PARTIAL_MASTERY_LIFT * 0.80);
         assert!(lu_hi > lu_lo);
+    }
+
+    /// Deliverable B: emit engine-derived reference values so the held-out Python
+    /// model evals can be locked to the REAL Rust engine. Every value below is
+    /// produced by the SHIPPED engine functions (`difficulty_to_irt_b`,
+    /// `IrtItemMetadata::probability_correct`, `concept_demo::base_recall_for_button`,
+    /// the `fsrs` crate) or constants; `evals/test_parity.py` reproduces each from the
+    /// Python eval modules and asserts they match to 1e-9. Writing a fixture file from
+    /// a test is intentional here.
+    #[test]
+    fn emit_engine_parity_fixture() {
+        use fsrs::MemoryState;
+        use fsrs::FSRS;
+        use fsrs::FSRS5_DEFAULT_DECAY;
+        use serde_json::json;
+
+        // FSRS-5 default power forgetting-curve constants. The Python eval builds its
+        // ANALYTIC curve from exactly these (see the honest caveat in
+        // ENGINE-FIDELITY.md); it is NOT a direct fsrs-crate call.
+        let fsrs_decay = FSRS5_DEFAULT_DECAY as f64;
+        let fsrs_factor = 0.9_f64.powf(1.0 / -fsrs_decay) - 1.0;
+        // concept_demo::MEMORY_HORIZON_SECS is 86_400 (one day); recall is projected to
+        // at least this forward horizon.
+        let memory_horizon_days = 86_400.0_f64 / 86_400.0;
+
+        // difficulty tag (1..=5) -> IRT b, via the engine's difficulty_to_irt_b table.
+        let difficulty_to_b: Vec<_> = (1u8..=5)
+            .map(|d| json!({ "difficulty": d, "b": difficulty_to_irt_b(d) }))
+            .collect();
+
+        // IRT 3PL probability_correct over a grid, via the REAL IrtItemMetadata.
+        let thetas = [-2.0_f64, -1.0, 0.0, 1.0, 2.0];
+        let discriminations = [0.8_f64, 1.0, 1.4];
+        let guessings = [0.2_f64, 0.25];
+        let mut irt = Vec::new();
+        for d in 1u8..=5 {
+            let b = difficulty_to_irt_b(d);
+            for &theta in &thetas {
+                for &discrimination in &discriminations {
+                    for &guessing in &guessings {
+                        let item = IrtItemMetadata {
+                            difficulty: b,
+                            discrimination,
+                            guessing,
+                        };
+                        irt.push(json!({
+                            "difficulty": d,
+                            "b": b,
+                            "theta": theta,
+                            "discrimination": discrimination,
+                            "guessing": guessing,
+                            "p": item.probability_correct(theta),
+                        }));
+                    }
+                }
+            }
+        }
+
+        // Memory fallback (no FSRS state): base_recall_for_button + rating decay.
+        let base_recall: Vec<_> = (1u8..=4)
+            .map(|button| {
+                json!({
+                    "button": button,
+                    "base": crate::scheduler::concept_demo::base_recall_for_button(button).unwrap(),
+                })
+            })
+            .collect();
+
+        let fallback_elapsed = [0.5_f64, 1.0, 5.0, 20.0];
+        let fallback_interval = [1.0_f64, 3.0, 14.0];
+        let mut memory_fallback = Vec::new();
+        for button in 1u8..=4 {
+            let base = crate::scheduler::concept_demo::base_recall_for_button(button).unwrap();
+            for &elapsed_days in &fallback_elapsed {
+                for &interval_days in &fallback_interval {
+                    // Mirrors concept_demo::card_memory's fallback branch exactly.
+                    let decay_factor = (-elapsed_days / interval_days.max(1.0)).exp();
+                    let recall = (base * decay_factor).clamp(0.0, 1.0);
+                    memory_fallback.push(json!({
+                        "button": button,
+                        "base": base,
+                        "elapsed_days": elapsed_days,
+                        "interval_days": interval_days,
+                        "recall": recall,
+                    }));
+                }
+            }
+        }
+
+        // FSRS-5 retrievability. `recall_analytic` is the power curve the Python eval
+        // reproduces (the parity target). `recall_fsrs_crate` is the actual fsrs-crate
+        // value (f32) at the same point, recorded so the writeup can honestly show the
+        // analytic curve and the crate coincide to f32 precision at the default decay.
+        let fsrs = FSRS::new(None).unwrap();
+        let fsrs_elapsed = [0.5_f64, 1.0, 3.0, 10.0, 30.0];
+        let fsrs_stability = [1.0_f64, 5.0, 20.0, 60.0];
+        let mut fsrs_curve = Vec::new();
+        for &elapsed_days in &fsrs_elapsed {
+            let t = elapsed_days.max(memory_horizon_days);
+            for &stability in &fsrs_stability {
+                let s = stability.max(1e-6);
+                let recall_analytic = (1.0 + fsrs_factor * t / s).powf(-fsrs_decay).clamp(0.0, 1.0);
+                let seconds = (t * 86_400.0) as u32;
+                let recall_crate = fsrs.current_retrievability_seconds(
+                    MemoryState {
+                        stability: stability as f32,
+                        difficulty: 5.0,
+                    },
+                    seconds,
+                    FSRS5_DEFAULT_DECAY,
+                ) as f64;
+                fsrs_curve.push(json!({
+                    "elapsed_days": elapsed_days,
+                    "stability": stability,
+                    "t_eval_days": t,
+                    "recall_analytic": recall_analytic,
+                    "recall_fsrs_crate": recall_crate,
+                }));
+            }
+        }
+
+        let fixture = json!({
+            "meta": {
+                "description": "Reference values emitted by the REAL Anki Rust engine for \
+                                Python<->Rust parity of the MCAT model evals.",
+                "generated_by": "anki/rslib/src/scheduler/concept.rs::tests::emit_engine_parity_fixture",
+                "tolerance": 1e-9,
+            },
+            "fsrs_constants": {
+                "fsrs5_default_decay": fsrs_decay,
+                "fsrs_factor": fsrs_factor,
+                "memory_horizon_days": memory_horizon_days,
+            },
+            "difficulty_to_irt_b": difficulty_to_b,
+            "irt_probability_correct": irt,
+            "base_recall_for_button": base_recall,
+            "memory_fallback": memory_fallback,
+            "fsrs_curve": fsrs_curve,
+        });
+
+        // Package `anki` lives at anki/rslib, so the repo root is two levels up.
+        let repo_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap();
+        let path = repo_root.join("evals/fixtures/engine_parity.json");
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(&path, serde_json::to_string_pretty(&fixture).unwrap() + "\n").unwrap();
+        eprintln!("wrote engine parity fixture: {}", path.display());
     }
 }

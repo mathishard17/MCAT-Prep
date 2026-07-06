@@ -15,23 +15,34 @@
  */
 package com.ichi2.anki.conceptscheduler
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
 import anki.scheduler.ConceptSchedulerStatusResponse
+import anki.scheduler.McatSection
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.ichi2.anki.CollectionManager.withCol
 import com.ichi2.anki.launchCatchingTask
@@ -43,10 +54,27 @@ import com.ichi2.compose.theme.AnkiDroidTheme
  * Non-blocking panel that shows the Concept Scheduler read model over the reviewer, so studying is
  * never interrupted. Hosts the shared [ConceptSchedulerStatusScreen] Compose UI. Open it with
  * [newInstance] and `show(fragmentManager, TAG)`.
+ *
+ * Presented as a premium sheet: it opens fully expanded (so the readiness dashboard is visible at a
+ * glance rather than peeking), carries a drag handle, and dragging down dismisses it.
  */
 class ConceptSchedulerStatusBottomSheet : BottomSheetDialogFragment() {
     private var status by mutableStateOf<ConceptSchedulerStatusResponse?>(null)
     private val deckId: DeckId by lazy { requireArguments().requireLong(ARG_DECK_ID) }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
+        dialog.setOnShowListener {
+            val sheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            sheet?.let {
+                BottomSheetBehavior.from(it).apply {
+                    state = BottomSheetBehavior.STATE_EXPANDED
+                    skipCollapsed = true
+                }
+            }
+        }
+        return dialog
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,14 +85,22 @@ class ConceptSchedulerStatusBottomSheet : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 AnkiDroidTheme {
-                    when (val s = status) {
-                        null -> LoadingBox()
-                        else ->
-                            ConceptSchedulerStatusScreen(
-                                s,
-                                onSelectTopic = { selectTopic(it) },
-                                onOpenLesson = { openLesson(it) },
-                            )
+                    Surface(color = MaterialTheme.colorScheme.background) {
+                        Box {
+                            when (val s = status) {
+                                null -> DashboardSkeleton()
+                                else ->
+                                    ConceptSchedulerStatusScreen(
+                                        s,
+                                        onSelectTopic = { selectTopic(it) },
+                                        onStudySection = { studySection(it) },
+                                        onOpenLesson = { openLesson(it) },
+                                        // "Continue studying" over the reviewer simply returns to the cards.
+                                        onContinueStudying = { dismiss() },
+                                    )
+                            }
+                            DragHandle(Modifier.align(Alignment.TopCenter))
+                        }
                     }
                 }
             }
@@ -97,6 +133,15 @@ class ConceptSchedulerStatusBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+    /** Focuses study on one MCAT [section] (the section picker), then refreshes the read model. */
+    private fun studySection(section: McatSection) {
+        val selectedDeckId = deckId
+        launchCatchingTask {
+            withCol { trySetConceptSelectedSection(selectedDeckId, section) }
+            status = withCol { backend.getConceptSchedulerStatus(selectedDeckId) }
+        }
+    }
+
     private fun openLesson(kc: String) {
         ConceptLessonBottomSheet
             .newInstance(kc)
@@ -116,12 +161,16 @@ class ConceptSchedulerStatusBottomSheet : BottomSheetDialogFragment() {
     }
 }
 
-@androidx.compose.runtime.Composable
-private fun LoadingBox() {
-    Box(
-        Modifier.fillMaxWidth().padding(48.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularProgressIndicator()
+/** A small centered grabber at the top of the sheet, the standard affordance for drag-to-dismiss. */
+@Composable
+private fun DragHandle(modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxWidth().padding(top = 8.dp), contentAlignment = Alignment.TopCenter) {
+        Box(
+            Modifier
+                .width(36.dp)
+                .height(4.dp)
+                .clip(RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)),
+        )
     }
 }

@@ -346,7 +346,10 @@ class Toolbar:
         links = [
             self.create_link(
                 "decks",
-                tr.actions_decks(),
+                # MCAT fork: the deck browser is the Readiness Dashboard home, so the
+                # top-level link reads "Home". The command/id/handler are unchanged so
+                # the link target keeps working.
+                "Home",
                 self._deckLinkHandler,
                 tip=tr.actions_shortcut_key(val="D"),
                 id="decks",

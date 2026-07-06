@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="500" viewBox="0 0 660 500" font-family="Helvetica,Arial,sans-serif">
+<rect x="0" y="0" width="660" height="500" fill="#ffffff"/>
+<text x="330" y="28" text-anchor="middle" font-size="18" font-weight="bold" fill="#111827">Readiness: a range, not a number</text>
+<text x="330" y="48" text-anchor="middle" font-size="12" fill="#6b7280">EXAMPLE projection from the ablation ON arm -- synthetic; range = center +/- 1.96*SE</text>
+<text x="20" y="104" font-size="12" fill="#374151">Projected total</text>
+<line x1="150" y1="100" x2="620" y2="100" stroke="#9ca3af" stroke-width="2"/>
+<line x1="150.0" y1="96" x2="150.0" y2="104" stroke="#9ca3af"/>
+<text x="150.0" y="118" text-anchor="middle" font-size="9" fill="#6b7280">472</text>
+<line x1="267.5" y1="96" x2="267.5" y2="104" stroke="#9ca3af"/>
+<text x="267.5" y="118" text-anchor="middle" font-size="9" fill="#6b7280">486</text>
+<line x1="385.0" y1="96" x2="385.0" y2="104" stroke="#9ca3af"/>
+<text x="385.0" y="118" text-anchor="middle" font-size="9" fill="#6b7280">500</text>
+<line x1="502.5" y1="96" x2="502.5" y2="104" stroke="#9ca3af"/>
+<text x="502.5" y="118" text-anchor="middle" font-size="9" fill="#6b7280">514</text>
+<line x1="620.0" y1="96" x2="620.0" y2="104" stroke="#9ca3af"/>
+<text x="620.0" y="118" text-anchor="middle" font-size="9" fill="#6b7280">528</text>
+<rect x="222.6" y="91" width="149.9" height="18" fill="#2563eb" fill-opacity="0.20"/>
+<circle cx="297.6" cy="100" r="5" fill="#2563eb" stroke="#1e3a8a"/>
+<text x="297.6" y="86" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">490 (likely 481-499)</text>
+<text x="20" y="168" font-size="12" fill="#374151">Per section (118-132):</text>
+<text x="20" y="194" font-size="12" fill="#374151">Bio/Biochem</text>
+<line x1="150" y1="190" x2="620" y2="190" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="150.0" y1="187" x2="150.0" y2="193" stroke="#9ca3af"/>
+<text x="150.0" y="205" text-anchor="middle" font-size="8" fill="#6b7280">118</text>
+<line x1="284.3" y1="187" x2="284.3" y2="193" stroke="#9ca3af"/>
+<text x="284.3" y="205" text-anchor="middle" font-size="8" fill="#6b7280">122</text>
+<line x1="385.0" y1="187" x2="385.0" y2="193" stroke="#9ca3af"/>
+<text x="385.0" y="205" text-anchor="middle" font-size="8" fill="#6b7280">125</text>
+<line x1="485.7" y1="187" x2="485.7" y2="193" stroke="#9ca3af"/>
+<text x="485.7" y="205" text-anchor="middle" font-size="8" fill="#6b7280">128</text>
+<line x1="620.0" y1="187" x2="620.0" y2="193" stroke="#9ca3af"/>
+<text x="620.0" y="205" text-anchor="middle" font-size="8" fill="#6b7280">132</text>
+<line x1="217.1" y1="179" x2="217.1" y2="201" stroke="#d97706" stroke-width="1" stroke-dasharray="3,3"/>
+<rect x="385.0" y="182" width="201.4" height="16" fill="#2563eb" fill-opacity="0.20"/>
+<circle cx="485.7" cy="190" r="4" fill="#2563eb" stroke="#1e3a8a"/>
+<text x="485.7" y="179" text-anchor="middle" font-size="10" fill="#1e3a8a">128 (125-131)</text>
+<text x="20" y="260" font-size="12" fill="#374151">Chem/Phys</text>
+<line x1="150" y1="256" x2="620" y2="256" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="150.0" y1="253" x2="150.0" y2="259" stroke="#9ca3af"/>
+<text x="150.0" y="271" text-anchor="middle" font-size="8" fill="#6b7280">118</text>
+<line x1="284.3" y1="253" x2="284.3" y2="259" stroke="#9ca3af"/>
+<text x="284.3" y="271" text-anchor="middle" font-size="8" fill="#6b7280">122</text>
+<line x1="385.0" y1="253" x2="385.0" y2="259" stroke="#9ca3af"/>
+<text x="385.0" y="271" text-anchor="middle" font-size="8" fill="#6b7280">125</text>
+<line x1="485.7" y1="253" x2="485.7" y2="259" stroke="#9ca3af"/>
+<text x="485.7" y="271" text-anchor="middle" font-size="8" fill="#6b7280">128</text>
+<line x1="620.0" y1="253" x2="620.0" y2="259" stroke="#9ca3af"/>
+<text x="620.0" y="271" text-anchor="middle" font-size="8" fill="#6b7280">132</text>
+<line x1="217.1" y1="245" x2="217.1" y2="267" stroke="#d97706" stroke-width="1" stroke-dasharray="3,3"/>
+<rect x="183.6" y="248" width="235.0" height="16" fill="#2563eb" fill-opacity="0.20"/>
+<circle cx="284.3" cy="256" r="4" fill="#2563eb" stroke="#1e3a8a"/>
+<text x="284.3" y="245" text-anchor="middle" font-size="10" fill="#1e3a8a">122 (119-126)</text>
+<text x="20" y="326" font-size="12" fill="#374151">Psych/Soc</text>
+<line x1="150" y1="322" x2="620" y2="322" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="150.0" y1="319" x2="150.0" y2="325" stroke="#9ca3af"/>
+<text x="150.0" y="337" text-anchor="middle" font-size="8" fill="#6b7280">118</text>
+<line x1="284.3" y1="319" x2="284.3" y2="325" stroke="#9ca3af"/>
+<text x="284.3" y="337" text-anchor="middle" font-size="8" fill="#6b7280">122</text>
+<line x1="385.0" y1="319" x2="385.0" y2="325" stroke="#9ca3af"/>
+<text x="385.0" y="337" text-anchor="middle" font-size="8" fill="#6b7280">125</text>
+<line x1="485.7" y1="319" x2="485.7" y2="325" stroke="#9ca3af"/>
+<text x="485.7" y="337" text-anchor="middle" font-size="8" fill="#6b7280">128</text>
+<line x1="620.0" y1="319" x2="620.0" y2="325" stroke="#9ca3af"/>
+<text x="620.0" y="337" text-anchor="middle" font-size="8" fill="#6b7280">132</text>
+<line x1="217.1" y1="311" x2="217.1" y2="333" stroke="#d97706" stroke-width="1" stroke-dasharray="3,3"/>
+<rect x="250.7" y="314" width="201.4" height="16" fill="#2563eb" fill-opacity="0.20"/>
+<circle cx="351.4" cy="322" r="4" fill="#2563eb" stroke="#1e3a8a"/>
+<text x="351.4" y="311" text-anchor="middle" font-size="10" fill="#1e3a8a">124 (121-127)</text>
+<text x="20" y="392" font-size="12" fill="#374151">CARS</text>
+<line x1="150" y1="388" x2="620" y2="388" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="150.0" y1="385" x2="150.0" y2="391" stroke="#9ca3af"/>
+<text x="150.0" y="403" text-anchor="middle" font-size="8" fill="#6b7280">118</text>
+<line x1="284.3" y1="385" x2="284.3" y2="391" stroke="#9ca3af"/>
+<text x="284.3" y="403" text-anchor="middle" font-size="8" fill="#6b7280">122</text>
+<line x1="385.0" y1="385" x2="385.0" y2="391" stroke="#9ca3af"/>
+<text x="385.0" y="403" text-anchor="middle" font-size="8" fill="#6b7280">125</text>
+<line x1="485.7" y1="385" x2="485.7" y2="391" stroke="#9ca3af"/>
+<text x="485.7" y="403" text-anchor="middle" font-size="8" fill="#6b7280">128</text>
+<line x1="620.0" y1="385" x2="620.0" y2="391" stroke="#9ca3af"/>
+<text x="620.0" y="403" text-anchor="middle" font-size="8" fill="#6b7280">132</text>
+<line x1="217.1" y1="377" x2="217.1" y2="399" stroke="#d97706" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="385.0" y="379" text-anchor="middle" font-size="11" fill="#6b7280">Not enough data yet -- need 190 reviews / 60% coverage</text>
+<text x="620" y="418" text-anchor="end" font-size="9" fill="#d97706">dashed = guessing floor (120)</text>
+<text x="330" y="486" text-anchor="middle" font-size="12" fill="#111827">Give-up rule: a section abstains below 20 items / 60% coverage (see give-up-rule.md)</text>
+</svg>
